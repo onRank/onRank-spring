@@ -1,11 +1,9 @@
-package com.onrank.server.domain.student;
+package com.onrank.server.service.student;
 
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import javax.swing.*;
 import java.util.Optional;
 
 @Repository

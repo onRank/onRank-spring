@@ -1,4 +1,4 @@
-package com.onrank.server.domain.student;
+package com.onrank.server.service.student;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,4 +1,4 @@
-package com.onrank.server.domain.student;
+package com.onrank.server.service.student;
 
 import com.onrank.server.domain.member.Member;
 import jakarta.persistence.*;
@@ -37,7 +37,7 @@ public class Student {
 
     // 생성자
     @Builder
-    public Student(Long studentId, String studentName, String studentEmail, String department, String phoneNumber) {
+    public Student(String name, String email, String department, String phoneNumber) {
         this.name = name;
         this.email = email;
         this.department = department;
