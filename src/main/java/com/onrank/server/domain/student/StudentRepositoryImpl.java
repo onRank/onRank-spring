@@ -1,4 +1,4 @@
-package com.onrank.server.service.student;
+package com.onrank.server.domain.student;
 
 
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,8 @@ public class StudentRepositoryImpl implements StudentRepository {
     }
 
     @Override
-    public void save(Student student) {
-        jpaRepository.save(student);
+    public Student save(Student student) {
+        return jpaRepository.save(student);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.onrank.server.service.student;
+package com.onrank.server.domain.student;
 
 import java.util.Optional;
 
@@ -11,7 +11,7 @@ public interface StudentRepository {
     Optional<Student> findByEmail(String email);
 
     // Student 저장
-    void save(Student student);
+    Student save(Student student);
 
     boolean existByEmail(String Email);
 }

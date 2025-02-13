@@ -1,7 +1,7 @@
 package com.onrank.server.service.student;
 
 import com.onrank.server.api.service.student.StudentService;
-import org.assertj.core.api.Assertions;
+import com.onrank.server.domain.student.Student;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

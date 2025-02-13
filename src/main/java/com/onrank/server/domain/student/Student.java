@@ -1,4 +1,4 @@
-package com.onrank.server.service.student;
+package com.onrank.server.domain.student;
 
 import com.onrank.server.domain.member.Member;
 import jakarta.persistence.*;
