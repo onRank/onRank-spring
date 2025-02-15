@@ -12,6 +12,4 @@ public interface StudentRepository {
 
     // Student 저장
     Student save(Student student);
-
-    boolean existByEmail(String Email);
 }

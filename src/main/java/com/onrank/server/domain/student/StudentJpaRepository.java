@@ -8,7 +8,4 @@ public interface StudentJpaRepository extends JpaRepository<Student, Long> {
 
     // 이메일로 Student 검색
     Optional<Student> findByEmail(String email);
-
-    // 이메일 존재 여부 확인
-    boolean existsByEmail(String email);
 }

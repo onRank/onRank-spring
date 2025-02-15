@@ -26,9 +26,4 @@ public class StudentRepositoryImpl implements StudentRepository {
     public Student save(Student student) {
         return jpaRepository.save(student);
     }
-
-    @Override
-    public boolean existByEmail(String Email) {
-        return jpaRepository.existsByEmail(Email);
-    }
 }

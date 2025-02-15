@@ -23,10 +23,10 @@ public class Student {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    private String school;
     private String department;
 
     @Column(nullable = false)
@@ -37,9 +37,10 @@ public class Student {
 
     // 생성자
     @Builder
-    public Student(String name, String email, String department, String phoneNumber) {
+    public Student(String name, String email, String school, String department, String phoneNumber) {
         this.name = name;
         this.email = email;
+        this.school = school;
         this.department = department;
         this.phoneNumber = phoneNumber;
     }
