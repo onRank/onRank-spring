@@ -1,5 +1,6 @@
 package com.onrank.server.domain.student;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -23,11 +24,12 @@ public class RegisterStudentDto {
     @Size(max = 20, message = "전화번호는 20자를 초과할 수 없습니다.")
     private String phoneNumber;
 
-    // DTO에서 엔티티로 변환
-    public Student toEntity(String email) {
+    // ✅ DTO에서 엔티티로 변환 (email을 매개변수로 받음)
+    public Student toEntity(String username, String email) {
         return Student.builder()
                 .name(name)
-                .email(email) // Google OAuth2에서 제공한 email (수정 불가)
+                .username(username) // ✅ Google OAuth2의 sub 값 (PK 역할)
+                .email(email) // ✅ OAuth2에서 받은 email 추가
                 .school(school) // 선택 값
                 .department(department) // 선택 값
                 .phoneNumber(phoneNumber)

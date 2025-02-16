@@ -24,6 +24,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
+@RequestMapping("/oauth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -31,53 +32,8 @@ public class AuthController {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    /**
-     * 🔹 OAuth2 로그인 후 현재 사용자 정보 반환
-     * - 프론트엔드에서 `/auth/me` 호출 후 적절한 페이지로 이동 (리다이렉트 X)
-     */
-    @GetMapping("/oauth/me")
-    public ResponseEntity<Map<String, Object>> getCurrentUser(HttpServletRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomOAuth2User)) {
-            return ResponseEntity.ok(Map.of("authenticated", false));
-        }
-
-        CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
-        String email = user.getAttribute("email");
-
-        log.info("✅ 로그인된 사용자: {}, isNewUser: {}", email, user.isNewUser());
-
-        return ResponseEntity.ok(Map.of(
-                "authenticated", true,
-                "isNewUser", user.isNewUser(),
-                "email", email
-        ));
-    }
-
-
-    /**
-     * 🔹 `register-student` 페이지 렌더링
-     * - JWT 기반으로 인증된 사용자 확인
-     * - AccessToken에서 이메일 정보 추출
-     */
-    @GetMapping("/register-student")
-    public Map<String, Object> registerStudentForm(HttpServletRequest request) {
-        String email = getEmailFromToken(request);
-        if (email == null) {
-            log.warn("❌ 유효한 AccessToken이 없음 - 로그인 필요");
-            return Map.of("error", "Unauthorized");
-        }
-
-        return Map.of("email", email);
-    }
-
-    /**
-     * 🔹 회원가입 요청 처리
-     * - 추가 정보를 입력받아 회원 저장
-     * - 새로운 AccessToken & RefreshToken 발급
-     */
-    @PostMapping("/register-student")
-    public Map<String, String> registerStudent(@RequestBody RegisterStudentDto request, HttpServletRequest httpRequest, HttpServletResponse response) throws IOException {
+    @PostMapping("/add")
+    public Map<String, String> registerStudent(@RequestBody RegisterStudentDto request, HttpServletResponse response) throws IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof CustomOAuth2User)) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
@@ -85,19 +41,24 @@ public class AuthController {
         }
 
         CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
-        String email = user.getEmail();
+        String username = user.getUsername(); // ✅ Google sub 값
+        String email = user.getAttributes().get("email").toString(); // ✅ Google 이메일 값
 
-        Student student = request.toEntity(email);
-        studentService.createMember(student);
+        log.info("✅ 신규 회원 등록 - username: {}, email: {}", username, email);
 
-        String accessToken = tokenProvider.generateAccessToken(email);
+        // ✅ Student 엔티티 생성 시 username과 email을 함께 저장
+        Student student = request.toEntity(username, email);
+        studentService.createStudent(student);
+
+        // ✅ AccessToken 및 RefreshToken 생성
+        String accessToken = tokenProvider.generateAccessToken(username);
         String refreshToken = UUID.randomUUID().toString();
 
-        refreshTokenRepository.save(new RefreshToken(email, refreshToken));
+        // ✅ RefreshToken 저장 (username을 기준으로 저장)
+        refreshTokenRepository.save(new RefreshToken(username, refreshToken));
 
         return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
     }
-
 
     /**
      * 🔹 AccessToken & RefreshToken을 쿠키에 저장
