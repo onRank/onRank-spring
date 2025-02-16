@@ -23,6 +23,7 @@ public class Student {
     @Column(nullable = false)
     private String name;
 
+
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -35,13 +36,16 @@ public class Student {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members = new ArrayList<>();
 
+    private String username;
+
     // 생성자
     @Builder
-    public Student(String name, String email, String school, String department, String phoneNumber) {
+    public Student(String name, String email, String school, String department, String phoneNumber, String username) {
         this.name = name;
         this.email = email;
         this.school = school;
         this.department = department;
         this.phoneNumber = phoneNumber;
+        this.username = username;
     }
 }

@@ -1,5 +1,6 @@
 package com.onrank.server.common.security.jwt;
 
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -7,62 +8,56 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.Collections;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenProvider tokenProvider;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        String token = resolveToken(request);
-
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
-
-            if (authentication != null) {
-                log.info("JWT 인증 성공 - SecurityContext에 사용자 정보 저장");
-                // SecurityContextHolder 에 인증 정보 저장
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                log.warn("JWT 검증 성공했지만 사용자 정보 없음");
-            }
-        } else {
-            log.warn("JWT 가 유효하지 않음");
-        }
-
-        filterChain.doFilter(request, response);
-    }
-
-    private String resolveToken(HttpServletRequest request) {
-
-        // 1. Authorization 헤더에서 토큰 확인
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            log.info("number1 Authorization header: {}", bearerToken.substring(7));
-            return bearerToken.substring(7); // "Bearer " 이후의 토큰 값만 가져옴
-        }
-
-        // 2. Authorization 쿠키에서 토큰 확인
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("Authorization")) {
-                    log.info("number2 Authorization header: {}", cookie.getValue());
-                    return cookie.getValue();
+                if ("Authorization".equals(cookie.getName())) {
+                    String token = cookie.getValue();
+                    String username = tokenProvider.getUsernameFromToken(token); // username 추출
+
+                    if (username != null) {
+                        log.info("✅ AccessToken 인증 성공 - 사용자: {}", username);
+
+                        // CustomOAuth2User 객체 생성
+                        OAuth2User customOAuth2User = new CustomOAuth2User(
+                                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
+                                Collections.singletonMap("sub", username),
+                                "sub",
+                                false // 기존 사용자로 가정
+                        );
+
+                        // Authentication 객체 생성 및 SecurityContext 설정
+                        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                    } else {
+                        log.warn("❌ AccessToken이 유효하지 않음");
+                    }
+                    break; // Authorization 쿠키를 찾으면 루프 종료
                 }
             }
         }
-        return null;
+
+        filterChain.doFilter(request, response);
     }
 }

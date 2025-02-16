@@ -8,4 +8,6 @@ public interface StudentJpaRepository extends JpaRepository<Student, Long> {
 
     // 이메일로 Student 검색
     Optional<Student> findByEmail(String email);
+
+    Optional<Student> findByUsername(String username);
 }

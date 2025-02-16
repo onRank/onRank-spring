@@ -19,15 +19,12 @@ public class StudentService {
         return studentRepository.findById(id);
     }
 
-    public Optional<Student> findByEmail(String email) {
-        return studentRepository.findByEmail(email);
+    public Optional<Student> findByUsername(String username) {
+        return studentRepository.findByEmail(username);
     }
 
-    /**
-     * 새로운 Student 등록
-     */
     @Transactional
-    public void createMember(Student student) {
+    public void createStudent(Student student) {
         studentRepository.save(student);
     }
 }
