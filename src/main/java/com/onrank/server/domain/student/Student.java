@@ -1,4 +1,4 @@
-package com.onrank.server.service.student;
+package com.onrank.server.domain.student;
 
 import com.onrank.server.domain.member.Member;
 import jakarta.persistence.*;
@@ -23,10 +23,11 @@ public class Student {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    private String school;
     private String department;
 
     @Column(nullable = false)
@@ -35,12 +36,16 @@ public class Student {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members = new ArrayList<>();
 
+    private String username;
+
     // 생성자
     @Builder
-    public Student(String name, String email, String department, String phoneNumber) {
+    public Student(String name, String email, String school, String department, String phoneNumber, String username) {
         this.name = name;
         this.email = email;
+        this.school = school;
         this.department = department;
         this.phoneNumber = phoneNumber;
+        this.username = username;
     }
 }
