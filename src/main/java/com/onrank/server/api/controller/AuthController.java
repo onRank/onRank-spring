@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +23,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/oauth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -41,20 +40,20 @@ public class AuthController {
         }
 
         CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
-        String username = user.getUsername(); // ✅ Google sub 값
-        String email = user.getAttributes().get("email").toString(); // ✅ Google 이메일 값
+        String username = user.getUsername();
+        String email = user.getAttributes().get("email").toString();
 
-        log.info("✅ 신규 회원 등록 - username: {}, email: {}", username, email);
+        log.info("신규 회원 등록 - username: {}, email: {}", username, email);
 
-        // ✅ Student 엔티티 생성 시 username과 email을 함께 저장
+        // Student 엔티티 생성 시 username과 email을 함께 저장
         Student student = request.toEntity(username, email);
         studentService.createStudent(student);
 
-        // ✅ AccessToken 및 RefreshToken 생성
+        // AccessToken 및 RefreshToken 생성
         String accessToken = tokenProvider.generateAccessToken(username);
         String refreshToken = UUID.randomUUID().toString();
 
-        // ✅ RefreshToken 저장 (username을 기준으로 저장)
+        // RefreshToken 저장 (username을 기준으로 저장)
         refreshTokenRepository.save(new RefreshToken(username, refreshToken));
 
         return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
