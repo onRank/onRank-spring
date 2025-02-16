@@ -1,9 +1,9 @@
 package com.onrank.server.common.config;
 
-import com.onrank.server.api.service.CustomOAuth2UserService;
-import com.onrank.server.common.auth.CustomSuccessHandler;
-import com.onrank.server.common.jwt.JWTFilter;
-import com.onrank.server.common.jwt.JWTUtil;
+import com.onrank.server.api.service.auth.CustomOAuth2UserService;
+import com.onrank.server.api.service.auth.CustomSuccessHandler;
+import com.onrank.server.common.security.jwt.JWTFilter;
+import com.onrank.server.common.security.jwt.JWTUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

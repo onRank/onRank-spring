@@ -1,4 +1,4 @@
-package com.onrank.server.api.dto;
+package com.onrank.server.api.dto.oauth;
 
 public interface OAuth2Response {
 

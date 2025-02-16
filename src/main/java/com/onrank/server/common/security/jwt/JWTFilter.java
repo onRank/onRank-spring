@@ -1,7 +1,6 @@
-package com.onrank.server.common.jwt;
+package com.onrank.server.common.security.jwt;
 
-import com.onrank.server.api.dto.CustomOAuth2User;
-import com.onrank.server.api.dto.UserDTO;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -9,10 +8,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public class JWTFilter extends OncePerRequestFilter {
 
@@ -61,17 +63,16 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
+        // CustomOAuth2User 객체 생성
+        OAuth2User customOAuth2User = new CustomOAuth2User(
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
+                Collections.singletonMap("sub", jwtUtil.getUsername(token)),
+                "sub",
+                false // 기존 사용자로 가정
+        );
+
         //토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
-
-        //userDTO를 생성하여 값 set
-        UserDTO userDTO = new UserDTO();
-        userDTO.setUsername(username);
-        userDTO.setRole(role);
-
-        //UserDetails에 회원 정보 객체 담기
-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
 
         //스프링 시큐리티 인증 토큰 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
