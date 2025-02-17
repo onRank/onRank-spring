@@ -39,7 +39,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         CookieUtil.addCookie(response, "Authorization", accessToken, 60 * 60 * 2);
 
         // 쿼리 파라미터를 추가하여 리다이렉트 (신규 회원 여부 포함)
-        String redirectUrl = "http://localhost:3000/auth/oauth?isNewUser=" + isNewUser;
+        String redirectUrl = "http://localhost:3000/auth?isNewUser=" + isNewUser;
         response.sendRedirect(redirectUrl);
     }
 }
