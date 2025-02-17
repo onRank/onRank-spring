@@ -3,15 +3,16 @@ package com.onrank.server.api.controller;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.common.security.jwt.TokenProvider;
 import com.onrank.server.api.service.student.StudentService;
+import com.onrank.server.common.util.CookieUtil;
 import com.onrank.server.domain.student.RegisterStudentDto;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.token.RefreshToken;
 import com.onrank.server.domain.token.RefreshTokenRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class AuthController {
 
         log.info("신규 회원 등록 - username: {}, email: {}", username, email);
 
-        // Student 엔티티 생성 시 username과 email을 함께 저장
+        // Student 엔티티 생성 및 저장
         Student student = request.toEntity(username, email);
         studentService.createStudent(student);
 
@@ -53,50 +54,24 @@ public class AuthController {
         String accessToken = tokenProvider.generateAccessToken(username);
         String refreshToken = UUID.randomUUID().toString();
 
-        // RefreshToken 저장 (username을 기준으로 저장)
+        // RefreshToken 저장
         refreshTokenRepository.save(new RefreshToken(username, refreshToken));
+
+        // 쿠키 설정
+        CookieUtil.setAuthCookies(response, accessToken, refreshToken);
 
         return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
     }
 
-    /**
-     * 🔹 AccessToken & RefreshToken을 쿠키에 저장
-     */
-    private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-        Cookie accessTokenCookie = new Cookie("AccessToken", accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(false);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(60 * 60 * 2);
-
-        Cookie refreshTokenCookie = new Cookie("RefreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setSecure(false);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(60 * 60 * 24 * 30);
-
-        response.addCookie(accessTokenCookie);
-        response.addCookie(refreshTokenCookie);
-    }
-
-    /**
-     * 🔹 RefreshToken을 이용한 AccessToken 재발급
-     */
     @PostMapping("/refresh-token")
     public Map<String, Object> refreshToken(HttpServletRequest request, HttpServletResponse response) {
-        String refreshToken = null;
+        Optional<String> refreshTokenOpt = CookieUtil.getCookieValue(request, "RefreshToken");
 
-        // RefreshToken 쿠키에서 가져오기
-        for (Cookie cookie : request.getCookies()) {
-            if ("RefreshToken".equals(cookie.getName())) {
-                refreshToken = cookie.getValue();
-            }
-        }
-
-        if (refreshToken == null) {
+        if (refreshTokenOpt.isEmpty()) {
             return Map.of("error", "Unauthorized");
         }
 
+        String refreshToken = refreshTokenOpt.get();
         Optional<RefreshToken> storedToken = refreshTokenRepository.findByRefreshToken(refreshToken);
         if (storedToken.isEmpty()) {
             return Map.of("error", "Unauthorized");
@@ -106,7 +81,7 @@ public class AuthController {
         String newAccessToken = tokenProvider.generateAccessToken(storedToken.get().getEmail());
 
         // 새로운 AccessToken을 쿠키에 저장
-        setTokenCookies(response, newAccessToken, refreshToken);
+        CookieUtil.setAuthCookies(response, newAccessToken, refreshToken);
 
         return Map.of("success", true);
     }

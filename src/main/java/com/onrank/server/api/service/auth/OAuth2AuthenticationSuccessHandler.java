@@ -1,8 +1,9 @@
 package com.onrank.server.api.service.auth;
 
+import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.common.security.jwt.TokenProvider;
-import jakarta.servlet.http.Cookie;
+import com.onrank.server.common.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 
-        // ✅ OAuth2 인증된 사용자 정보 가져오기
+        // OAuth2 인증된 사용자 정보 가져오기
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
         String username = oAuth2User.getUsername();
         boolean isNewUser = oAuth2User.isNewUser();
@@ -31,17 +32,14 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         log.info("OAuth2 로그인 성공 - 사용자: {}", username);
         log.info("신규 회원 여부: {}", isNewUser);
 
-        // AccessToken 생성 및 쿠키에 저장
+        // AccessToken 생성
         String accessToken = tokenProvider.generateAccessToken(username);
-        Cookie accessTokenCookie = new Cookie("Authorization", accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(request.isSecure()); // HTTPS 환경에서는 true
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(60 * 60 * 2); // 2시간 유지
-        response.addCookie(accessTokenCookie);
 
-        // ✅ 쿼리 파라미터를 추가하여 리다이렉트 (신규 회원 여부 포함)
-        String redirectUrl = "http://localhost:3000/auth/oauth/check?isNewUser=" + isNewUser;
+        // 쿠키에 AccessToken 저장
+        CookieUtil.addCookie(response, "Authorization", accessToken, 60 * 60 * 2);
+
+        // 쿼리 파라미터를 추가하여 리다이렉트 (신규 회원 여부 포함)
+        String redirectUrl = "http://localhost:3000/auth/oauth?isNewUser=" + isNewUser;
         response.sendRedirect(redirectUrl);
     }
 }
