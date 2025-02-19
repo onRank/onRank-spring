@@ -2,8 +2,6 @@ package com.onrank.server.api.service.notice;
 
 import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.notice.NoticeJpaRepository;
-import com.onrank.server.domain.student.Student;
-import com.onrank.server.domain.student.StudentJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +16,8 @@ public class NoticeService {
 
     private final NoticeJpaRepository noticeRepository;
 
-    public Optional<Notice> findById(Long id) {
-        return noticeRepository.findById(id);
+    public Optional<Notice> findByNoticeId(Long noticeId) {
+        return noticeRepository.findByNoticeId(noticeId);
     }
 
     public List<Notice> findAll() {
@@ -27,7 +25,7 @@ public class NoticeService {
     }
 
     public List<Notice> findByStudyId(Long studyId) {
-        return noticeRepository.findByStudy_Id(studyId);
+        return noticeRepository.findByStudyStudyId(studyId);
     }
 
     @Transactional
@@ -39,11 +37,11 @@ public class NoticeService {
      * 공지사항 수정 메서드
      */
     @Transactional
-    public void updateNotice(Long noticeId, String title, String content, String imagePath) {
-        Notice notice = noticeRepository.findById(noticeId)
+    public void updateNotice(Long noticeId, String noticeTitle, String noticeContent, String noticeImagePath) {
+        Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지사항이 존재하지 않습니다."));
 
-        notice.update(title, content, imagePath);
+        notice.update(noticeTitle, noticeContent, noticeImagePath);
     }
 
     /**
@@ -51,7 +49,7 @@ public class NoticeService {
      */
     @Transactional
     public void deleteNotice(Long noticeId) {
-        Notice notice = noticeRepository.findById(noticeId)
+        Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지사항이 존재하지 않습니다."));
 
         noticeRepository.delete(notice);

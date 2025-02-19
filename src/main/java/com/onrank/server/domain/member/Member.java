@@ -17,8 +17,7 @@ import java.time.LocalDate;
 public class Member {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id")
-    private Long id;
+    private Long memberId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
@@ -30,20 +29,20 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberRole role;
+    private MemberRole memberRole;
 
     @Column(nullable = false)
-    private LocalDate joiningAt;
+    private LocalDate memberJoiningAt;
 
     // 생성자
     @Builder
-    public Member(Student student, Study study, MemberRole role, LocalDate joiningAt) {
+    public Member(Student student, Study study, MemberRole memberRole, LocalDate memberJoiningAt) {
         // 연관관계 설정
         setStudent(student);
         setStudy(study);
 
-        this.role = role;
-        this.joiningAt = joiningAt;
+        this.memberRole = memberRole;
+        this.memberJoiningAt = memberJoiningAt;
     }
 
     //==연관관계 메서드==//
@@ -71,6 +70,6 @@ public class Member {
 
     //==비지니스 로직==//
     public void changeRole(MemberRole memberRole) {
-        this.role = memberRole;
+        this.memberRole = memberRole;
     }
 }

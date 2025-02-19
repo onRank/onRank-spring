@@ -15,8 +15,8 @@ public class StudentService {
 
     private final StudentJpaRepository studentRepository;
 
-    public Optional<Student> findById(Long id) {
-        return studentRepository.findById(id);
+    public Optional<Student> findByStudentId(Long studentId) {
+        return studentRepository.findByStudentId(studentId);
     }
 
     public Optional<Student> findByUsername(String username) {

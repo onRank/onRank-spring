@@ -17,45 +17,44 @@ public class Notice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "notice_id")
-    private Long id;
+    private Long noticeId;
 
     @Column(nullable = false)
-    private String title;
+    private String noticeTitle;
 
     @Column(nullable = false)
-    private String content;
+    private String noticeContent;
 
     @Column(nullable = false)
-    private LocalDate createdAt;
+    private LocalDate noticeCreatedAt;
 
     @Column(nullable = false)
-    private LocalDate modifiedAt;
+    private LocalDate noticeModifiedAt;
 
-    private String imagePath;
+    private String noticeImagePath;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id")
     private Study study;
 
     @Builder
-    public Notice(Long id, String title, String content, LocalDate createdAt, LocalDate modifiedAt, String imagePath, Study study) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
-        this.imagePath = imagePath;
+    public Notice(Long noticeId, String noticeTitle, String noticeContent, LocalDate noticeCreatedAt, LocalDate noticeModifiedAt, String noticeImagePath, Study study) {
+        this.noticeId = noticeId;
+        this.noticeTitle = noticeTitle;
+        this.noticeContent = noticeContent;
+        this.noticeCreatedAt = noticeCreatedAt;
+        this.noticeModifiedAt = noticeModifiedAt;
+        this.noticeImagePath = noticeImagePath;
         this.study = study;
     }
 
     /**
      * 공지사항 수정 메서드
      */
-    public void update(String title, String content, String imagePath) {
-        this.title = title;
-        this.content = content;
-        this.imagePath = imagePath;
-        this.modifiedAt = LocalDate.now();
+    public void update(String noticeTitle, String noticeContent, String noticeImagePath) {
+        this.noticeTitle = noticeTitle;
+        this.noticeContent = noticeContent;
+        this.noticeImagePath = noticeImagePath;
+        this.noticeModifiedAt = LocalDate.now();
     }
 }

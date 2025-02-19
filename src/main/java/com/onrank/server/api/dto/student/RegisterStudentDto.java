@@ -10,19 +10,23 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RegisterStudentDto {
 
-    private String name;
-    private String school;
-    private String department;
-    private String phoneNumber;
+    @NotBlank
+    private String studentName;
 
-    public Student toEntity(String username, String email) {
+    private String studentSchool;
+    private String studentDepartment;
+
+    @NotBlank
+    private String studentPhoneNumber;
+
+    public Student toEntity(String username, String studentEmail) {
         return Student.builder()
-                .name(name)
+                .studentName(studentName)
                 .username(username)
-                .email(email)
-                .school(school)
-                .department(department)
-                .phoneNumber(phoneNumber)
+                .studentEmail(studentEmail)
+                .studentSchool(studentSchool)
+                .studentDepartment(studentDepartment)
+                .studentPhoneNumber(studentPhoneNumber)
                 .build();
     }
 }
