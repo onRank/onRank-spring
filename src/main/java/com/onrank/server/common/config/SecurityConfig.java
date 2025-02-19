@@ -42,13 +42,10 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
 
-                // request 인증, 인가 설정
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/").permitAll() // 인증 없이 접근 가능
-                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-                )
 
-                // oauth2 설정
+                .addFilterBefore(accessTokenFilter, UsernamePasswordAuthenticationFilter.class)
+
+        // oauth2 설정
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService) // 사용자 정보를 처리할 서비스 설정
@@ -56,7 +53,12 @@ public class SecurityConfig {
                         .successHandler(successHandler) // 로그인 성공시 핸들러 실행
                 )
 
-                .addFilterBefore(accessTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                // request 인증, 인가 설정
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/").permitAll() // 인증 없이 접근 가능
+                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                );
+
 
         return http.build();
     }
