@@ -33,9 +33,8 @@ public class Study {
     private List<Member> members = new ArrayList<>();
 
     // Study와 Notice의 1:N 관계 설정
-    @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notice> notices = new ArrayList<>();
-
 
     // 생성자
     @Builder

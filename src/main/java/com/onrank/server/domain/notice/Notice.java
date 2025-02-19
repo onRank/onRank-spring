@@ -48,4 +48,14 @@ public class Notice {
         this.imagePath = imagePath;
         this.study = study;
     }
+
+    /**
+     * 공지사항 수정 메서드
+     */
+    public void update(String title, String content, String imagePath) {
+        this.title = title;
+        this.content = content;
+        this.imagePath = imagePath;
+        this.modifiedAt = LocalDate.now();
+    }
 }

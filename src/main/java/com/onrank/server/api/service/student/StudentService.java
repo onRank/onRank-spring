@@ -20,7 +20,7 @@ public class StudentService {
     }
 
     public Optional<Student> findByUsername(String username) {
-        return studentRepository.findByEmail(username);
+        return studentRepository.findByUsername(username);
     }
 
     @Transactional

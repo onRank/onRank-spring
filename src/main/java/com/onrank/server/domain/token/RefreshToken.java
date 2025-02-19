@@ -13,11 +13,11 @@ import lombok.Setter;
 public class RefreshToken {
 
     @Id
-    private String email;
+    private String username;
     private String refreshToken;
 
-    public RefreshToken(String email, String refreshToken) {
-        this.email = email;
+    public RefreshToken(String username, String refreshToken) {
+        this.username = username;
         this.refreshToken = refreshToken;
     }
 }

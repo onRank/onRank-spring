@@ -1,13 +1,14 @@
 package com.onrank.server.api.controller;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.service.refreshToken.RefreshTokenService;
 import com.onrank.server.common.security.jwt.TokenProvider;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.util.CookieUtil;
 import com.onrank.server.api.dto.student.RegisterStudentDto;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.token.RefreshToken;
-import com.onrank.server.domain.token.RefreshTokenRepository;
+import com.onrank.server.domain.token.RefreshTokenJpaRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class AuthController {
 
     private final StudentService studentService;
     private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/add")
     public Map<String, String> registerStudent(@RequestBody RegisterStudentDto request, HttpServletResponse response) throws IOException {
@@ -54,7 +55,7 @@ public class AuthController {
         String refreshToken = UUID.randomUUID().toString();
 
         // RefreshToken 저장
-        refreshTokenRepository.save(new RefreshToken(username, refreshToken));
+        refreshTokenService.save(new RefreshToken(username, refreshToken));
 
         // 쿠키 설정
         CookieUtil.setAuthCookies(response, accessToken, refreshToken);
@@ -71,13 +72,13 @@ public class AuthController {
         }
 
         String refreshToken = refreshTokenOpt.get();
-        Optional<RefreshToken> storedToken = refreshTokenRepository.findByRefreshToken(refreshToken);
+        Optional<RefreshToken> storedToken = refreshTokenService.findByRefreshToken(refreshToken);
         if (storedToken.isEmpty()) {
             return Map.of("error", "Unauthorized");
         }
 
         // 새로운 AccessToken 생성
-        String newAccessToken = tokenProvider.generateAccessToken(storedToken.get().getEmail());
+        String newAccessToken = tokenProvider.generateAccessToken(storedToken.get().getUsername());
 
         // 새로운 AccessToken을 쿠키에 저장
         CookieUtil.setAuthCookies(response, newAccessToken, refreshToken);
