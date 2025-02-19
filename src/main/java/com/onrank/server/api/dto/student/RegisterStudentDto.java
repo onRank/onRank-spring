@@ -1,6 +1,6 @@
-package com.onrank.server.domain.student;
+package com.onrank.server.api.dto.student;
 
-import jakarta.validation.constraints.Email;
+import com.onrank.server.domain.student.Student;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

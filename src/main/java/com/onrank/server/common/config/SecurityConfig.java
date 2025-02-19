@@ -39,14 +39,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable) // 기본 인증 로그인 비활성화
                 .formLogin(AbstractHttpConfigurer::disable) // 기본 login form 비활성화
                 .logout(AbstractHttpConfigurer::disable) // 기본 logout 비활성화
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
 
-                // request 인증, 인가 설정
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/").permitAll() // 인증 없이 접근 가능
-                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-                )
+                // JwtAuthenticationFilter 추가
+                .addFilterBefore(accessTokenFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // oauth2 설정
                 .oauth2Login(oauth2 -> oauth2
@@ -56,7 +51,16 @@ public class SecurityConfig {
                         .successHandler(successHandler) // 로그인 성공시 핸들러 실행
                 )
 
-                .addFilterBefore(accessTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                // request 인증, 인가 설정
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/").permitAll() // 인증 없이 접근 가능
+                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                )
+
+                // 세션 사용하지 않음
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
 
         return http.build();
     }
