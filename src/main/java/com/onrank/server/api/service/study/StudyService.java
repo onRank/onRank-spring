@@ -17,7 +17,7 @@ public class StudyService {
 
     private final StudyJpaRepository studyRepository;
 
-    public Optional<Study> findById(Long id) {
+    public Optional<Study> findByStudyId(Long id) {
         return studyRepository.findById(id);
     }
 }

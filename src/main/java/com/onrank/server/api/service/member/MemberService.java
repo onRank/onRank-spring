@@ -17,14 +17,27 @@ public class MemberService {
     private final MemberJpaRepository memberRepository;
     private final StudentService studentService;
 
-    public boolean isUserHost(String username, Long studyId) {
+    /**
+     * 사용자가 특정 스터디에 속해 있는지 확인
+     */
+    public boolean isMemberInStudy(String username, Long studyId) {
         Student student = studentService.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Student 를 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("Student를 찾을 수 없습니다."));
 
         Long studentId = student.getStudentId();
-        Member member = memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스터디에 가입되지 않은 Student 입니다."));
+        return memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId).isPresent();
+    }
 
-        return member.getMemberRole().equals(MemberRole.HOST);
+    /**
+     * 사용자가 특정 스터디에서 HOST 역할을 가지고 있는지 확인
+     */
+    public boolean isMemberHost(String username, Long studyId) {
+        Student student = studentService.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Student를 찾을 수 없습니다."));
+
+        Long studentId = student.getStudentId();
+        return memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId)
+                .map(member -> member.getMemberRole().equals(MemberRole.HOST))
+                .orElse(false);
     }
 }
