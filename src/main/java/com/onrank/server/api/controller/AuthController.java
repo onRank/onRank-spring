@@ -1,26 +1,25 @@
 package com.onrank.server.api.controller;
 
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
-import com.onrank.server.common.security.jwt.TokenProvider;
+import com.onrank.server.api.dto.student.RegisterStudentDto;
+import com.onrank.server.api.service.refreshtoken.RefreshTokenService;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.util.CookieUtil;
-import com.onrank.server.domain.student.RegisterStudentDto;
+import com.onrank.server.common.util.JWTUtil;
+import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
 import com.onrank.server.domain.student.Student;
-import com.onrank.server.domain.token.RefreshToken;
-import com.onrank.server.domain.token.RefreshTokenRepository;
+import com.onrank.server.domain.refreshtoken.RefreshToken;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -29,19 +28,26 @@ import java.util.UUID;
 public class AuthController {
 
     private final StudentService studentService;
-    private final TokenProvider tokenProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final JWTUtil jwtUtil;
+    private final RefreshTokenJpaRepository refreshTokenRepository;
+
+    // ✅ 프론트엔드에서 이 API를 호출하면 Google 로그인 페이지로 리디렉션
+    @GetMapping("/login")
+    public void redirectToGoogle(HttpServletResponse response) throws IOException {
+        response.sendRedirect("/oauth2/authorization/google"); // Spring Security가 자동 처리
+    }
 
     @PostMapping("/add")
     public Map<String, String> registerStudent(@RequestBody RegisterStudentDto request, HttpServletResponse response) throws IOException {
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof CustomOAuth2User)) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof DefaultOAuth2User user)) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
             return Map.of();
         }
 
-        CustomOAuth2User user = (CustomOAuth2User) authentication.getPrincipal();
-        String username = user.getUsername();
+        String username = user.getName();
         String email = user.getAttributes().get("email").toString();
 
         log.info("신규 회원 등록 - username: {}, email: {}", username, email);
@@ -50,17 +56,8 @@ public class AuthController {
         Student student = request.toEntity(username, email);
         studentService.createStudent(student);
 
-        // AccessToken 및 RefreshToken 생성
-        String accessToken = tokenProvider.generateAccessToken(username);
-        String refreshToken = UUID.randomUUID().toString();
-
-        // RefreshToken 저장
-        refreshTokenRepository.save(new RefreshToken(username, refreshToken));
-
-        // 쿠키 설정
-        CookieUtil.setAuthCookies(response, accessToken, refreshToken);
-
-        return Map.of("accessToken", accessToken, "refreshToken", refreshToken);
+        // return 값 설정 필요
+        return Map.of();
     }
 
     @PostMapping("/refresh-token")
@@ -78,7 +75,7 @@ public class AuthController {
         }
 
         // 새로운 AccessToken 생성
-        String newAccessToken = tokenProvider.generateAccessToken(storedToken.get().getEmail());
+        String newAccessToken = jwtUtil.generateAccessToken(storedToken.get().getUsername());
 
         // 새로운 AccessToken을 쿠키에 저장
         CookieUtil.setAuthCookies(response, newAccessToken, refreshToken);
