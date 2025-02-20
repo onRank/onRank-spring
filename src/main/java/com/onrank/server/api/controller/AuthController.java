@@ -13,11 +13,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -61,7 +64,9 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public Map<String, Object> refreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public Map<String, Object> refreshToken(HttpServletRequest request,
+                                            HttpServletResponse response,
+                                            @AuthenticationPrincipal DefaultOAuth2User oAuth2User) {
         Optional<String> refreshTokenOpt = CookieUtil.getCookieValue(request, "RefreshToken");
 
         if (refreshTokenOpt.isEmpty()) {
@@ -74,8 +79,22 @@ public class AuthController {
             return Map.of("error", "Unauthorized");
         }
 
+        // authorities는 "ROLE_USER"로 고정
+        String fixedAuthority = "ROLE_USER";
+
+        // attributes에서 "sub" 값을 추출
+        Object subValue = oAuth2User.getAttributes().get("sub");
+        if (subValue == null) {
+            throw new IllegalArgumentException("OAuth2 사용자 정보에 'sub' 값이 없습니다.");
+        }
+
+        // JWT 클레임 구성: "sub"와 고정된 authorities 값을 넣음
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", subValue);
+        claims.put("authorities", Collections.singletonList(fixedAuthority));
+
         // 새로운 AccessToken 생성
-        String newAccessToken = jwtUtil.generateAccessToken(storedToken.get().getUsername());
+        String newAccessToken = jwtUtil.generateAccessToken(claims);
 
         // 새로운 AccessToken을 쿠키에 저장
         CookieUtil.setAuthCookies(response, newAccessToken, refreshToken);
