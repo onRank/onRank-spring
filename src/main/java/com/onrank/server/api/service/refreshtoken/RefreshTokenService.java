@@ -1,6 +1,5 @@
 package com.onrank.server.api.service.refreshtoken;
 
-import com.onrank.server.common.security.jwt.TokenProvider;
 import com.onrank.server.domain.refreshtoken.RefreshToken;
 import com.onrank.server.domain.refreshtoken.RefreshTokenRepository;
 import org.springframework.beans.factory.annotation.Value;
