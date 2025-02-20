@@ -41,12 +41,7 @@ public class NoticeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        List<NoticeResponse> noticeResponses = noticeService.findByStudyId(studyId)
-                .stream()
-                .map(NoticeResponse::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(noticeResponses);
+        return ResponseEntity.ok(noticeService.getNoticeResponsesByStudyId(studyId));
     }
 
     /**
