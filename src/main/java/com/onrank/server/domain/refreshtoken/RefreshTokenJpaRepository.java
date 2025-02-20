@@ -1,4 +1,4 @@
-package com.onrank.server.domain.token;
+package com.onrank.server.domain.refreshtoken;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
