@@ -1,13 +1,13 @@
 package com.onrank.server.api.controller;
 
+import com.onrank.server.api.dto.student.RegisterStudentDto;
 import com.onrank.server.api.service.refreshtoken.RefreshTokenService;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.util.CookieUtil;
 import com.onrank.server.common.util.JWTUtil;
-import com.onrank.server.domain.student.RegisterStudentDto;
+import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.refreshtoken.RefreshToken;
-import com.onrank.server.domain.refreshtoken.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class AuthController {
     private final StudentService studentService;
     private final RefreshTokenService refreshTokenService;
     private final JWTUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenJpaRepository refreshTokenRepository;
 
     // ✅ 프론트엔드에서 이 API를 호출하면 Google 로그인 페이지로 리디렉션
     @GetMapping("/login")

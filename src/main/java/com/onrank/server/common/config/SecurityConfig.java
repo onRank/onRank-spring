@@ -44,11 +44,10 @@ public class SecurityConfig {
 
                 // oauth2 설정
                 .oauth2Login(oauth2 -> oauth2
-//                        .defaultSuccessUrl("http://localhost:3000/auth/callback?isNewUser=true", true)
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(oAuth2UserService) // 사용자 정보를 처리할 서비스 설정
-                        )
-                        .successHandler(successHandler) // 로그인 성공시 핸들러 실행
+                                .userInfoEndpoint(userInfo -> userInfo
+                                        .userService(oAuth2UserService) // 사용자 정보를 처리할 서비스 설정
+                                )
+                                .successHandler(successHandler) // 로그인 성공시 핸들러 실행
                 )
 
                 // request 인증, 인가 설정
