@@ -30,7 +30,7 @@ public class TokenProvider {
                 .compact();
     }
 
-    // AccessToken에서 이메일 추출
+    // AccessToken에서 username 추출
     public String getUsernameFromToken(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
