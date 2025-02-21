@@ -6,6 +6,7 @@ import com.onrank.server.api.dto.notice.NoticeResponse;
 import com.onrank.server.api.service.notice.NoticeService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
