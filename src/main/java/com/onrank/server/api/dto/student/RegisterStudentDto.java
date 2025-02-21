@@ -14,6 +14,7 @@ public class RegisterStudentDto {
     private String studentName;
 
     private String studentSchool;
+
     private String studentDepartment;
 
     @NotBlank
@@ -22,11 +23,11 @@ public class RegisterStudentDto {
     public Student toEntity(String username, String studentEmail) {
         return Student.builder()
                 .studentName(studentName)
-                .username(username)
                 .studentEmail(studentEmail)
                 .studentSchool(studentSchool)
                 .studentDepartment(studentDepartment)
                 .studentPhoneNumber(studentPhoneNumber)
+                .username(username)
                 .build();
     }
 }

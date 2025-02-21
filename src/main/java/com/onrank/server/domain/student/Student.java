@@ -8,7 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -35,16 +37,20 @@ public class Student {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members = new ArrayList<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    private Set<Role> roles = new HashSet<>();
     private String username;
 
     // 생성자
     @Builder
-    public Student(String studentName, String studentEmail, String studentSchool, String studentDepartment, String studentPhoneNumber, String username) {
+    public Student(String studentName, String studentEmail, String studentSchool, String studentDepartment, String studentPhoneNumber, Set<Role> roles, String username) {
         this.studentName = studentName;
         this.studentEmail = studentEmail;
         this.studentSchool = studentSchool;
         this.studentDepartment = studentDepartment;
         this.studentPhoneNumber = studentPhoneNumber;
+        this.roles = roles;
         this.username = username;
     }
 }

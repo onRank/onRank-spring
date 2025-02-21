@@ -1,5 +1,6 @@
 package com.onrank.server.api.service.student;
 
+import com.onrank.server.domain.student.Role;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,10 @@ public class StudentService {
 
     public Optional<Student> findByUsername(String username) {
         return studentRepository.findByUsername(username);
+    }
+
+    public boolean checkIfNewUser(String username) {
+        return !studentRepository.existsByUsername(username);
     }
 
     @Transactional

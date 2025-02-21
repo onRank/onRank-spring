@@ -2,8 +2,9 @@ package com.onrank.server.common.config;
 
 import com.onrank.server.api.service.auth.CustomOAuth2UserService;
 import com.onrank.server.api.service.auth.OAuth2AuthenticationSuccessHandler;
-import com.onrank.server.common.security.jwt.JwtAuthenticationFilter;
-import com.onrank.server.common.util.JWTUtil;
+import com.onrank.server.api.service.student.StudentService;
+import com.onrank.server.common.security.jwt.JwtOAuth2AuthenticationFilter;
+import com.onrank.server.api.service.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,10 +27,11 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler successHandler;
-    private final JWTUtil jwtUtil;
+    private final TokenService tokenService;
+    private final StudentService studentService;
 
     @Bean
-    public SecurityFilterChain filerChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화 -> cookie를 사용하지 않으면 꺼도 된다. (cookie를 사용할 경우 httpOnly(XSS 방어), sameSite(CSRF 방어)로 방어해야 한다.)
@@ -40,7 +42,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
 
                 // jwt 필터 등록
-                .addFilterAfter(new JwtAuthenticationFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class)
+                .addFilterAfter(new JwtOAuth2AuthenticationFilter(tokenService, studentService), OAuth2LoginAuthenticationFilter.class)
 
                 // oauth2 설정
                 .oauth2Login(oauth2 -> oauth2
@@ -52,7 +54,7 @@ public class SecurityConfig {
 
                 // request 인증, 인가 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/oauth2/**", "/auth/**", "/login/**").permitAll() // 인증 없이 접근 가능
+                        .requestMatchers( "/auth/add").permitAll() // 인증 없이 접근 가능
                         .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
                 );
 
