@@ -3,20 +3,15 @@ package com.onrank.server.api.controller;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.student.RegisterStudentDto;
 import com.onrank.server.api.service.student.StudentService;
-import com.onrank.server.common.util.CookieUtil;
 import com.onrank.server.api.service.token.TokenService;
-import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
+import com.onrank.server.common.util.CookieUtil;
 import com.onrank.server.domain.student.Student;
-import com.onrank.server.domain.refreshtoken.RefreshToken;
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -26,7 +21,7 @@ public class AuthController {
 
     private final StudentService studentService;
     private final TokenService tokenService;
-    private final RefreshTokenJpaRepository refreshTokenRepository;
+    private final CookieUtil cookieUtil;
 
     @PostMapping("/add")
     public ResponseEntity<Void> registerStudent(
@@ -45,50 +40,84 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    // (*) RTK 삭제 코드 작성해야 함
-    @GetMapping("/refresh-token")
+    @GetMapping("/reissue")
     public ResponseEntity<?> refreshToken(
             RequestEntity<Void> requestEntity,
-            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+            @CookieValue(name = "refresh_token", required = false) String refreshToken,
+            HttpServletResponse response) {
 
-        String authorization = requestEntity.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        String refreshToken = requestEntity.getHeaders().getFirst("Refresh-Token");
+        String authorizationHeader = requestEntity.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        // AccessToken, RefreshToken 둘 다 없음
-        if (authorization == null && refreshToken == null) {
+        // 두 토큰 모두 전달되지 않은 경우
+        if (authorizationHeader == null && refreshToken == null) {
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("AccessToken cookie not found.");
+                    .body("인증 정보가 제공되지 않았습니다. 로그인이 필요합니다.");
         }
 
-        // AccessToken, RefreshToken 둘 중 하나만 있음 -> RTK 삭제 및 401 반환
-        if (!(authorization != null && refreshToken != null)) {
+        // access token만 전달된 경우
+        if (authorizationHeader != null && refreshToken == null) {
+
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("AccessToken cookie not found.");
+                    .body("토큰 갱신 요청에 refresh token이 누락되었습니다.");
         }
 
-        String accessToken = authorization.substring(7);
+        // refresh token만 전달된 경우
+        if (authorizationHeader == null) {
+
+            // refresh token이 유효하지 않은 경우
+            if (!tokenService.validateRefreshToken(refreshToken)) {
+
+                tokenService.deleteRefreshToken(refreshToken);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("유효하지 않은 refresh token입니다. 다시 로그인해주세요.");
+            }
+            // refresh token이 유효한 경우 -> 새로운 토큰 발급
+            return getResponseEntity(refreshToken, response);
+        }
+
+        // access token이 올바르지 않은 경우
+        if (!authorizationHeader.startsWith("Bearer ")) {
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("인증 정보가 제공되지 않았습니다. 로그인이 필요합니다.");
+        }
+        String accessToken = authorizationHeader.substring(7);
 
 
-        // AccessToken이 만료되지 않았는데 RefreshToken 재발급 요청을 보냄 -> RTK 삭제 및 401 반환
+        // access token이 만료되지 않은 경우 -> 보안상의 이유로 재인증 처리
         if (!tokenService.isExpired(accessToken)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body("AccessToken not expired.");
-        }
 
-        if (tokenService.isExpired(refreshToken)) {
+            tokenService.deleteRefreshToken(refreshToken);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Refresh token expired.");
+                    .body("만료되지 않은 access token과 함께 refresh token이 전달되었습니다. 보안상의 이유로 재인증이 필요합니다.");
         }
 
-        // 액세스 토큰과 리프레시 토큰 생성
-        String newAccessToken = tokenService.generateAccessToken(oAuth2User);
-        String newRefreshToken = tokenService.generateRefreshToken(oAuth2User);
+        // refresh token이 만료되었거나 유효하지 않을 경우
+        if (tokenService.isExpired(refreshToken)) {
+
+            tokenService.deleteRefreshToken(refreshToken);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("만료되지 않은 refresh token입니다. 다시 로그인해주세요.");
+        }
+
+        // refresh token이 유효한 경우 -> 새로운 토큰 발급
+        return getResponseEntity(refreshToken, response);
+    }
+
+    private ResponseEntity<?> getResponseEntity(@CookieValue(name = "refresh_token", required = false) String refreshToken, HttpServletResponse response) {
+        String username = tokenService.getUsername(refreshToken);
+        String email = tokenService.getEmail(refreshToken);
+
+        String newAccessToken = tokenService.createJwt("access", username, email);
+        String newRefreshToken = tokenService.createJwt("refresh", username, email);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + newAccessToken);
-        headers.set("Refresh-Token", newRefreshToken);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
+        cookieUtil.addRefreshTokenCookie(response, "refresh_token", newRefreshToken);
+
+        return ResponseEntity.ok()
                 .headers(headers)
                 .build();
     }

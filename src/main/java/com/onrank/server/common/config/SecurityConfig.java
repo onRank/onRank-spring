@@ -41,6 +41,12 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
 
+                // request 인증, 인가 설정
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers( "/oauth2/**", "/auth/add", "auth/reissue").permitAll() // 인증 없이 접근 가능
+                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                )
+
                 // jwt 필터 등록
                 .addFilterAfter(new JwtOAuth2AuthenticationFilter(tokenService, studentService), OAuth2LoginAuthenticationFilter.class)
 
@@ -50,12 +56,6 @@ public class SecurityConfig {
                                         .userService(oAuth2UserService) // 사용자 정보를 처리할 서비스 설정
                                 )
                                 .successHandler(successHandler) // 로그인 성공시 핸들러 실행
-                )
-
-                // request 인증, 인가 설정
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/auth/add").permitAll() // 인증 없이 접근 가능
-                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
                 );
 
         return http.build();

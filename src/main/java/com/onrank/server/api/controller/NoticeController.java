@@ -3,6 +3,7 @@ package com.onrank.server.api.controller;
 import com.onrank.server.api.dto.notice.AddNoticeRequest;
 import com.onrank.server.api.dto.notice.NoticeIdResponse;
 import com.onrank.server.api.dto.notice.NoticeResponse;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.notice.NoticeService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.api.service.member.MemberService;

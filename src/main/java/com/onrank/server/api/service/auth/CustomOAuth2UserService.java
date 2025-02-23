@@ -39,8 +39,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
          * 커스텀 OAuth2User의 authorities:
          * 기본적으로 "ROLE_USER"를 부여한 후,
          * 제공 받은 OAuth2User를 활용하여
-         * 특정 조건(예: 이메일)에 따라 추가적인 역할 할당 가능
-         * (혹은 추후에 역할 할당)
+         * 특정 조건(예: 이메일)에 따라 추가적인 역할 할당 혹은 추후에 역할 할당
+         * (더 알아봐야 함)
          */
 
         Map<String, Object> attributes = oAuth2User.getAttributes();
@@ -48,18 +48,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // Google에서 제공하는 고유 식별자 (sub)
         String sub = (String) attributes.get("sub");
-        log.info("username: {}", sub);
+
 
         // Client Registration Id ("google")
         String registartionId = userRequest.getClientRegistration().getRegistrationId();
 
-        String username = sub + " " + registartionId;
+        // OAuth2User의 username을 "google 1234..."과 같이 구성
+        String username = registartionId + " " + sub;
+        log.info("username: {}", username);
 
         String email = (String) attributes.get("email");
         log.info("email: {}", email);
 
-
-        // 처음 로그인할 때
+        // 처음 로그인할 때는 "ROLE_USER" 부여
         return new CustomOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
                 attributes,
