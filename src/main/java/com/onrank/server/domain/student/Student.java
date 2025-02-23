@@ -1,8 +1,16 @@
 package com.onrank.server.domain.student;
 
+import com.onrank.server.domain.member.Member;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -10,36 +18,39 @@ import lombok.*;
 @Table(name = "students")
 public class Student {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "student_id")
-    private Long id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long studentId;
 
     @Column(nullable = false)
-    private String name;
+    private String studentName;
+
 
     @Column(nullable = false, unique = true)
-    private String email;
+    private String studentEmail;
 
-    private String school;
-
-    private String department;
+    private String studentSchool;
+    private String studentDepartment;
 
     @Column(nullable = false)
-    private String phoneNumber;
+    private String studentPhoneNumber;
 
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Member> members = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    private Set<Role> roles = new HashSet<>();
     private String username;
 
-//    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Member> members = new ArrayList<>();
-
+    // 생성자
     @Builder
-    public Student(String name, String email, String school, String department, String phoneNumber, String username) {
-        this.name = name;
-        this.email = email;
-        this.school = school;
-        this.department = department;
-        this.phoneNumber = phoneNumber;
+    public Student(String studentName, String studentEmail, String studentSchool, String studentDepartment, String studentPhoneNumber, Set<Role> roles, String username) {
+        this.studentName = studentName;
+        this.studentEmail = studentEmail;
+        this.studentSchool = studentSchool;
+        this.studentDepartment = studentDepartment;
+        this.studentPhoneNumber = studentPhoneNumber;
+        this.roles = roles;
         this.username = username;
     }
 }
