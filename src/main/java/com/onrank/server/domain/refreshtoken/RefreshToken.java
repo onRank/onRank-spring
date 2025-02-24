@@ -18,5 +18,4 @@ public class RefreshToken {
 
     private String username;
     private String refreshToken;
-    private Instant expiration;
 }

@@ -43,6 +43,7 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
         // "Authorization" 헤더에서 accessToken 추출
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            log.info("Authorization = {}", authorizationHeader);
             filterChain.doFilter(request, response);
             return;
         }

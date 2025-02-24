@@ -1,5 +1,6 @@
 package com.onrank.server.api.service.token;
 
+import com.onrank.server.domain.refreshtoken.RefreshToken;
 import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -109,5 +110,13 @@ public class TokenService {
     public void deleteRefreshToken(String token) {
 
         refreshTokenJpaRepository.deleteByRefreshToken(token);
+    }
+
+    public void save(String username, String refreshToken) {
+
+        RefreshToken rtk = new RefreshToken();
+        rtk.setUsername(username);
+        rtk.setRefreshToken(refreshToken);
+        refreshTokenJpaRepository.save(rtk);
     }
 }

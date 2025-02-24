@@ -45,6 +45,7 @@ public class AuthController {
             RequestEntity<Void> requestEntity,
             @CookieValue(name = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response) {
+        log.info("/reissue 진입");
 
         String authorizationHeader = requestEntity.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 

@@ -49,6 +49,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         // 리프레시 토큰 생성
         String refreshToken = tokenService.createJwt("refresh", username, email);
 
+        // refresh token DB에 저장
+        tokenService.save(username, refreshToken);
+
         // refresh token 쿠키 생성 및 응답에 추가
         cookieUtil.addRefreshTokenCookie(response, "refresh_token", refreshToken);
 
