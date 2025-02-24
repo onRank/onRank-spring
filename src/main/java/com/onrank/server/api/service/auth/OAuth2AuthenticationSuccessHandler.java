@@ -52,11 +52,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         // refresh token 쿠키 생성 및 응답에 추가
         cookieUtil.addRefreshTokenCookie(response, "refresh_token", refreshToken);
 
-        // 신규 회원 여부 확인
-        boolean isNewUser = studentService.checkIfNewUser(authentication.getName());
+//        // 신규 회원 여부 확인
+//        boolean isNewUser = studentService.checkIfNewUser(authentication.getName());
 
         // 리다이렉트 URL 구성 후 sendRedirect 호출
-        String redirectUrl = "http://localhost:3000/auth/callback?isNewUser=" + isNewUser;
+        String redirectUrl = "http://localhost:3000/auth/callback";
         response.sendRedirect(redirectUrl);
     }
 }
