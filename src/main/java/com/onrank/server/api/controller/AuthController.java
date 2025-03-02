@@ -35,10 +35,12 @@ public class AuthController {
         String username = tokenService.getUsername(accessToken);
         String email = tokenService.getEmail(accessToken);
 
-        log.info("신규 회원 등록 - username: {}, email: {}", username, email);
-
         // Student 엔티티 생성 및 저장
         Student student = registerStudentDto.toEntity(username, email);
+
+        log.info("신규 회원 등록 - username: {}, email: {}, studentName: {}, studentPhoneNumber: {}, studentSchool: {}, studentDepartment: {}",
+                username, email, student.getStudentName(), student.getStudentPhoneNumber(), student.getStudentSchool(), student.getStudentDepartment());
+
         studentService.createStudent(student);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();

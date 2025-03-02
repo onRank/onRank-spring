@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -53,11 +54,11 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
         // username은 "google aSdFqWeR..."과 같이 되어 있음
         String username = tokenService.getUsername(accessToken);
 
-        if (studentService.checkIfNewUser(username)) {
-            log.info("New user logged in");
-            filterChain.doFilter(request, response);
-            return;
-        }
+//        if (studentService.checkIfNewUser(username)) {
+//            log.info("New user logged in");
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
 
         // 토큰 만료 여부 및 유효성 확인
         try {
@@ -90,9 +91,10 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
         String[] parts = username.split(" ");
         String authorizedClientRegistrationId = parts[0];
 
-        Collection<? extends GrantedAuthority> authorities = studentService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Student not found"))
-                .getRoles();
+//        Collection<? extends GrantedAuthority> authorities = studentService.findByUsername(username)
+//                .orElseThrow(() -> new UsernameNotFoundException("Student not found"))
+//                .getRoles();
+        Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
         log.info("authorities: {}", authorities);
 
         // (?) JWT 필터에서는 attributes에 어떤 값을 넣어야 하나?
@@ -108,7 +110,9 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
         // OAuth2AuthenticationToken 생성
         OAuth2AuthenticationToken authToken =
                 new OAuth2AuthenticationToken(customOAuth2User, customOAuth2User.getAuthorities(), authorizedClientRegistrationId);
+        log.info("authToken: {}", authToken);
         SecurityContextHolder.getContext().setAuthentication(authToken);
+        log.info("SecurityContextHolder: {}", SecurityContextHolder.getContext());
 
         filterChain.doFilter(request, response);
     }

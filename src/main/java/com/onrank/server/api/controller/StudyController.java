@@ -20,7 +20,7 @@ public class StudyController {
     private final StudyService studyService;
     private final TokenService tokenService;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<Study>> getStudiesByUsers(@RequestHeader("Authorization") String authHeader) {
 
         String accessToken = authHeader.substring(7);
