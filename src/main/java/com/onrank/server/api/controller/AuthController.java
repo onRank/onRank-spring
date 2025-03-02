@@ -26,10 +26,14 @@ public class AuthController {
     @PostMapping("/add")
     public ResponseEntity<Void> registerStudent(
             @RequestBody RegisterStudentDto registerStudentDto,
-            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+            @RequestHeader("Authorization") String authHeader) {
 
-        String username = oAuth2User.getName();
-        String email = oAuth2User.getAttributes().get("email").toString();
+        String accessToken = authHeader.substring(7);
+
+
+
+        String username = tokenService.getUsername(accessToken);
+        String email = tokenService.getEmail(accessToken);
 
         log.info("신규 회원 등록 - username: {}, email: {}", username, email);
 
@@ -117,6 +121,10 @@ public class AuthController {
         headers.set("Authorization", "Bearer " + newAccessToken);
 
         cookieUtil.addRefreshTokenCookie(response, "refresh_token", newRefreshToken);
+
+        // 기존 refresh token 삭제 후 새 refresh token 저장
+        tokenService.deleteRefreshToken(refreshToken);
+        tokenService.save(username, newRefreshToken);
 
         return ResponseEntity.ok()
                 .headers(headers)

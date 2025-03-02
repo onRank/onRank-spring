@@ -41,15 +41,23 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
 
         // "Authorization" 헤더에서 accessToken 추출
-        String authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            log.info("Authorization = {}", authorizationHeader);
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.info("Access token not found");
             filterChain.doFilter(request, response);
             return;
         }
-
         // accessToken이 "Bearer AsDfQwEr..."과 같이 되어 있음
-        String accessToken = authorizationHeader.substring(7);
+        String accessToken = authHeader.substring(7);
+
+        // username은 "google aSdFqWeR..."과 같이 되어 있음
+        String username = tokenService.getUsername(accessToken);
+
+        if (studentService.checkIfNewUser(username)) {
+            log.info("New user logged in");
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // 토큰 만료 여부 및 유효성 확인
         try {
@@ -79,8 +87,6 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // username은 "google aSdFqWeR..."과 같이 되어 있음
-        String username = tokenService.getUsername(accessToken);
         String[] parts = username.split(" ");
         String authorizedClientRegistrationId = parts[0];
 

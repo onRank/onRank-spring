@@ -28,6 +28,9 @@ public class Study {
     @Column(nullable = false)
     private String studyContent; // 스터디 설명
 
+    @Column(nullable = false)
+    private String studyImage; // 스터디 이미지
+
     // Study와 Member의 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members = new ArrayList<>();

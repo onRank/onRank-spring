@@ -12,7 +12,6 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class StudentService {
 
     private final StudentJpaRepository studentRepository;
