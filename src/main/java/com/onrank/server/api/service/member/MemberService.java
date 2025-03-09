@@ -4,10 +4,13 @@ import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;
+import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.student.Student;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 
 @Service
@@ -17,6 +20,17 @@ public class MemberService {
 
     private final MemberJpaRepository memberRepository;
     private final StudentService studentService;
+
+    /**
+     * username과 StudyId에 해당하는 Member 조회
+     */
+    public Optional<Member> findByUsernameAndStudyId(String username, Long studyId) {
+        Student student = studentService.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+
+        Long studentId = student.getStudentId();
+        return memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId);
+    }
 
     /**
      * 사용자가 특정 스터디에 속해 있는지 확인

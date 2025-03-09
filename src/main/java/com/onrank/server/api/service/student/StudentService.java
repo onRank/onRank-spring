@@ -16,6 +16,13 @@ public class StudentService {
 
     private final StudentJpaRepository studentRepository;
 
+    public String findStudentNameByUsername (String username) {
+        Student student = studentRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("Username " + username + " not found"));
+
+        return student.getStudentName();
+    }
+
     public Optional<Student> findByStudentId(Long studentId) {
         return studentRepository.findByStudentId(studentId);
     }
