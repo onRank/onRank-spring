@@ -1,7 +1,8 @@
 package com.onrank.server.api.service.study;
 
+import com.onrank.server.api.dto.student.CreateStudyRequestDto;
+import com.onrank.server.api.dto.study.MainpageStudyResponseDto;
 import com.onrank.server.domain.member.Member;
-import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -26,17 +27,30 @@ public class StudyService {
         return studyRepository.findByStudyId(id);
     }
 
-    public List<Study> getStudiesByUsername(String username) {
+    public List<MainpageStudyResponseDto> getStudiesByUsername(String username) {
 
         Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         List<Member> members = student.getMembers();
-        List<Study> studies = new ArrayList<>();
+        List<MainpageStudyResponseDto> studies = new ArrayList<>();
         for (Member member : members) {
-            studies.add(member.getStudy());
+            Study study = member.getStudy();
+            MainpageStudyResponseDto studyDto = new MainpageStudyResponseDto(
+                    study.getStudyName(),
+                    study.getStudyName(),
+                    study.getStudyImageUrl());
+            studies.add(studyDto);
         }
 
         return studies;
+    }
+
+    public Study createStudy(CreateStudyRequestDto requestDto) {
+        Study study = Study.builder()
+                .studyName(requestDto.getStudyName())
+                .studyContent(requestDto.getStudyContent())
+                .build();
+        return studyRepository.save(study);
     }
 }

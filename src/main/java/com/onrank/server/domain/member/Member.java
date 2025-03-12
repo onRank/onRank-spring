@@ -3,10 +3,7 @@ package com.onrank.server.domain.member;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 

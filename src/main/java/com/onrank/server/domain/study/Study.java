@@ -29,7 +29,7 @@ public class Study {
     private String studyContent; // 스터디 설명
 
     @Column(nullable = false)
-    private String studyImage; // 스터디 이미지
+    private String studyImageUrl; // 스터디 이미지
 
     // Study와 Member의 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -41,8 +41,9 @@ public class Study {
 
     // 생성자
     @Builder
-    public Study(String studyName, String studyContent) {
+    public Study(String studyName, String studyContent, String studyImageUrl) {
         this.studyName = studyName;
         this.studyContent = studyContent;
+        this.studyImageUrl = studyImageUrl;
     }
 }

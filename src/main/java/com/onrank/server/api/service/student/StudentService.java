@@ -20,6 +20,10 @@ public class StudentService {
         return studentRepository.findByStudentId(studentId);
     }
 
+    public Optional<Student> findByStudentEmail(String studentEmail) {
+        return studentRepository.findByStudentEmail(studentEmail);
+    }
+
     public Optional<Student> findByUsername(String username) {
         return studentRepository.findByUsername(username);
     }

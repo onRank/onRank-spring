@@ -5,6 +5,7 @@ import com.onrank.server.api.dto.student.RegisterStudentDto;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.api.service.token.TokenService;
 import com.onrank.server.common.util.CookieUtil;
+import com.onrank.server.domain.student.Role;
 import com.onrank.server.domain.student.Student;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -30,13 +34,15 @@ public class AuthController {
 
         String accessToken = authHeader.substring(7);
 
-
-
         String username = tokenService.getUsername(accessToken);
+
         String email = tokenService.getEmail(accessToken);
 
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.ROLE_USER);
+
         // Student 엔티티 생성 및 저장
-        Student student = registerStudentDto.toEntity(username, email);
+        Student student = registerStudentDto.toEntity(username, email, roles);
 
         log.info("신규 회원 등록 - username: {}, email: {}, studentName: {}, studentPhoneNumber: {}, studentSchool: {}, studentDepartment: {}",
                 username, email, student.getStudentName(), student.getStudentPhoneNumber(), student.getStudentSchool(), student.getStudentDepartment());
