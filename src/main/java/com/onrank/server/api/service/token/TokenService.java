@@ -1,22 +1,17 @@
 package com.onrank.server.api.service.token;
 
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.domain.refreshtoken.RefreshToken;
 import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.*;
 
 @Slf4j
@@ -24,12 +19,11 @@ import java.util.*;
 public class TokenService {
 
     private final SecretKey secretKey;
-    private final long accessTokenExpiration; // 2시간 (2시간 후 만료)
-    private final long refreshTokenExpiration;
-
+    private final long accessTokenExpiration; // 30분
+    private final long refreshTokenExpiration; // 2시간
     private final RefreshTokenJpaRepository refreshTokenJpaRepository;
 
-    public TokenService(@Value("${jwt.secret}")String secret,
+    public TokenService(@Value("${jwt.secret}") String secret,
                         @Value("${jwt.access.expirationMs}") long accessTokenExpiration,
                         @Value("${jwt.refresh.expirationMs}") long refreshTokenExpiration,
                         RefreshTokenJpaRepository refreshTokenJpaRepository) {
@@ -39,81 +33,90 @@ public class TokenService {
         this.refreshTokenJpaRepository = refreshTokenJpaRepository;
     }
 
-    public boolean validateToken(String token) {
-        try {
-            // 토큰 파싱: 유효하지 않거나 만료된 경우 예외 발생
-            Jwts
-                    .parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token);
-            return true;
-        } catch (JwtException e) {
-            // 예외 발생 시 false 반환
-            return false;
+    public String createJwt(String category, String username, String email) {
+
+        Long expiredMs = 0L;
+        if (category.equals("access")) {
+            expiredMs = accessTokenExpiration;
+        } else if (category.equals("refresh")) {
+            expiredMs = refreshTokenExpiration;
         }
-    }
-
-    public Boolean isExpired(String token) {
-
-        return Jwts
-                .parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getExpiration()
-                .before(new Date());
-    }
-
-    public String getUsernameFromToken(String token) {
-
-        return Jwts
-                .parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
-    }
-
-    public Object getEmailFromToken(String token) {
-
-        return Jwts
-                .parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .get("email");
-    }
-
-    // AccessToken 생성
-    public String generateAccessToken(CustomOAuth2User customOAuth2User) {
-
-        String username = customOAuth2User.getName();
-        String email = customOAuth2User.getEmail();
 
         return Jwts.builder()
-                .subject(username)
+                .claim("category", category)
+                .claim("username", username)
                 .claim("email", email)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
                 .compact();
     }
 
-    // RefreshToken 생성
-    public String generateRefreshToken(CustomOAuth2User customOAuth2User) {
+    public String getUsername(String token) {
 
-        String rtk = UUID.randomUUID().toString();
+        return Jwts
+                .parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("username", String.class);
+    }
 
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUsername(customOAuth2User.getName());
-        refreshToken.setRefreshToken(rtk);
-        refreshToken.setExpiration(Instant.now().plusMillis(refreshTokenExpiration));
-        refreshTokenJpaRepository.save(refreshToken);
+    public String getEmail(String token) {
 
-        return rtk;
+        return Jwts
+                .parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("email", String.class);
+    }
+
+    public String getCategory(String token) {
+
+        return Jwts
+                .parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("category", String.class);
+    }
+
+    public Boolean isExpired(String token) {
+
+        Claims claims = Jwts
+                .parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        if (claims.getExpiration().before(new Date())) {
+            // 토큰이 만료된 경우 명시적으로 예외 발생
+            throw new ExpiredJwtException(null, claims, "Token has expired");
+        }
+
+        return false;
+    }
+
+    public Boolean validateRefreshToken(String token) {
+
+        return refreshTokenJpaRepository.existsByRefreshToken(token);
+    }
+
+    public void deleteRefreshToken(String token) {
+
+        refreshTokenJpaRepository.deleteByRefreshToken(token);
+    }
+
+    public void save(String username, String refreshToken) {
+
+        RefreshToken rtk = new RefreshToken();
+        rtk.setUsername(username);
+        rtk.setRefreshToken(refreshToken);
+        refreshTokenJpaRepository.save(rtk);
     }
 }

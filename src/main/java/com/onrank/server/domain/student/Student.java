@@ -24,23 +24,23 @@ public class Student {
     @Column(nullable = false)
     private String studentName;
 
-
-    @Column(nullable = false, unique = true)
-    private String studentEmail;
-
     private String studentSchool;
     private String studentDepartment;
 
     @Column(nullable = false)
     private String studentPhoneNumber;
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Member> members = new ArrayList<>();
+    private String username;
+
+    @Column(nullable = false, unique = true)
+    private String studentEmail;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<Role> roles = new HashSet<>();
-    private String username;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Member> members = new ArrayList<>();
 
     // 생성자
     @Builder

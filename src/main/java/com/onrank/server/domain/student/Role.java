@@ -1,14 +1,10 @@
 package com.onrank.server.domain.student;
 
-import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 
-import java.io.Serializable;
-
-@Getter
 public enum Role implements GrantedAuthority {
-    ROLE_USER("USER"),
-    ROLE_ADMIN("ADMIN");
+    ROLE_USER("ROLE_USER"),
+    ROLE_ADMIN("ROLE_ADMIN");
 
     private final String description;
 

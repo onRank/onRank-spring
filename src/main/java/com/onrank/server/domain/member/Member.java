@@ -1,5 +1,7 @@
 package com.onrank.server.domain.member;
 
+import com.onrank.server.domain.attendance.Attendance;
+import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
 import jakarta.persistence.*;
@@ -9,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -26,6 +30,12 @@ public class Member {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id", nullable = false)
     private Study study;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attendance> attendances = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

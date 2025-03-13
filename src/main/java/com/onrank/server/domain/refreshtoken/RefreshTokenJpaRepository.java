@@ -1,11 +1,11 @@
 package com.onrank.server.domain.refreshtoken;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.Optional;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface RefreshTokenJpaRepository extends JpaRepository<RefreshToken, String> {
 
-    Optional<RefreshToken> findByUsername(String username);
-    Optional<RefreshToken> findByRefreshToken(String refreshToken);
+    Boolean existsByRefreshToken(String refreshToken);
+    @Transactional
+    void deleteByRefreshToken(String refreshToken);
 }
