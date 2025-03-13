@@ -30,11 +30,11 @@ public class Schedule {
     private List<Attendance> attendances = new ArrayList<>();
 
     @Column(nullable = false)
-    private String attendanceTitle;
+    private String scheduleTitle;
 
     @Column(nullable = false)
-    private String attendanceContent;
+    private String scheduleContent;
 
     @Column(nullable = false)
-    private LocalDateTime startingAt;
+    private LocalDateTime scheduleStartingAt;
 }
