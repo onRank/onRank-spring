@@ -25,13 +25,13 @@ public class Study {
     @Column(name = "study_name", nullable = false)
     private String studyName; // 스터디 이름
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "study_content", nullable = false)
     private String studyContent; // 스터디 설명
 
-    @Column(name = "image", columnDefinition = "TEXT")
+    @Column(name = "study_image_url")
     private String studyImageUrl; // 스터디 이미지
 
-    @Column(name = "google_form")
+    @Column(name = "study_google_form_url")
     private String studyGoogleFormUrl; // 스터디 구글폼 url
 
     // Study와 Member의 1:N 관계 설정

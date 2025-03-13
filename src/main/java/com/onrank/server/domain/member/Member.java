@@ -24,7 +24,7 @@ public class Member {
     @JoinColumn(name = "study_id", nullable = false)
     private Study study;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.       STRING)
     @Column(nullable = false)
     private MemberRole memberRole;
 

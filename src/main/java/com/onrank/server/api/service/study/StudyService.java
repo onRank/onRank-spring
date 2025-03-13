@@ -58,16 +58,16 @@ public class StudyService {
         // 스터디 생성 코드...
         Study.StudyBuilder builder = Study.builder()
                 .studyName(requestDto.getStudyName())
-                .studyContent(requestDto.getContent());
+                .studyContent(requestDto.getStudyContent());
 
         // 이미지 URL이 존재할 경우에만 세팅
-        if (requestDto.getImage() != null && !requestDto.getImage().isEmpty()) {
-            builder.studyImageUrl(requestDto.getImage());
+        if (requestDto.getStudyImageUrl() != null && !requestDto.getStudyImageUrl().isEmpty()) {
+            builder.studyImageUrl(requestDto.getStudyImageUrl());
         }
 
         // 구글폼 URL이 존재할 경우에만 세팅
-        if (requestDto.getGoogleForm() != null && !requestDto.getGoogleForm().isEmpty()) {
-            builder.studyGoogleFormUrl(requestDto.getGoogleForm());
+        if (requestDto.getStudyGoogleFormUrl() != null && !requestDto.getStudyGoogleFormUrl().isEmpty()) {
+            builder.studyGoogleFormUrl(requestDto.getStudyGoogleFormUrl());
         }
 
         Study study = builder.build();
