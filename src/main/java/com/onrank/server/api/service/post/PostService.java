@@ -1,8 +1,6 @@
 package com.onrank.server.api.service.post;
 
-import com.onrank.server.api.dto.notice.NoticeResponse;
 import com.onrank.server.api.dto.post.PostResponse;
-import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.post.Post;

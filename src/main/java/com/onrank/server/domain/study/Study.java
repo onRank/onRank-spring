@@ -2,6 +2,7 @@ package com.onrank.server.domain.study;
 
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.notice.Notice;
+import com.onrank.server.domain.schedule.Schedule;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -38,6 +39,10 @@ public class Study {
     // Study와 Notice의 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notice> notices = new ArrayList<>();
+
+    // Study와 Schedule 1:N 관계 설정
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Schedule> schedules = new ArrayList<>();
 
     // 생성자
     @Builder

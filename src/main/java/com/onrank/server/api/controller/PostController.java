@@ -1,17 +1,13 @@
 package com.onrank.server.api.controller;
 
-import com.onrank.server.api.dto.notice.AddNoticeRequest;
-import com.onrank.server.api.dto.notice.NoticeIdResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.post.AddPostRequest;
 import com.onrank.server.api.dto.post.PostIdResponse;
 import com.onrank.server.api.dto.post.PostResponse;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.post.PostService;
-import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.domain.member.Member;
-import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +26,6 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
-    private final StudentService studentService;
     private final StudyService studyService;
     private final MemberService memberService;
 
@@ -109,7 +104,7 @@ public class PostController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // 작성자만 수정 가능
-        if (postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
+        if (!postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -129,7 +124,7 @@ public class PostController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // 작성자만 삭제 가능
-        if (postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
+        if (!postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

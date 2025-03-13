@@ -1,5 +1,6 @@
 package com.onrank.server.domain.member;
 
+import com.onrank.server.domain.attendance.Attendance;
 import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
@@ -32,6 +33,9 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attendance> attendances = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
