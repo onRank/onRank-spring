@@ -28,7 +28,7 @@ public class Study {
     @Column(name = "study_content", nullable = false)
     private String studyContent; // 스터디 설명
 
-    @Column(name = "study_image_url")
+    @Column(name = "study_image_url", columnDefinition = "TEXT")
     private String studyImageUrl; // 스터디 이미지
 
     @Column(name = "study_google_form_url")
