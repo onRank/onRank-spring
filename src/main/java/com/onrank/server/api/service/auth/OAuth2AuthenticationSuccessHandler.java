@@ -60,6 +60,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         // 리다이렉트 URL 구성 후 sendRedirect 호출
         String redirectUrl = "http://localhost:3000/auth/callback?isNewUser=" + isNewUser;
+
         response.sendRedirect(redirectUrl);
     }
 }
