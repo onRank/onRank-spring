@@ -47,10 +47,23 @@ public class StudyService {
     }
 
     public Study createStudy(CreateStudyRequestDto requestDto) {
-        Study study = Study.builder()
+        Study.StudyBuilder builder = Study.builder()
                 .studyName(requestDto.getStudyName())
-                .studyContent(requestDto.getStudyContent())
-                .build();
+                .studyContent(requestDto.getStudyContent());
+
+
+        // 이미지 URL이 존재할 경우에만 세팅
+        if (requestDto.getStudyImageUrl() != null && !requestDto.getStudyImageUrl().isEmpty()) {
+            builder.studyImageUrl(requestDto.getStudyImageUrl());
+        }
+
+        // 구글폼 URL이 존재할 경우에만 세팅
+        if (requestDto.getStudyGoogleFormUrl() != null && !requestDto.getStudyGoogleFormUrl().isEmpty()) {
+            builder.studyImageUrl(requestDto.getStudyGoogleFormUrl());
+        }
+
+        Study study = builder.build();
+
         return studyRepository.save(study);
     }
 }

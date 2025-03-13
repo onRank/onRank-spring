@@ -31,6 +31,8 @@ public class Study {
     @Column(nullable = false)
     private String studyImageUrl; // 스터디 이미지
 
+    private String studyGoogleFormUrl; // 스터디 구글폼 url
+
     // Study와 Member의 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members = new ArrayList<>();
