@@ -1,10 +1,10 @@
-package com.onrank.server.api.service.student;
+package com.onrank.server.api.service.study;
 
 import com.onrank.server.api.dto.student.CreateStudyRequestDto;
+import com.onrank.server.api.dto.study.MainpageStudyResponseDto;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
-import com.onrank.server.domain.member.MemberRole;
-import com.onrank.server.domain.student.Role;
+import com.onrank.server.domain.member.MemberRole;  // 이 줄 추가
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -13,61 +13,61 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDate;  // 이 줄도 필요합니다
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class StudentService {
+@Transactional(readOnly = true)
+public class StudyService {
 
     private final StudentJpaRepository studentRepository;
     private final StudyJpaRepository studyRepository;
-    private final MemberJpaRepository memberJpaRepository;
+    private final MemberJpaRepository memberJpaRepository; // 이 줄 추가
 
-    public String findStudentNameByUsername (String username) {
+
+    public Optional<Study> findByStudyId(Long id) {
+        return studyRepository.findByStudyId(id);
+    }
+
+    public List<MainpageStudyResponseDto> getStudiesByUsername(String username) {
+
         Student student = studentRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Username " + username + " not found"));
+                .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        return student.getStudentName();
+        List<Member> members = student.getMembers();
+        List<MainpageStudyResponseDto> studies = new ArrayList<>();
+        for (Member member : members) {
+            Study study = member.getStudy();
+            MainpageStudyResponseDto studyDto = new MainpageStudyResponseDto(
+                    study.getStudyName(),
+                    study.getStudyContent(),
+                    study.getStudyImageUrl(),
+                    study.getStudyGoogleFormUrl());
+            studies.add(studyDto);
+        }
+
+        return studies;
     }
 
-    public Optional<Student> findByStudentId(Long studentId) {
-        return studentRepository.findByStudentId(studentId);
-    }
-
-    public Optional<Student> findByStudentEmail(String studentEmail) {
-        return studentRepository.findByStudentEmail(studentEmail);
-    }
-
-    public Optional<Student> findByUsername(String username) {
-        return studentRepository.findByUsername(username);
-    }
-
-    public boolean checkIfNewUser(String username) {
-        return !studentRepository.existsByUsername(username);
-    }
-
-    @Transactional
-    public void createStudent(Student student) {
-        studentRepository.save(student);
-    }
-
+    // 수정된 메서드 (username 매개변수 추가)
     @Transactional
     public Study createStudy(CreateStudyRequestDto requestDto, String username) {
-        // 스터디 생성 코드
+        // 스터디 생성 코드...
         Study.StudyBuilder builder = Study.builder()
                 .studyName(requestDto.getStudyName())
-                .studyContent(requestDto.getStudyContent()); // content에서 studyContent로 변경
+                .studyContent(requestDto.getStudyContent());
 
         // 이미지 URL이 존재할 경우에만 세팅
         if (requestDto.getStudyImageUrl() != null && !requestDto.getStudyImageUrl().isEmpty()) {
-            builder.studyImageUrl(requestDto.getStudyImageUrl()); // image에서 studyImageUrl로 변경
+            builder.studyImageUrl(requestDto.getStudyImageUrl());
         }
 
         // 구글폼 URL이 존재할 경우에만 세팅
         if (requestDto.getStudyGoogleFormUrl() != null && !requestDto.getStudyGoogleFormUrl().isEmpty()) {
-            builder.studyGoogleFormUrl(requestDto.getStudyGoogleFormUrl()); // googleForm에서 studyGoogleFormUrl로 변경
+            builder.studyGoogleFormUrl(requestDto.getStudyGoogleFormUrl());
         }
 
         Study study = builder.build();

@@ -1,5 +1,7 @@
 package com.onrank.server.domain.member;
 
+import com.onrank.server.domain.attendance.Attendance;
+import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
 import jakarta.persistence.*;
@@ -9,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -17,8 +21,7 @@ import java.time.LocalDate;
 public class Member {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "member_id")
-    private Long id;
+    private Long memberId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
@@ -28,22 +31,28 @@ public class Member {
     @JoinColumn(name = "study_id", nullable = false)
     private Study study;
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attendance> attendances = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberRole role;
+    private MemberRole memberRole;
 
     @Column(nullable = false)
-    private LocalDate joiningAt;
+    private LocalDate memberJoiningAt;
 
     // 생성자
     @Builder
-    public Member(Student student, Study study, MemberRole role, LocalDate joiningAt) {
+    public Member(Student student, Study study, MemberRole memberRole, LocalDate memberJoiningAt) {
         // 연관관계 설정
         setStudent(student);
         setStudy(study);
 
-        this.role = role;
-        this.joiningAt = joiningAt;
+        this.memberRole = memberRole;
+        this.memberJoiningAt = memberJoiningAt;
     }
 
     //==연관관계 메서드==//
@@ -71,6 +80,6 @@ public class Member {
 
     //==비지니스 로직==//
     public void changeRole(MemberRole memberRole) {
-        this.role = memberRole;
+        this.memberRole = memberRole;
     }
 }

@@ -1,13 +1,16 @@
 package com.onrank.server.api.service.auth;
 
-import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
-import com.onrank.server.common.security.jwt.TokenProvider;
+import com.onrank.server.api.service.student.StudentService;
+import com.onrank.server.api.service.token.TokenService;
 import com.onrank.server.common.util.CookieUtil;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -16,30 +19,48 @@ import java.io.IOException;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final TokenProvider tokenProvider;
+    private final TokenService tokenService;
+    private final StudentService studentService;
+    private final CookieUtil cookieUtil;
+
+    public OAuth2AuthenticationSuccessHandler(TokenService tokenService,
+                                              StudentService studentService,
+                                              CookieUtil cookieUtil) {
+        this.tokenService = tokenService;
+        this.studentService = studentService;
+        this.cookieUtil = cookieUtil;
+    }
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+    public void onAuthenticationSuccess(HttpServletRequest request,
+                                        HttpServletResponse response,
+                                        Authentication authentication)
+            throws IOException {
 
-        // OAuth2 인증된 사용자 정보 가져오기
-        CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
-        String username = oAuth2User.getUsername();
-        boolean isNewUser = oAuth2User.isNewUser();
+        log.info("OAuth2 로그인 성공");
 
-        log.info("OAuth2 로그인 성공 - 사용자: {}", username);
-        log.info("신규 회원 여부: {}", isNewUser);
+        // 사용자 정보
+        CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        String username = customOAuth2User.getUsername();
+        String email = customOAuth2User.getEmail();
 
-        // AccessToken 생성
-        String accessToken = tokenProvider.generateAccessToken(username);
+        // 리프레시 토큰 생성
+        String refreshToken = tokenService.createJwt("refresh", username, email);
 
-        // 쿠키에 AccessToken 저장
-        CookieUtil.addCookie(response, "Authorization", accessToken, 60 * 60 * 2);
+        // refresh token DB에 저장
+        tokenService.save(username, refreshToken);
 
-        // 쿼리 파라미터를 추가하여 리다이렉트 (신규 회원 여부 포함)
-        String redirectUrl = "http://localhost:3000/auth?isNewUser=" + isNewUser;
+        // refresh token 쿠키 생성 및 응답에 추가
+        cookieUtil.addRefreshTokenCookie(response, "refresh_token", refreshToken);
+
+        // 신규 회원 여부 확인
+        boolean isNewUser = studentService.checkIfNewUser(authentication.getName());
+
+        // 리다이렉트 URL 구성 후 sendRedirect 호출
+        String redirectUrl = "http://localhost:3000/auth/callback?isNewUser=" + isNewUser;
+
         response.sendRedirect(redirectUrl);
     }
 }
