@@ -36,9 +36,15 @@ public class StudyController {
 
     @PostMapping("/add")
     public ResponseEntity<CreateStudyResponseDto> createStudy(
-            @RequestBody CreateStudyRequestDto requestDto) {
+            @RequestBody CreateStudyRequestDto requestDto,
+            @RequestHeader("Authorization") String authHeader) {
 
-        Study study = studyService.createStudy(requestDto);
+        // 인증 토큰에서 사용자 이름 추출
+        String accessToken = authHeader.substring(7);
+        String username = tokenService.getUsername(accessToken);
+
+        // 사용자 정보를 포함하여 스터디 생성
+        Study study = studyService.createStudy(requestDto, username);
 
         CreateStudyResponseDto responseDto = new CreateStudyResponseDto(
                 study.getStudyId(),
