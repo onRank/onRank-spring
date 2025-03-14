@@ -1,7 +1,9 @@
 package com.onrank.server.api.controller;
 
-import com.onrank.server.api.dto.notice.NoticeResponse;
+import com.onrank.server.api.dto.attendance.AttendanceResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.service.attendance.AttendanceService;
+import com.onrank.server.api.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,21 +22,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AttendanceController {
 
-//    private final
+    private MemberService memberService;
+    private AttendanceService attendanceService;
 
     /**
-     * 스터디 내의 개인 출석 조회 (스터디 참여자)
+     * 출석 조회
      */
-//    @GetMapping
-//    public ResponseEntity<List<NoticeResponse>> getAttendances(
-//            @PathVariable Long studyId,
-//            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-//
-//        // 스터디 멤버만 가능
-//        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-//        }
-//
-//        return ResponseEntity.ok(noticeService.getNoticeResponsesByStudyId(studyId));
-//    }
+    @GetMapping
+    public ResponseEntity<List<AttendanceResponse>> getAttendances(
+            @PathVariable Long studyId,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(attendanceService.getAttendanceResponsesByStudyId(studyId));
+    }
 }
