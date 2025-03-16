@@ -15,7 +15,7 @@ public class ScheduleService {
     private final ScheduleJpaRepository scheduleRepository;
     private final AttendanceService attendanceService;
 
-     // 새로운 일정 등록
+    // 새로운 일정 등록
     @Transactional
     public void createSchedule(Schedule schedule) {
         Schedule savedSchedule = scheduleRepository.save(schedule);
