@@ -1,8 +1,7 @@
 package com.onrank.server.api.service.attendance;
 
+import com.onrank.server.api.dto.attendance.AttendanceMemberResponse;
 import com.onrank.server.api.dto.attendance.AttendanceResponse;
-import com.onrank.server.api.dto.notice.NoticeResponse;
-import com.onrank.server.domain.attendance.Attendance;
 import com.onrank.server.domain.attendance.AttendanceJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +22,14 @@ public class AttendanceService {
         return attendanceRepository.findAllByStudyId(studyId)
                 .stream()
                 .map(AttendanceResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    // 특정 일정(scheduleId)에 속한 모든 출석 정보 조회
+    public List<AttendanceMemberResponse> getAttendanceMembersByScheduleId(Long scheduleId) {
+        return attendanceRepository.findAllByScheduleId(scheduleId)
+                .stream()
+                .map(AttendanceMemberResponse::new)
                 .collect(Collectors.toList());
     }
 }

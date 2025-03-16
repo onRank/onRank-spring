@@ -1,5 +1,6 @@
 package com.onrank.server.api.controller;
 
+import com.onrank.server.api.dto.attendance.AttendanceMemberResponse;
 import com.onrank.server.api.dto.attendance.AttendanceResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.attendance.AttendanceService;
@@ -22,8 +23,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AttendanceController {
 
-    private MemberService memberService;
-    private AttendanceService attendanceService;
+    private final MemberService memberService;
+    private final AttendanceService attendanceService;
 
     /**
      * 출석 조회
@@ -38,5 +39,21 @@ public class AttendanceController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(attendanceService.getAttendanceResponsesByStudyId(studyId));
+    }
+
+    /**
+     * HOST - 출석 상세조회
+     */
+    @GetMapping("/{scheduleId}")
+    public ResponseEntity<List<AttendanceMemberResponse>> getAttendance(
+            @PathVariable Long studyId,
+            @PathVariable Long scheduleId,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+
+        // HOST 만 가능
+        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(attendanceService.getAttendanceMembersByScheduleId(scheduleId));
     }
 }

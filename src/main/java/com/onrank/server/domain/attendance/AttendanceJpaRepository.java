@@ -8,6 +8,11 @@ import java.util.List;
 
 public interface AttendanceJpaRepository extends JpaRepository<Attendance, Long> {
 
+    // 스터디의 모든 출석 리스트 조회
     @Query("SELECT a FROM Attendance a WHERE a.schedule.study.studyId = :studyId")
     List<Attendance> findAllByStudyId(@Param("studyId") Long studyId);
+
+    // 특정 일정(scheduleId)에 속한 모든 출석 정보 조회
+    @Query("SELECT a FROM Attendance a WHERE a.schedule.scheduleId = :scheduleId")
+    List<Attendance> findAllByScheduleId(@Param("scheduleId") Long scheduleId);
 }
