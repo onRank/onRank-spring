@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AttendanceJpaRepository extends JpaRepository<Attendance, Long> {
 
@@ -15,4 +16,6 @@ public interface AttendanceJpaRepository extends JpaRepository<Attendance, Long>
     // 특정 일정(scheduleId)에 속한 모든 출석 정보 조회
     @Query("SELECT a FROM Attendance a WHERE a.schedule.scheduleId = :scheduleId")
     List<Attendance> findAllByScheduleId(@Param("scheduleId") Long scheduleId);
+
+    Optional<Attendance> findByAttendanceId(Long scheduleId);
 }

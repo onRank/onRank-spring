@@ -10,10 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,7 +24,7 @@ public class AttendanceController {
     private final AttendanceService attendanceService;
 
     /**
-     * 출석 조회
+     * 출석 목록 조회 (스터디 멤버만 가능)
      */
     @GetMapping
     public ResponseEntity<List<AttendanceResponse>> getAttendances(
@@ -42,7 +39,7 @@ public class AttendanceController {
     }
 
     /**
-     * HOST - 출석 상세조회
+     * 특정 일정의 출석 상세 조회 (HOST 만 가능)
      */
     @GetMapping("/{scheduleId}")
     public ResponseEntity<List<AttendanceMemberResponse>> getAttendance(
@@ -55,5 +52,24 @@ public class AttendanceController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(attendanceService.getAttendanceMembersByScheduleId(scheduleId));
+    }
+
+    /**
+     * 출석 상태 변경 (HOST 만 가능)
+     */
+    @PutMapping("/{attendanceId}")
+    public ResponseEntity<Void> updateAttendanceStatus(
+            @PathVariable Long studyId,
+            @PathVariable Long attendanceId,
+            @RequestParam String status,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+
+        // HOST 만 가능
+        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        attendanceService.updateAttendanceStatus(attendanceId, status);
+        return ResponseEntity.ok().build();
     }
 }
