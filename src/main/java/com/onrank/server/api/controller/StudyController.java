@@ -46,16 +46,22 @@ public class StudyController {
         String accessToken = authHeader.substring(7);
         String username = JWTUtil.getUsername(accessToken);
 
-        // 사용자 정보를 포함하여 스터디 생성
-        Study study = studyService.createStudy(requestDto, username);
+        try {
+            // 사용자 정보를 포함하여 스터디 생성
+            Study study = studyService.createStudy(requestDto, username);
 
-        CreateStudyResponseDto responseDto = new CreateStudyResponseDto(
-                study.getStudyId(),
-                "Study created with id: " + study.getStudyId()
-        );
+            CreateStudyResponseDto responseDto = new CreateStudyResponseDto(
+                    study.getStudyId(),
+                    "Study created with id: " + study.getStudyId()
+            );
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(responseDto);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(responseDto);
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .build();
+        }
     }
 }

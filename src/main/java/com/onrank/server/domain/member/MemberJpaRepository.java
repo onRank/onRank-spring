@@ -9,5 +9,5 @@ public interface MemberJpaRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByStudentStudentIdAndStudyStudyId(Long studentId, Long studyId);
 
-    List<Member> findAllByStudy_StudyId(Long studyId);
+    List<Member> findByStudyStudyId(Long studyId);
 }
