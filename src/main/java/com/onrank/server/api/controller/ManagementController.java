@@ -33,13 +33,18 @@ public class ManagementController {
             @PathVariable Long studyId,
             @RequestBody AddMemberRequestDto requestDto) {
 
-        Member member = memberService.addMemberToStudy(studyId, requestDto);
+        try {
+            Member member = memberService.addMemberToStudy(studyId, requestDto);
 
-        AddMemberResponseDto responseDto = new AddMemberResponseDto(
-                member.getMemberId(),
-                "Member added successfully"
-        );
+            AddMemberResponseDto responseDto = new AddMemberResponseDto(
+                    member.getMemberId(),
+                    "Member added successfully"
+            );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
     }
 }
