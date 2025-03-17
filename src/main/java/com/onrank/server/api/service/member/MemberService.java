@@ -71,7 +71,7 @@ public class MemberService {
      */
     public List<MemberResponseDto> getMembersForStudy(Long studyId) {
 
-        List<Member> members = memberRepository.findAllByStudy_StudyId(studyId);
+        List<Member> members = memberRepository.findByStudyStudyId(studyId);
 
         return members.stream()
                 .map(member -> new MemberResponseDto(

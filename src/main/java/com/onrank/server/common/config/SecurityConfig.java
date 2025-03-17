@@ -3,8 +3,8 @@ package com.onrank.server.common.config;
 import com.onrank.server.api.service.auth.CustomOAuth2UserService;
 import com.onrank.server.api.service.auth.OAuth2AuthenticationSuccessHandler;
 import com.onrank.server.api.service.student.StudentService;
-import com.onrank.server.common.security.jwt.JwtOAuth2AuthenticationFilter;
-import com.onrank.server.api.service.token.TokenService;
+import com.onrank.server.common.security.jwt.JWTOAuth2AuthenticationFilter;
+import com.onrank.server.common.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +27,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler successHandler;
-    private final TokenService tokenService;
+    private final JWTUtil JWTUtil;
     private final StudentService studentService;
 
     @Bean
@@ -48,7 +48,7 @@ public class SecurityConfig {
                 )
 
                 // jwt 필터 등록
-                .addFilterAfter(new JwtOAuth2AuthenticationFilter(tokenService, studentService), OAuth2LoginAuthenticationFilter.class)
+                .addFilterAfter(new JWTOAuth2AuthenticationFilter(JWTUtil, studentService), OAuth2LoginAuthenticationFilter.class)
 
                 // oauth2 설정
                 .oauth2Login(oauth2 -> oauth2

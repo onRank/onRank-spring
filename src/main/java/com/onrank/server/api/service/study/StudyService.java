@@ -39,9 +39,11 @@ public class StudyService {
 
         List<Member> members = student.getMembers();
         List<MainpageStudyResponseDto> studies = new ArrayList<>();
+
         for (Member member : members) {
             Study study = member.getStudy();
             MainpageStudyResponseDto studyDto = new MainpageStudyResponseDto(
+                    study.getStudyId(),
                     study.getStudyName(),
                     study.getStudyContent(),
                     study.getStudyImageUrl(),

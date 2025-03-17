@@ -2,15 +2,11 @@ package com.onrank.server.api.service.auth;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.student.StudentService;
-import com.onrank.server.api.service.token.TokenService;
+import com.onrank.server.common.util.JWTUtil;
 import com.onrank.server.common.util.CookieUtil;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -21,14 +17,14 @@ import java.io.IOException;
 @Component
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final TokenService tokenService;
+    private final JWTUtil JWTUtil;
     private final StudentService studentService;
     private final CookieUtil cookieUtil;
 
-    public OAuth2AuthenticationSuccessHandler(TokenService tokenService,
+    public OAuth2AuthenticationSuccessHandler(JWTUtil JWTUtil,
                                               StudentService studentService,
                                               CookieUtil cookieUtil) {
-        this.tokenService = tokenService;
+        this.JWTUtil = JWTUtil;
         this.studentService = studentService;
         this.cookieUtil = cookieUtil;
     }
@@ -47,10 +43,10 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String email = customOAuth2User.getEmail();
 
         // 리프레시 토큰 생성
-        String refreshToken = tokenService.createJwt("refresh", username, email);
+        String refreshToken = JWTUtil.createJwt("refresh", username, email);
 
         // refresh token DB에 저장
-        tokenService.save(username, refreshToken);
+        JWTUtil.save(username, refreshToken);
 
         // refresh token 쿠키 생성 및 응답에 추가
         cookieUtil.addRefreshTokenCookie(response, "refresh_token", refreshToken);
