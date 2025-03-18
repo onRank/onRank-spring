@@ -7,14 +7,16 @@ import lombok.Getter;
 @Getter
 public class MainpageStudyResponseDto {
 
+    private Long studyId;
+
     private String studyName;
 
     // studyContent를 content로 변경
-    private String content;
+    private String studyContent;
 
     // studyImageUrl을 image로 변경
-    private String image;
+    private String studyImage;
 
     // studyGoogleFormUrl을 googleForm으로 변경
-    private String googleForm;
+    private String studyGoogleForm;
 }
