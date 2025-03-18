@@ -29,7 +29,7 @@ public class CookieUtil {
         Cookie refreshTokenCookie = new Cookie(name, refreshToken);
         refreshTokenCookie.setMaxAge(refreshTokenExpiration); // 2시간
         refreshTokenCookie.setPath(refreshTokenPath);
-//        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setPath("/");
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setSecure(false);
 
