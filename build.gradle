@@ -22,7 +22,6 @@ configurations {
 repositories {
 	mavenCentral()
 }
-
 dependencies {
 	// Spring Boot
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -52,17 +51,13 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
-	// AWS Spring Cloud (S3)
-	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.0'
+	// AWS
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.1.1'
 
 	// AWS SDK v2 (S3)
-	implementation 'software.amazon.awssdk:s3:2.20.126'
-	implementation 'software.amazon.awssdk:sts:2.20.126'
-	implementation 'software.amazon.awssdk:auth:2.20.126'
-
-	// Spring Cloud AWS Dependencies BOM
-	implementation platform('io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0')
+	implementation 'software.amazon.awssdk:s3:2.31.2'
 }
+
 
 tasks.named('test') {
 	useJUnitPlatform()

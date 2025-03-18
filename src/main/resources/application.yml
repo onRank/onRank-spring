@@ -2,6 +2,5 @@ spring:
   application:
     name: server
   profiles:
-    include: oauth, cloud, db
-  config:
-    import: optional:classpath:.env
+    include: oauth, cloud
+    active: db
