@@ -7,7 +7,6 @@ import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.post.PostService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.domain.member.Member;
-import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -84,8 +83,7 @@ public class PostController {
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
         // Pre-signed URL 생성 및 파일 메타데이터 저장
-        Post post = addPostRequest.toEntity(study, member);
-        Map<String, Object> result = postService.createPost(post, addPostRequest);
+        Map<String, Object> result = postService.createPost(addPostRequest, study, member);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
