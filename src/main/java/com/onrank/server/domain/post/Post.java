@@ -32,7 +32,6 @@ public class Post {
     @Column(nullable = false)
     private LocalDate postModifiedAt;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id")
     private Study study;
@@ -51,7 +50,6 @@ public class Post {
         this.study = study;
         this.member = member;
     }
-
 
     /**
      * 게시판 수정 메서드
