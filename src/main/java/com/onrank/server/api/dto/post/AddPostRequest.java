@@ -4,24 +4,24 @@ import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.study.Study;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 public class AddPostRequest {
 
     @NotBlank
-    @Size(max = 255)
     private String postTitle;
 
     @NotBlank
     private String postContent;
 
-    private String postImagePath;
+    // 업로드하기 위한 파일명들
+    private List<String> fileNames;
 
     public Post toEntity(Study study, Member member) {
         return Post.builder()
@@ -29,7 +29,6 @@ public class AddPostRequest {
                 .postContent(postContent)
                 .postCreatedAt(LocalDate.now())
                 .postModifiedAt(LocalDate.now())
-                .postImagePath(postImagePath)
                 .study(study)
                 .member(member)
                 .build();

@@ -56,6 +56,8 @@ dependencies {
 
 	// AWS SDK v2 (S3)
 	implementation 'software.amazon.awssdk:s3:2.31.2'
+//	implementation 'software.amazon.awssdk:sts:2.31.2' // STS (임시 인증 토큰)
+//	implementation 'software.amazon.awssdk:auth:2.31.2' // 인증 관련 모듈
 }
 
 

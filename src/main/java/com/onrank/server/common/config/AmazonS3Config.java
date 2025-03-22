@@ -21,6 +21,7 @@ public class AmazonS3Config {
     @Value("${cloud.aws.region.static}")
     private String region;
 
+    // 백엔드에서 직접 파일 업로드 & 다운로드
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
@@ -30,6 +31,7 @@ public class AmazonS3Config {
                 .build();
     }
 
+    // Pre-signed URL 생성 (프론트에서 업로드 가능)
     @Bean
     public S3Presigner s3Presigner() {
         return S3Presigner.builder()
