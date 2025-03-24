@@ -21,14 +21,14 @@ public class ManagementController {
 
     private final MemberService memberService;
 
-    @GetMapping("/member")
+    @GetMapping("/members")
     public ResponseEntity<List<MemberResponseDto>> getStudyMembers(@PathVariable Long studyId) {
         List<MemberResponseDto> members = memberService.getMembersForStudy(studyId);
         log.info("members: {}", members);
         return ResponseEntity.ok(members);
     }
 
-    @PostMapping("/member/add")
+    @PostMapping("/members/add")
     public ResponseEntity<AddMemberResponseDto> addMember(
             @PathVariable Long studyId,
             @RequestBody AddMemberRequestDto requestDto) {

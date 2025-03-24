@@ -22,8 +22,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final CookieUtil cookieUtil;
 
     public OAuth2AuthenticationSuccessHandler(JWTUtil JWTUtil,
-                                              StudentService studentService,
-                                              CookieUtil cookieUtil) {
+                                                StudentService studentService,
+                                                CookieUtil cookieUtil) {
         this.JWTUtil = JWTUtil;
         this.studentService = studentService;
         this.cookieUtil = cookieUtil;
