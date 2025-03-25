@@ -87,6 +87,8 @@ public class AuthController {
             return getResponseEntity(refreshToken, response);
         }
 
+        log.info("authorizationHeader: {}", authorizationHeader);
+
         // access token이 올바르지 않은 경우
         if (!authorizationHeader.startsWith("Bearer ")) {
 
