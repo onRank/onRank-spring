@@ -92,6 +92,7 @@ public class AuthController {
         // access token이 올바르지 않은 경우
         if (!authorizationHeader.startsWith("Bearer ")) {
 
+            log.info("authorizationHeader: {}", authorizationHeader);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("인증 정보가 제공되지 않았습니다. 로그인이 필요합니다.");
         }
