@@ -1,17 +1,27 @@
 package com.onrank.server.api.controller;
 
-import com.onrank.server.api.dto.student.CreateStudyRequestDto;
-import com.onrank.server.api.dto.student.CreateStudyResponseDto;
-import com.onrank.server.api.dto.study.MainpageStudyResponseDto;
+import com.onrank.server.api.dto.error.ErrorResponse;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.study.CreateStudyRequestDto;
+import com.onrank.server.api.dto.study.CreateStudyResponseDto;
+import com.onrank.server.api.dto.study.StudyListResponseDto;
+import com.onrank.server.api.exception.NotFoundException;
 import com.onrank.server.api.service.study.StudyService;
-import com.onrank.server.common.util.JWTUtil;
 import com.onrank.server.domain.study.Study;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @Slf4j
@@ -21,41 +31,72 @@ import java.util.List;
 public class StudyController {
 
     private final StudyService studyService;
-    private final JWTUtil JWTUtil;
 
+    @Operation(
+            summary = "내가 속한 스터디 목록 조회",
+            description = "로그인한 사용자가 속한 모든 스터디를 조회합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "스터디 목록 조회 성공",
+            content = @Content(schema = @Schema(implementation = StudyListResponseDto.class))
+    )
     @GetMapping
-    public ResponseEntity<List<MainpageStudyResponseDto>> getStudiesByUsers(
-            @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<StudyListResponseDto>> getStudiesByUsers(
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        String accessToken = authHeader.substring(7);
-        String username = JWTUtil.getUsername(accessToken);
-
-        List<MainpageStudyResponseDto> studies = studyService.getStudiesByUsername(username);
+        List<StudyListResponseDto> studies = studyService.getStudiesByUsername(oAuth2User.getName());
 
         log.info("studies: {}", studies);
 
         return ResponseEntity.ok().body(studies);
     }
 
-    @PostMapping("/add")
+    @Operation(
+            summary = "스터디 생성",
+            description = "새로운 스터디를 생성합니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "스터디 생성 요청 데이터",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = CreateStudyRequestDto.class))
+            )
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "스터디 생성 성공",
+                    headers = {
+                            @Header(
+                                    name = "Location",
+                                    description = "생성된 스터디의 URI",
+                                    schema = @Schema(type = "string", example = "/studies/123"))
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "요청 데이터 오류",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 내부 오류",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    @PostMapping
     public ResponseEntity<CreateStudyResponseDto> createStudy(
-            @RequestBody CreateStudyRequestDto requestDto,
-            @RequestHeader("Authorization") String authHeader) {
+            @Valid @RequestBody CreateStudyRequestDto requestDto,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // 인증 토큰에서 사용자 이름 추출
-        String accessToken = authHeader.substring(7);
-        String username = JWTUtil.getUsername(accessToken);
+        try {
+            Study study = studyService.createStudy(requestDto, oAuth2User.getName());
 
-        // 사용자 정보를 포함하여 스터디 생성
-        Study study = studyService.createStudy(requestDto, username);
+            URI studyURI = URI.create("/studies/" + study.getStudyId());
 
-        CreateStudyResponseDto responseDto = new CreateStudyResponseDto(
-                study.getStudyId(),
-                "Study created with id: " + study.getStudyId()
-        );
+            return ResponseEntity.created(studyURI).build();
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(responseDto);
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException("스터디 생성 중 오류: " + e.getMessage());
+        }
     }
 }

@@ -1,10 +1,9 @@
 package com.onrank.server.api.service.student;
 
-import com.onrank.server.api.dto.student.CreateStudyRequestDto;
+import com.onrank.server.api.dto.study.CreateStudyRequestDto;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;
-import com.onrank.server.domain.student.Role;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor

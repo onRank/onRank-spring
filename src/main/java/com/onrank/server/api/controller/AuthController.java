@@ -1,17 +1,29 @@
 package com.onrank.server.api.controller;
 
+import com.onrank.server.api.dto.error.ErrorResponse;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.student.RegisterStudentDto;
+import com.onrank.server.api.exception.UnAuthorizedException;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.util.JWTUtil;
 import com.onrank.server.common.util.CookieUtil;
 import com.onrank.server.domain.student.Role;
 import com.onrank.server.domain.student.Student;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,98 +37,124 @@ public class AuthController {
     private final JWTUtil JWTUtil;
     private final CookieUtil cookieUtil;
 
+    @Operation(
+            summary = "회원 등록",
+            description = "OAuth2 인증 이후 사용자 정보를 등록합니다.",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "회원 등록 요청 데이터",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = RegisterStudentDto.class)
+                    )
+            )
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "회원 등록 성공",
+                    headers = @Header(
+                            name = "Location",
+                            description = "생성된 회원 리소스의 URI",
+                            schema = @Schema(type = "string", example = "/students/1")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "요청 데이터 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 내부 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
     @PostMapping("/add")
     public ResponseEntity<Void> registerStudent(
-            @RequestBody RegisterStudentDto registerStudentDto,
-            @RequestHeader("Authorization") String authHeader) {
+            @Valid @RequestBody RegisterStudentDto registerStudentDto,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        String accessToken = authHeader.substring(7);
-
-        String username = JWTUtil.getUsername(accessToken);
-
-        String email = JWTUtil.getEmail(accessToken);
+        String username = oAuth2User.getName();
+        String email = oAuth2User.getEmail();
 
         Set<Role> roles = new HashSet<>();
         roles.add(Role.ROLE_USER);
 
-        // Student 엔티티 생성 및 저장
         Student student = registerStudentDto.toEntity(username, email, roles);
 
-        log.info("신규 회원 등록 - username: {}, email: {}, studentName: {}, studentPhoneNumber: {}, studentSchool: {}, studentDepartment: {}",
-                username, email, student.getStudentName(), student.getStudentPhoneNumber(), student.getStudentSchool(), student.getStudentDepartment());
+        log.info("신규 회원 등록 - username: {}, email: {}, studentName: {}", username, email, student.getStudentName());
 
         studentService.createStudent(student);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        URI studentURI = URI.create("/students/" + student.getStudentId());
+        return ResponseEntity.created(studentURI).build();
     }
 
+    @Operation(summary = "Access Token 재발급", description = "Refresh Token을 사용해 Access Token을 재발급합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "토큰 재발급 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "토큰 누락 또는 유효하지 않음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
     @GetMapping("/reissue")
     public ResponseEntity<?> refreshToken(
             RequestEntity<Void> requestEntity,
             @CookieValue(name = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response) {
+
         log.info("/reissue 진입");
 
         String authorizationHeader = requestEntity.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-        // 두 토큰 모두 전달되지 않은 경우
         if (authorizationHeader == null && refreshToken == null) {
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("인증 정보가 제공되지 않았습니다. 로그인이 필요합니다.");
+            throw new UnAuthorizedException("인증 정보가 제공되지 않았습니다. 로그인이 필요합니다.");
         }
 
-        // access token만 전달된 경우
         if (authorizationHeader != null && refreshToken == null) {
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("토큰 갱신 요청에 refresh token이 누락되었습니다.");
+            throw new UnAuthorizedException("토큰 갱신 요청에 refresh token이 누락되었습니다.");
         }
 
-        // refresh token만 전달된 경우
         if (authorizationHeader == null) {
-
-            // refresh token이 유효하지 않은 경우
             if (!JWTUtil.validateRefreshToken(refreshToken)) {
-
                 JWTUtil.deleteRefreshToken(refreshToken);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("유효하지 않은 refresh token입니다. 다시 로그인해주세요.");
+                throw new UnAuthorizedException("유효하지 않은 refresh token입니다. 다시 로그인해주세요.");
             }
-            // refresh token이 유효한 경우 -> 새로운 토큰 발급
             return getResponseEntity(refreshToken, response);
         }
 
-        // access token이 올바르지 않은 경우
         if (!authorizationHeader.startsWith("Bearer ")) {
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("인증 정보가 제공되지 않았습니다. 로그인이 필요합니다.");
+            throw new UnAuthorizedException("잘못된 Authorization 헤더 형식입니다.");
         }
+
         String accessToken = authorizationHeader.substring(7);
 
-
-        // access token이 만료되지 않은 경우 -> 보안상의 이유로 재인증 처리
         if (!JWTUtil.isExpired(accessToken)) {
-
             JWTUtil.deleteRefreshToken(refreshToken);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("만료되지 않은 access token과 함께 refresh token이 전달되었습니다. 보안상의 이유로 재인증이 필요합니다.");
+            throw new UnAuthorizedException("만료되지 않은 access token입니다. 보안상의 이유로 재인증이 필요합니다.");
         }
 
-        // refresh token이 만료되었거나 유효하지 않을 경우
         if (JWTUtil.isExpired(refreshToken)) {
-
             JWTUtil.deleteRefreshToken(refreshToken);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("만료되지 않은 refresh token입니다. 다시 로그인해주세요.");
+            throw new UnAuthorizedException("만료된 refresh token입니다. 다시 로그인해주세요.");
         }
 
-        // refresh token이 유효한 경우 -> 새로운 토큰 발급
         return getResponseEntity(refreshToken, response);
     }
 
-    private ResponseEntity<?> getResponseEntity(@CookieValue(name = "refresh_token", required = false) String refreshToken, HttpServletResponse response) {
+    private ResponseEntity<?> getResponseEntity(String refreshToken, HttpServletResponse response) {
         String username = JWTUtil.getUsername(refreshToken);
         String email = JWTUtil.getEmail(refreshToken);
 
@@ -128,7 +166,6 @@ public class AuthController {
 
         cookieUtil.addRefreshTokenCookie(response, "refresh_token", newRefreshToken);
 
-        // 기존 refresh token 삭제 후 새 refresh token 저장
         JWTUtil.deleteRefreshToken(refreshToken);
         JWTUtil.save(username, newRefreshToken);
 

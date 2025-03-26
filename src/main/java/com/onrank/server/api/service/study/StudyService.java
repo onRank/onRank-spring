@@ -1,7 +1,7 @@
 package com.onrank.server.api.service.study;
 
-import com.onrank.server.api.dto.student.CreateStudyRequestDto;
-import com.onrank.server.api.dto.study.MainpageStudyResponseDto;
+import com.onrank.server.api.dto.study.CreateStudyRequestDto;
+import com.onrank.server.api.dto.study.StudyListResponseDto;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;  // 이 줄 추가
@@ -32,17 +32,17 @@ public class StudyService {
         return studyRepository.findByStudyId(id);
     }
 
-    public List<MainpageStudyResponseDto> getStudiesByUsername(String username) {
+    public List<StudyListResponseDto> getStudiesByUsername(String username) {
 
         Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
         List<Member> members = student.getMembers();
-        List<MainpageStudyResponseDto> studies = new ArrayList<>();
+        List<StudyListResponseDto> studies = new ArrayList<>();
 
         for (Member member : members) {
             Study study = member.getStudy();
-            MainpageStudyResponseDto studyDto = new MainpageStudyResponseDto(
+            StudyListResponseDto studyDto = new StudyListResponseDto(
                     study.getStudyId(),
                     study.getStudyName(),
                     study.getStudyContent(),
