@@ -2,14 +2,18 @@ package com.onrank.server.api.controller;
 
 import com.onrank.server.api.dto.student.RegisterStudentDto;
 import com.onrank.server.api.service.student.StudentService;
-import com.onrank.server.api.service.token.TokenService;
+import com.onrank.server.common.util.JWTUtil;
 import com.onrank.server.common.util.CookieUtil;
+import com.onrank.server.domain.student.Role;
 import com.onrank.server.domain.student.Student;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -18,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final StudentService studentService;
-    private final TokenService tokenService;
+    private final JWTUtil JWTUtil;
     private final CookieUtil cookieUtil;
 
     @PostMapping("/add")
@@ -28,13 +32,15 @@ public class AuthController {
 
         String accessToken = authHeader.substring(7);
 
+        String username = JWTUtil.getUsername(accessToken);
 
+        String email = JWTUtil.getEmail(accessToken);
 
-        String username = tokenService.getUsername(accessToken);
-        String email = tokenService.getEmail(accessToken);
+        Set<Role> roles = new HashSet<>();
+        roles.add(Role.ROLE_USER);
 
         // Student 엔티티 생성 및 저장
-        Student student = registerStudentDto.toEntity(username, email);
+        Student student = registerStudentDto.toEntity(username, email, roles);
 
         log.info("신규 회원 등록 - username: {}, email: {}, studentName: {}, studentPhoneNumber: {}, studentSchool: {}, studentDepartment: {}",
                 username, email, student.getStudentName(), student.getStudentPhoneNumber(), student.getStudentSchool(), student.getStudentDepartment());
@@ -71,9 +77,9 @@ public class AuthController {
         if (authorizationHeader == null) {
 
             // refresh token이 유효하지 않은 경우
-            if (!tokenService.validateRefreshToken(refreshToken)) {
+            if (!JWTUtil.validateRefreshToken(refreshToken)) {
 
-                tokenService.deleteRefreshToken(refreshToken);
+                JWTUtil.deleteRefreshToken(refreshToken);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("유효하지 않은 refresh token입니다. 다시 로그인해주세요.");
             }
@@ -81,9 +87,12 @@ public class AuthController {
             return getResponseEntity(refreshToken, response);
         }
 
+        log.info("authorizationHeader: {}", authorizationHeader);
+
         // access token이 올바르지 않은 경우
         if (!authorizationHeader.startsWith("Bearer ")) {
 
+            log.info("authorizationHeader: {}", authorizationHeader);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("인증 정보가 제공되지 않았습니다. 로그인이 필요합니다.");
         }
@@ -91,17 +100,17 @@ public class AuthController {
 
 
         // access token이 만료되지 않은 경우 -> 보안상의 이유로 재인증 처리
-        if (!tokenService.isExpired(accessToken)) {
+        if (!JWTUtil.isExpired(accessToken)) {
 
-            tokenService.deleteRefreshToken(refreshToken);
+            JWTUtil.deleteRefreshToken(refreshToken);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("만료되지 않은 access token과 함께 refresh token이 전달되었습니다. 보안상의 이유로 재인증이 필요합니다.");
         }
 
         // refresh token이 만료되었거나 유효하지 않을 경우
-        if (tokenService.isExpired(refreshToken)) {
+        if (JWTUtil.isExpired(refreshToken)) {
 
-            tokenService.deleteRefreshToken(refreshToken);
+            JWTUtil.deleteRefreshToken(refreshToken);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("만료되지 않은 refresh token입니다. 다시 로그인해주세요.");
         }
@@ -111,11 +120,11 @@ public class AuthController {
     }
 
     private ResponseEntity<?> getResponseEntity(@CookieValue(name = "refresh_token", required = false) String refreshToken, HttpServletResponse response) {
-        String username = tokenService.getUsername(refreshToken);
-        String email = tokenService.getEmail(refreshToken);
+        String username = JWTUtil.getUsername(refreshToken);
+        String email = JWTUtil.getEmail(refreshToken);
 
-        String newAccessToken = tokenService.createJwt("access", username, email);
-        String newRefreshToken = tokenService.createJwt("refresh", username, email);
+        String newAccessToken = JWTUtil.createJwt("access", username, email);
+        String newRefreshToken = JWTUtil.createJwt("refresh", username, email);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + newAccessToken);
@@ -123,8 +132,8 @@ public class AuthController {
         cookieUtil.addRefreshTokenCookie(response, "refresh_token", newRefreshToken);
 
         // 기존 refresh token 삭제 후 새 refresh token 저장
-        tokenService.deleteRefreshToken(refreshToken);
-        tokenService.save(username, newRefreshToken);
+        JWTUtil.deleteRefreshToken(refreshToken);
+        JWTUtil.save(username, newRefreshToken);
 
         return ResponseEntity.ok()
                 .headers(headers)

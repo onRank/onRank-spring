@@ -3,8 +3,8 @@ package com.onrank.server.common.config;
 import com.onrank.server.api.service.auth.CustomOAuth2UserService;
 import com.onrank.server.api.service.auth.OAuth2AuthenticationSuccessHandler;
 import com.onrank.server.api.service.student.StudentService;
-import com.onrank.server.common.security.jwt.JwtOAuth2AuthenticationFilter;
-import com.onrank.server.api.service.token.TokenService;
+import com.onrank.server.common.security.jwt.JWTOAuth2AuthenticationFilter;
+import com.onrank.server.common.util.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +27,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler successHandler;
-    private final TokenService tokenService;
+    private final JWTUtil JWTUtil;
     private final StudentService studentService;
 
     @Bean
@@ -43,12 +43,12 @@ public class SecurityConfig {
 
                 // request 인증, 인가 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/oauth2/**", "/auth/add", "/auth/reissue").permitAll() // 인증 없이 접근 가능
+                        .requestMatchers("/oauth2/**", "/auth/add", "/auth/reissue").permitAll() // 인증 없이 접근 가능
                         .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
                 )
 
                 // jwt 필터 등록
-                .addFilterAfter(new JwtOAuth2AuthenticationFilter(tokenService, studentService), OAuth2LoginAuthenticationFilter.class)
+                .addFilterAfter(new JWTOAuth2AuthenticationFilter(JWTUtil, studentService), OAuth2LoginAuthenticationFilter.class)
 
                 // oauth2 설정
                 .oauth2Login(oauth2 -> oauth2
@@ -65,6 +65,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("https://d37q7cndbbsph5.cloudfront.net"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization")); // Authorization 헤더 노출
