@@ -55,7 +55,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         boolean isNewUser = studentService.checkIfNewUser(authentication.getName());
 
         // 리다이렉트 URL 구성 후 sendRedirect 호출
-        String redirectUrl = "http://localhost:3000/auth/callback?isNewUser=" + isNewUser;
+        String redirectUrl = "https://d37q7cndbbsph5.cloudfront.net/auth/callback?isNewUser=" + isNewUser;
 
         response.sendRedirect(redirectUrl);
     }
