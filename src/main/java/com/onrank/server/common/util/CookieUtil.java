@@ -53,6 +53,6 @@ public class CookieUtil {
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         // 디버깅용 로그 추가
-        log.info("설정된 쿠키: {}", cookie.toString());
+        log.info("설정된 쿠키: {}", cookie);
     }
 }

@@ -37,8 +37,6 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-
-
         // "Authorization" 헤더에서 access token 추출
         String authHeader = request.getHeader("Authorization");
 
