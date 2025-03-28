@@ -44,7 +44,7 @@ public class SecurityConfig {
 
                 // request 인증, 인가 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/reissue",
+                        .requestMatchers("/auth/reissue","/oauth2/**", "/auth/add",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs").permitAll() // 인증 없이 접근 가능
                         .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
                 )
