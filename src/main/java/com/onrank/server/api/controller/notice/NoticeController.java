@@ -1,4 +1,4 @@
-package com.onrank.server.api.controller;
+package com.onrank.server.api.controller.notice;
 
 import com.onrank.server.api.dto.notice.AddNoticeRequest;
 import com.onrank.server.api.dto.notice.NoticeResponse;

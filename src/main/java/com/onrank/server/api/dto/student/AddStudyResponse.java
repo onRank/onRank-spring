@@ -5,8 +5,11 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class CreateStudyResponseDto {
+public class AddStudyResponse {
 
     private Long studyId;
-    private String message;
+    private String fileName;
+    private String uploadUrl;
+
+
 }

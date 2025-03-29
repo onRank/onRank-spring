@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -92,10 +93,10 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
         String authorizedClientRegistrationId = parts[0];
 
         // "ROLE_USER" 권한 부여
-        Collection<? extends GrantedAuthority> authorities = studentService.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Student not found"))
-                .getRoles();
-//        Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
+//        Collection<? extends GrantedAuthority> authorities = studentService.findByUsername(username)
+//                .orElseThrow(() -> new UsernameNotFoundException("Student not found"))
+//                .getRoles();
+        Collection<? extends GrantedAuthority> authorities = Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
         log.info("authorities: {}", authorities);
 
         // (?) JWT 필터에서는 attributes에 어떤 값을 넣어야 하나?

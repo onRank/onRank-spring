@@ -1,4 +1,4 @@
-package com.onrank.server.api.controller;
+package com.onrank.server.api.controller.management;
 
 import com.onrank.server.api.dto.member.AddMemberRequestDto;
 import com.onrank.server.api.dto.member.AddMemberResponseDto;

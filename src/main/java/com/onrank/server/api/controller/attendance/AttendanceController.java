@@ -1,4 +1,4 @@
-package com.onrank.server.api.controller;
+package com.onrank.server.api.controller.attendance;
 
 import com.onrank.server.api.dto.attendance.AttendanceMemberResponse;
 import com.onrank.server.api.dto.attendance.AttendanceResponse;

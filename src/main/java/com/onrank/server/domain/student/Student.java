@@ -35,22 +35,24 @@ public class Student {
     @Column(nullable = false, unique = true)
     private String studentEmail;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Enumerated(EnumType.STRING)
-    private Set<Role> roles = new HashSet<>();
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    @Enumerated(EnumType.STRING)
+//    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members = new ArrayList<>();
 
     // 생성자
     @Builder
-    public Student(String studentName, String studentEmail, String studentSchool, String studentDepartment, String studentPhoneNumber, Set<Role> roles, String username) {
+    public Student(String studentName, String studentEmail, String studentSchool, String studentDepartment, String studentPhoneNumber
+//            , Set<Role> roles
+            , String username) {
         this.studentName = studentName;
         this.studentEmail = studentEmail;
         this.studentSchool = studentSchool;
         this.studentDepartment = studentDepartment;
         this.studentPhoneNumber = studentPhoneNumber;
-        this.roles = roles;
+//        this.roles = roles;
         this.username = username;
     }
 }
