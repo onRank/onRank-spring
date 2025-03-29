@@ -31,30 +31,26 @@ public class Notice {
     @Column(nullable = false)
     private LocalDate noticeModifiedAt;
 
-    private String noticeImagePath;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id")
     private Study study;
 
     @Builder
-    public Notice(Long noticeId, String noticeTitle, String noticeContent, LocalDate noticeCreatedAt, LocalDate noticeModifiedAt, String noticeImagePath, Study study) {
+    public Notice(Long noticeId, String noticeTitle, String noticeContent, LocalDate noticeCreatedAt, LocalDate noticeModifiedAt, Study study) {
         this.noticeId = noticeId;
         this.noticeTitle = noticeTitle;
         this.noticeContent = noticeContent;
         this.noticeCreatedAt = noticeCreatedAt;
         this.noticeModifiedAt = noticeModifiedAt;
-        this.noticeImagePath = noticeImagePath;
         this.study = study;
     }
 
     /**
      * 공지사항 수정 메서드
      */
-    public void update(String noticeTitle, String noticeContent, String noticeImagePath) {
+    public void update(String noticeTitle, String noticeContent) {
         this.noticeTitle = noticeTitle;
         this.noticeContent = noticeContent;
-        this.noticeImagePath = noticeImagePath;
         this.noticeModifiedAt = LocalDate.now();
     }
 }

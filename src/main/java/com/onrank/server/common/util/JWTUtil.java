@@ -1,4 +1,4 @@
-package com.onrank.server.api.service.token;
+package com.onrank.server.common.util;
 
 import com.onrank.server.domain.refreshtoken.RefreshToken;
 import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
@@ -16,17 +16,17 @@ import java.util.*;
 
 @Slf4j
 @Component
-public class TokenService {
+public class JWTUtil {
 
     private final SecretKey secretKey;
     private final long accessTokenExpiration; // 30분
     private final long refreshTokenExpiration; // 2시간
     private final RefreshTokenJpaRepository refreshTokenJpaRepository;
 
-    public TokenService(@Value("${jwt.secret}") String secret,
-                        @Value("${jwt.access.expirationMs}") long accessTokenExpiration,
-                        @Value("${jwt.refresh.expirationMs}") long refreshTokenExpiration,
-                        RefreshTokenJpaRepository refreshTokenJpaRepository) {
+    public JWTUtil(@Value("${jwt.secret}") String secret,
+                   @Value("${jwt.access.expirationMs}") long accessTokenExpiration,
+                   @Value("${jwt.refresh.expirationMs}") long refreshTokenExpiration,
+                   RefreshTokenJpaRepository refreshTokenJpaRepository) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessTokenExpiration = accessTokenExpiration;
         this.refreshTokenExpiration = refreshTokenExpiration;
@@ -35,7 +35,7 @@ public class TokenService {
 
     public String createJwt(String category, String username, String email) {
 
-        Long expiredMs = 0L;
+        long expiredMs = 0L;
         if (category.equals("access")) {
             expiredMs = accessTokenExpiration;
         } else if (category.equals("refresh")) {
@@ -103,6 +103,7 @@ public class TokenService {
     }
 
     public Boolean validateRefreshToken(String token) {
+        log.info("refresh token: {}", token);
 
         return refreshTokenJpaRepository.existsByRefreshToken(token);
     }

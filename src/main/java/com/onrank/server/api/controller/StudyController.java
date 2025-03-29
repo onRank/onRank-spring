@@ -1,58 +1,43 @@
 package com.onrank.server.api.controller;
 
-import com.onrank.server.api.dto.student.CreateStudyRequestDto;
-import com.onrank.server.api.dto.student.CreateStudyResponseDto;
-import com.onrank.server.api.dto.study.MainpageStudyResponseDto;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.study.AddStudyRequest;
+import com.onrank.server.api.dto.study.StudyListResponse;
 import com.onrank.server.api.service.study.StudyService;
-import com.onrank.server.api.service.token.TokenService;
-import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("studies")
 @RequiredArgsConstructor
 public class StudyController {
 
     private final StudyService studyService;
-    private final TokenService tokenService;
 
     @GetMapping
-    public ResponseEntity<List<MainpageStudyResponseDto>> getStudiesByUsers(
-            @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<StudyListResponse>> getStudies(
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        String accessToken = authHeader.substring(7);
-        String username = tokenService.getUsername(accessToken);
+        String username = oAuth2User.getName();
 
-        List<MainpageStudyResponseDto> studies = studyService.getStudiesByUsername(username);
-
-        return ResponseEntity.ok().body(studies);
+        return ResponseEntity.ok(studyService.getStudyListResponsesByUsername(username));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<CreateStudyResponseDto> createStudy(
-            @RequestBody CreateStudyRequestDto requestDto,
-            @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Map<String, Object>> createStudy(
+            @RequestBody AddStudyRequest addStudyRequest,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // 인증 토큰에서 사용자 이름 추출
-        String accessToken = authHeader.substring(7);
-        String username = tokenService.getUsername(accessToken);
-
-        // 사용자 정보를 포함하여 스터디 생성
-        Study study = studyService.createStudy(requestDto, username);
-
-        CreateStudyResponseDto responseDto = new CreateStudyResponseDto(
-                study.getStudyId(),
-                "Study created with id: " + study.getStudyId()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(responseDto);
+        String username = oAuth2User.getName();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(studyService.createStudy(addStudyRequest, username));
     }
 }

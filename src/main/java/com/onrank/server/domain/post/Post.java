@@ -32,8 +32,6 @@ public class Post {
     @Column(nullable = false)
     private LocalDate postModifiedAt;
 
-    private String postImagePath;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "study_id")
     private Study study;
@@ -43,25 +41,22 @@ public class Post {
     private Member member;
 
     @Builder
-    public Post(Long postId, String postTitle, String postContent, LocalDate postCreatedAt, LocalDate postModifiedAt, String postImagePath, Study study, Member member) {
+    public Post(Long postId, String postTitle, String postContent, LocalDate postCreatedAt, LocalDate postModifiedAt, Study study, Member member) {
         this.postId = postId;
         this.postTitle = postTitle;
         this.postContent = postContent;
         this.postCreatedAt = postCreatedAt;
         this.postModifiedAt = postModifiedAt;
-        this.postImagePath = postImagePath;
         this.study = study;
         this.member = member;
     }
 
-
     /**
      * 게시판 수정 메서드
      */
-    public void update(String postTitle, String postContent, String postImagePath) {
+    public void update(String postTitle, String postContent) {
         this.postTitle = postTitle;
         this.postContent = postContent;
-        this.postImagePath = postImagePath;
         this.postModifiedAt = LocalDate.now();
     }
 }

@@ -1,12 +1,11 @@
 package com.onrank.server.api.service.member;
 
-import com.onrank.server.api.dto.member.AddMemberRequestDto;
-import com.onrank.server.api.dto.member.MemberResponseDto;
+import com.onrank.server.api.dto.member.AddMemberRequest;
+import com.onrank.server.api.dto.member.MemberListResponse;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;
-import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
@@ -18,8 +17,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import java.util.Optional;
 
 
 @Service
@@ -69,30 +66,31 @@ public class MemberService {
     /**
      *  DB에서 스터디에 속한 멤버 목록 조회
      */
-    public List<MemberResponseDto> getMembersForStudy(Long studyId) {
+    public List<MemberListResponse> getMembersForStudy(Long studyId) {
 
-        List<Member> members = memberRepository.findAllByStudy_StudyId(studyId);
-
+        List<Member> members = memberRepository.findByStudyStudyId(studyId);
         return members.stream()
-                .map(member -> new MemberResponseDto(
-                        member.getStudent().getStudentName(),
-                        member.getStudent().getStudentEmail()
-                ))
+                .map(MemberListResponse::new)
                 .collect(Collectors.toList());
     }
 
     @Transactional
-    public Member addMemberToStudy(Long studyId, AddMemberRequestDto requestDto) {
+    public void addMemberToStudy(Long studyId, AddMemberRequest request) {
 
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found with id: " + studyId));
 
-        Student student = studentService.findByStudentEmail(requestDto.getStudentEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Student not found with email: " + requestDto.getStudentEmail()));
+        Student student = studentService.findByStudentEmail(request.getStudentEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Student not found with email: " + request.getStudentEmail()));
 
         Member newMember = new Member(student, study, MemberRole.PARTICIPANT, LocalDate.now());
+        memberRepository.save(newMember);
+    }
 
-        // 3. DB에 저장
-        return memberRepository.save(newMember);
+    @Transactional
+    public void updateMemberRole(Long studyId, Long memberId, String newRole) {
+        Member member = memberRepository.findByMemberIdAndStudyStudyId(memberId, studyId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not in Study"));
+        member.changeRole(MemberRole.valueOf(newRole));
     }
 }

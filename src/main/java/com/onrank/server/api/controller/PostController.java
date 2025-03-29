@@ -2,13 +2,11 @@ package com.onrank.server.api.controller;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.post.AddPostRequest;
-import com.onrank.server.api.dto.post.PostIdResponse;
 import com.onrank.server.api.dto.post.PostResponse;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.post.PostService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.domain.member.Member;
-import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -59,17 +58,14 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        Post post = postService.findByPostId(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
-        return ResponseEntity.ok(new PostResponse(post));
+        return ResponseEntity.ok(postService.getPostResponse(postId));
     }
 
     /**
      * 게시판 등록 (스터디 멤버만 가능)
      */
     @PostMapping("/add")
-    public ResponseEntity<PostIdResponse> createNotice(
+    public ResponseEntity<Map<String, Object>> createPost(
             @PathVariable Long studyId,
             @RequestBody AddPostRequest addPostRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -86,39 +82,42 @@ public class PostController {
         Member member = memberService.findByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
-        Post post = addPostRequest.toEntity(study, member);
-        postService.createPost(post);
+        // Pre-signed URL 생성 및 파일 메타데이터 저장
+        Map<String, Object> result = postService.createPost(addPostRequest, study, member);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new PostIdResponse(post.getPostId()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     /**
      * 게시판 수정 (Post 의 작성자만 가능)
      */
     @PutMapping("/{postId}")
-    public ResponseEntity<PostIdResponse> updatePost(
+    public ResponseEntity<Map<String, Object>> updatePost(
             @PathVariable Long studyId,
             @PathVariable Long postId,
             @RequestBody AddPostRequest addPostRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+
 
         // 작성자만 수정 가능
         if (!postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        postService.updatePost(postId, addPostRequest.getPostTitle(),
-                addPostRequest.getPostContent(), addPostRequest.getPostImagePath());
-
-        return ResponseEntity.ok(new PostIdResponse(postId));
+        Map<String, Object> result = postService.updatePost(
+                postId,
+                addPostRequest.getPostTitle(),
+                addPostRequest.getPostContent(),
+                addPostRequest.getFileNames()
+        );
+        return ResponseEntity.ok(result);
     }
 
     /**
      * 게시판 삭제 (Post 의 작성자만 가능)
      */
     @DeleteMapping("/{postId}")
-    public ResponseEntity<PostIdResponse> deletePost(
+    public ResponseEntity<Void> deletePost(
             @PathVariable Long studyId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -130,6 +129,6 @@ public class PostController {
 
         postService.deletePost(postId);
 
-        return ResponseEntity.ok(new PostIdResponse(postId));
+        return ResponseEntity.noContent().build();
     }
 }

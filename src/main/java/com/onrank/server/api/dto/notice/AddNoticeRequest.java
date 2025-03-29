@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -20,7 +21,8 @@ public class AddNoticeRequest {
     @NotBlank
     private String noticeContent;
 
-    private String noticeImagePath;
+    // 업로드하기 위한 파일명들
+    private List<String> fileNames;
 
     public Notice toEntity(Study study) {
         return Notice.builder()
@@ -28,7 +30,6 @@ public class AddNoticeRequest {
                 .noticeContent(noticeContent)
                 .noticeCreatedAt(LocalDate.now())
                 .noticeModifiedAt(LocalDate.now())
-                .noticeImagePath(noticeImagePath)
                 .study(study)
                 .build();
     }

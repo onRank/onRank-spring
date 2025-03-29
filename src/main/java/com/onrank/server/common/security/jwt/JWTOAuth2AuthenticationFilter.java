@@ -2,7 +2,7 @@ package com.onrank.server.common.security.jwt;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.student.StudentService;
-import com.onrank.server.api.service.token.TokenService;
+import com.onrank.server.common.util.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.micrometer.common.lang.NonNullApi;
@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -21,16 +20,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.*;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 @NonNullApi // (?) 이게 왜 있어야 되지?
-public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
+public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
-    private final TokenService tokenService;
+    private final JWTUtil JWTUtil;
     private final StudentService studentService;
 
     @Override
@@ -39,21 +37,23 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-
-
-        // "Authorization" 헤더에서 accessToken 추출
+        // "Authorization" 헤더에서 access token 추출
         String authHeader = request.getHeader("Authorization");
+
+        // access token이 없으면 필터 건너뛰기
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.info("Access token not found");
             filterChain.doFilter(request, response);
             return;
         }
-        // accessToken이 "Bearer AsDfQwEr..."과 같이 되어 있음
+
+        // access token이 "Bearer AsDfQwEr..."과 같이 되어 있음
         String accessToken = authHeader.substring(7);
 
         // username은 "google aSdFqWeR..."과 같이 되어 있음
-        String username = tokenService.getUsername(accessToken);
+        String username = JWTUtil.getUsername(accessToken);
 
+        // 등록된 회원이 아니면 필터 건너뛰기
         if (studentService.checkIfNewUser(username)) {
             log.info("New user logged in");
             filterChain.doFilter(request, response);
@@ -62,7 +62,7 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
         // 토큰 만료 여부 및 유효성 확인
         try {
-            tokenService.isExpired(accessToken);
+            JWTUtil.isExpired(accessToken);
 
         } catch (ExpiredJwtException ex) {
 
@@ -78,7 +78,7 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 토큰이 access인지 확인 (발급시 페이로드에 명시)
-        String category = tokenService.getCategory(accessToken);
+        String category = JWTUtil.getCategory(accessToken);
 
         if (!category.equals("access")) {
 
@@ -102,7 +102,7 @@ public class JwtOAuth2AuthenticationFilter extends OncePerRequestFilter {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("username", username);
 
-        String email = tokenService.getEmail(accessToken);
+        String email = JWTUtil.getEmail(accessToken);
         attributes.put("email", email);
 
         CustomOAuth2User customOAuth2User = new CustomOAuth2User(authorities, attributes, username, email);
