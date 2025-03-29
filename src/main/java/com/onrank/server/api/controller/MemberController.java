@@ -52,7 +52,7 @@ public class MemberController {
         }
 
         // 서비스에 존재 여부
-        if (studentService.checkIfExist(addMemberRequest.getStudentEmail())) {
+        if (!studentService.checkIfExist(addMemberRequest.getStudentEmail())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
