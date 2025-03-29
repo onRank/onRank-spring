@@ -1,9 +1,7 @@
 package com.onrank.server.api.service.student;
 
-import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
-import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
