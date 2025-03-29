@@ -1,3 +1,4 @@
+TRUNCATE TABLE students;
 INSERT INTO students (student_name, student_email, student_school, student_department, student_phone_number, username)
 VALUES
     ('Alice Kim', 'alice.kim@example.com', 'Seoul National University', 'Computer Science', '010-1234-5678', 'alicekim'),
@@ -10,16 +11,3 @@ VALUES
     ('Henry Moon', 'henry.moon@example.com', 'UNIST', 'Chemistry', '010-8901-2345', 'henrymoon'),
     ('Ivy Kang', 'ivy.kang@example.com', 'Ewha Womans University', 'Law', '010-9012-3456', 'ivykang'),
     ('Jack Seo', 'jack.seo@example.com', 'Sogang University', 'Political Science', '010-0123-4567', 'jackseo');
-
--- INSERT INTO student_roles (student_student_id, roles)
--- VALUES
---     (1, 'ROLE_STUDENT'),
---     (2, 'ROLE_STUDENT'),
---     (3, 'ROLE_STUDENT'),
---     (4, 'ROLE_STUDENT'),
---     (5, 'ROLE_STUDENT'),
---     (6, 'ROLE_STUDENT'),
---     (7, 'ROLE_STUDENT'),
---     (8, 'ROLE_STUDENT'),
---     (9, 'ROLE_STUDENT'),
---     (10, 'ROLE_STUDENT');
