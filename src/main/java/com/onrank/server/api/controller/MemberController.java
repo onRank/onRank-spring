@@ -6,18 +6,14 @@ import com.onrank.server.api.dto.member.MemberRoleRequest;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.student.StudentService;
-import com.onrank.server.domain.member.Member;
-import com.onrank.server.domain.member.MemberRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
