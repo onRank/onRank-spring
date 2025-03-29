@@ -24,7 +24,7 @@ public class MemberController {
     private final MemberService memberService;
     private final StudentService studentService;
 
-    @GetMapping()
+    @GetMapping
     public ResponseEntity<List<MemberListResponse>> getMembers(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {

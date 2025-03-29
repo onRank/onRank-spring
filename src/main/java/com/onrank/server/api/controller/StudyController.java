@@ -26,9 +26,7 @@ public class StudyController {
     public ResponseEntity<List<StudyListResponse>> getStudies(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        String username = oAuth2User.getName();
-
-        return ResponseEntity.ok(studyService.getStudyListResponsesByUsername(username));
+        return ResponseEntity.ok(studyService.getStudyListResponsesByUsername(oAuth2User.getName()));
     }
 
     @PostMapping("/add")
@@ -36,8 +34,6 @@ public class StudyController {
             @RequestBody AddStudyRequest addStudyRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        String username = oAuth2User.getName();
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(studyService.createStudy(addStudyRequest, username));
+        return ResponseEntity.status(HttpStatus.CREATED).body(studyService.createStudy(addStudyRequest, oAuth2User.getName()));
     }
 }
