@@ -1,17 +1,12 @@
-package com.onrank.server.api.dto.student;
+package com.onrank.server.api.dto.study;
 
-import com.onrank.server.domain.notice.Notice;
-import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.util.List;
 
 @Getter
 @Setter

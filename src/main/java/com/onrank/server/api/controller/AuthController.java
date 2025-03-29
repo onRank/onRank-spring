@@ -1,6 +1,6 @@
 package com.onrank.server.api.controller;
 
-import com.onrank.server.api.dto.student.RegisterStudentDto;
+import com.onrank.server.api.dto.student.AddStudentDto;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.util.JWTUtil;
 import com.onrank.server.common.util.CookieUtil;
@@ -27,7 +27,7 @@ public class AuthController {
 
     @PostMapping("/add")
     public ResponseEntity<Void> registerStudent(
-            @RequestBody RegisterStudentDto registerStudentDto,
+            @RequestBody AddStudentDto addStudentDto,
             @RequestHeader("Authorization") String authHeader) {
 
         String accessToken = authHeader.substring(7);
@@ -40,7 +40,7 @@ public class AuthController {
         roles.add(Role.ROLE_USER);
 
         // Student 엔티티 생성 및 저장
-        Student student = registerStudentDto.toEntity(username, email, roles);
+        Student student = addStudentDto.toEntity(username, email, roles);
 
         log.info("신규 회원 등록 - username: {}, email: {}, studentName: {}, studentPhoneNumber: {}, studentSchool: {}, studentDepartment: {}",
                 username, email, student.getStudentName(), student.getStudentPhoneNumber(), student.getStudentSchool(), student.getStudentDepartment());

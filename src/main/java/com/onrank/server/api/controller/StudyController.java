@@ -1,13 +1,9 @@
 package com.onrank.server.api.controller;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
-import com.onrank.server.api.dto.student.AddStudyRequest;
-import com.onrank.server.api.dto.student.CreateStudyRequestDto;
-import com.onrank.server.api.dto.student.CreateStudyResponseDto;
-import com.onrank.server.api.dto.study.MainpageStudyResponseDto;
+import com.onrank.server.api.dto.study.AddStudyRequest;
+import com.onrank.server.api.dto.study.StudyListResponse;
 import com.onrank.server.api.service.study.StudyService;
-import com.onrank.server.common.util.JWTUtil;
-import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -25,20 +21,14 @@ import java.util.Map;
 public class StudyController {
 
     private final StudyService studyService;
-    private final JWTUtil JWTUtil;
 
     @GetMapping
-    public ResponseEntity<List<MainpageStudyResponseDto>> getStudiesByUsers(
-            @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<List<StudyListResponse>> getStudies(
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        String accessToken = authHeader.substring(7);
-        String username = JWTUtil.getUsername(accessToken);
+        String username = oAuth2User.getName();
 
-        List<MainpageStudyResponseDto> studies = studyService.getStudiesByUsername(username);
-
-        log.info("studies: {}", studies);
-
-        return ResponseEntity.ok().body(studies);
+        return ResponseEntity.ok(studyService.getStudyListResponsesByUsername(username));
     }
 
     @PostMapping("/add")
@@ -47,18 +37,7 @@ public class StudyController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         String username = oAuth2User.getName();
-        return ResponseEntity.status(HttpStatus.CREATED).body(studyService.createStudy(addStudyRequest, username));
-
-//        // 사용자 정보를 포함하여 스터디 생성
-//        Study study = studyService.createStudy(addStudyRequest, username);
-//
-//        AddStudyResponse responseDto = new AddStudyResponse(
-//                study.getStudyId(),
-//                "Study created with id: " + study.getStudyId()
-//        );
-//
-//        return ResponseEntity
-//                .status(HttpStatus.CREATED)
-//                .body(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(studyService.createStudy(addStudyRequest, username));
     }
 }

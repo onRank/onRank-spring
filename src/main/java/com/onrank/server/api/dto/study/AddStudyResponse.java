@@ -1,4 +1,4 @@
-package com.onrank.server.api.dto.student;
+package com.onrank.server.api.dto.study;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
