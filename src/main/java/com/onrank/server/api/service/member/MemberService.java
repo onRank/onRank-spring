@@ -86,4 +86,11 @@ public class MemberService {
         Member newMember = new Member(student, study, MemberRole.PARTICIPANT, LocalDate.now());
         memberRepository.save(newMember);
     }
+
+    @Transactional
+    public void updateMemberRole(Long studyId, Long memberId, String newRole) {
+        Member member = memberRepository.findByMemberIdAndStudyStudyId(memberId, studyId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not in Study"));
+        member.changeRole(MemberRole.valueOf(newRole));
+    }
 }
