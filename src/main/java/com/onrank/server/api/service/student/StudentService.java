@@ -1,29 +1,20 @@
 package com.onrank.server.api.service.student;
 
-import com.onrank.server.api.dto.student.CreateStudyRequestDto;
-import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
-import com.onrank.server.domain.member.MemberRole;
-import com.onrank.server.domain.student.Role;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
-import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class StudentService {
 
     private final StudentJpaRepository studentRepository;
-    private final StudyJpaRepository studyRepository;
-    private final MemberJpaRepository memberJpaRepository;
 
     public String findStudentNameByUsername (String username) {
         Student student = studentRepository.findByUsername(username)
