@@ -1,5 +1,7 @@
 package com.onrank.server.api.controller;
 
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.student.AddStudyRequest;
 import com.onrank.server.api.dto.student.CreateStudyRequestDto;
 import com.onrank.server.api.dto.student.CreateStudyResponseDto;
 import com.onrank.server.api.dto.study.MainpageStudyResponseDto;
@@ -10,9 +12,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -38,24 +42,23 @@ public class StudyController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<CreateStudyResponseDto> createStudy(
-            @RequestBody CreateStudyRequestDto requestDto,
-            @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Map<String, Object>> createStudy(
+            @RequestBody AddStudyRequest addStudyRequest,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // 인증 토큰에서 사용자 이름 추출
-        String accessToken = authHeader.substring(7);
-        String username = JWTUtil.getUsername(accessToken);
+        String username = oAuth2User.getName();
+        return ResponseEntity.status(HttpStatus.CREATED).body(studyService.createStudy(addStudyRequest, username));
 
-        // 사용자 정보를 포함하여 스터디 생성
-        Study study = studyService.createStudy(requestDto, username);
-
-        CreateStudyResponseDto responseDto = new CreateStudyResponseDto(
-                study.getStudyId(),
-                "Study created with id: " + study.getStudyId()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(responseDto);
+//        // 사용자 정보를 포함하여 스터디 생성
+//        Study study = studyService.createStudy(addStudyRequest, username);
+//
+//        AddStudyResponse responseDto = new AddStudyResponse(
+//                study.getStudyId(),
+//                "Study created with id: " + study.getStudyId()
+//        );
+//
+//        return ResponseEntity
+//                .status(HttpStatus.CREATED)
+//                .body(responseDto);
     }
 }
