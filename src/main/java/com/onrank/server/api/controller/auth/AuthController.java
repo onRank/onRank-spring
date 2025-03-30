@@ -30,15 +30,12 @@ public class AuthController {
     @PostMapping("/add")
     public ResponseEntity<Void> registerStudent(
             @RequestBody AddStudentRequest addStudentRequest,
-            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-//            @RequestHeader("Authorization") String authHeader
+            @RequestHeader("Authorization") String authHeader) {
 
-//        String accessToken = authHeader.substring(7);
-//        String username = JWTUtil.getUsername(accessToken);
-//        String email = JWTUtil.getEmail(accessToken);
+        String accessToken = authHeader.substring(7);
+        String username = JWTUtil.getUsername(accessToken);
+        String email = JWTUtil.getEmail(accessToken);
 
-        String username = oAuth2User.getName();
-        String email = oAuth2User.getEmail();
         Set<Role> roles = new HashSet<>();
         roles.add(Role.ROLE_USER);
 
