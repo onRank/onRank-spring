@@ -10,6 +10,4 @@ public class AddStudyResponse {
     private Long studyId;
     private String fileName;
     private String uploadUrl;
-
-
 }

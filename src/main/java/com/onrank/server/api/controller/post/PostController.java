@@ -1,4 +1,4 @@
-package com.onrank.server.api.controller;
+package com.onrank.server.api.controller.post;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.post.AddPostRequest;

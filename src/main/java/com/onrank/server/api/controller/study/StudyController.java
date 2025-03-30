@@ -1,4 +1,4 @@
-package com.onrank.server.api.controller;
+package com.onrank.server.api.controller.study;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.AddStudyRequest;
@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("studies")
+@RequestMapping("/studies")
 @RequiredArgsConstructor
 public class StudyController {
 

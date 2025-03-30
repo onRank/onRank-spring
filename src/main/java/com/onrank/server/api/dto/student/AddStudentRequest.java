@@ -10,15 +10,12 @@ import java.util.Set;
 
 @Getter
 @NoArgsConstructor
-public class AddStudentDto {
+public class AddStudentRequest {
 
     @NotBlank
     private String studentName;
-
     private String studentSchool;
-
     private String studentDepartment;
-
     @NotBlank
     private String studentPhoneNumber;
 

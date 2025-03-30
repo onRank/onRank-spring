@@ -1,4 +1,4 @@
-package com.onrank.server.api.controller;
+package com.onrank.server.api.controller.member;
 
 import com.onrank.server.api.dto.member.AddMemberRequest;
 import com.onrank.server.api.dto.member.MemberListResponse;
@@ -17,7 +17,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("studies/{studyId}/management/members")
+@RequestMapping("/studies/{studyId}/management/members")
 @RequiredArgsConstructor
 public class MemberController {
 

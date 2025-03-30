@@ -1,11 +1,9 @@
 package com.onrank.server.api.dto.schedule;
 
-import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.schedule.Schedule;
 import com.onrank.server.domain.study.Study;
 import lombok.Getter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
