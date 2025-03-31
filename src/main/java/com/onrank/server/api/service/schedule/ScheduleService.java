@@ -44,8 +44,8 @@ public class ScheduleService {
         Schedule schedule = request.toEntity(study);
         scheduleRepository.save(schedule);
 
-        // 출석 정보 자동 생성
-        attendanceService.createAttendancesForSchedule(schedule);
+//        // 출석 정보 자동 생성
+//        attendanceService.createAttendancesForSchedule(schedule);
     }
 
     @Transactional
