@@ -2,6 +2,7 @@ package com.onrank.server.api.controller.study;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.AddStudyRequest;
+import com.onrank.server.api.dto.study.AddStudyResponse;
 import com.onrank.server.api.dto.study.StudyListResponse;
 import com.onrank.server.api.service.study.StudyService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class StudyController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Map<String, Object>> createStudy(
+    public ResponseEntity<AddStudyResponse> createStudy(
             @RequestBody AddStudyRequest addStudyRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 

@@ -1,6 +1,5 @@
 package com.onrank.server.api.controller.auth;
 
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.student.AddStudentRequest;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.util.JWTUtil;
@@ -11,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;

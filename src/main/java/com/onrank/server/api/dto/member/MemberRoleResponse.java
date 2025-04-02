@@ -4,12 +4,13 @@ import com.onrank.server.domain.member.Member;
 import lombok.Getter;
 
 @Getter
-public class MemberRoleDto {
-    private String memberRole;
-    private String studyName;
+public class MemberRoleResponse {
 
-    public MemberRoleDto(Member member) {
-        this.memberRole = String.valueOf(member.getMemberRole());
+    private String studyName;
+    private String memberRole;
+
+    public MemberRoleResponse(Member member) {
         this.studyName = member.getStudy().getStudyName();
+        this.memberRole = getMemberRole();
     }
 }

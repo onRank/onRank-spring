@@ -20,20 +20,18 @@ public class Study {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "study_id")
     private Long studyId;
 
-    @Column(name = "study_name", nullable = false)
-    private String studyName; // 스터디 이름
+    @Column(nullable = false)
+    private String studyName;
 
-    @Column(name = "study_content", nullable = false)
-    private String studyContent; // 스터디 설명
+    @Column(nullable = false)
+    private String studyContent;
 
-    @Column(name = "study_image_url", columnDefinition = "TEXT")
-    private String studyImageUrl; // 스터디 이미지
-
-    @Column(name = "study_google_form_url")
     private String studyGoogleFormUrl; // 스터디 구글폼 url
+    private int deposit; // 스터디 보증금
+
+
 
     // Study와 Member의 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -49,10 +47,10 @@ public class Study {
 
     // 생성자
     @Builder
-    public Study(String studyName, String studyContent, String studyImageUrl, String studyGoogleFormUrl) {
+    public Study(String studyName, String studyContent, String studyGoogleFormUrl, int deposit) {
         this.studyName = studyName;
         this.studyContent = studyContent;
-        this.studyImageUrl = studyImageUrl;
         this.studyGoogleFormUrl = studyGoogleFormUrl;
+        this.deposit = deposit;
     }
 }

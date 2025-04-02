@@ -35,44 +35,45 @@ public class NoticeService {
     }
 
     @Transactional
-    public Map<String, Object> createNotice(AddNoticeRequest addNoticeRequest, Study study) {
+    public List<FileMetadataDto> createNotice(AddNoticeRequest addNoticeRequest, Study study) {
+        // 공지 생성 및 저장
         Notice notice = addNoticeRequest.toEntity(study);
         noticeRepository.save(notice);
 
-        List<Map<String, String>> presignedUrls =
-                s3Service.uploadFilesWithMetadata(FileCategory.NOTICE, notice.getNoticeId(), addNoticeRequest.getFileNames());
-        return Map.of(
-                "noticeId", notice.getNoticeId(),
-                "uploadUrls", presignedUrls
-        );
+        // 파일 presigned URL 발급 및 메타데이터 저장
+        s3Service.uploadFilesWithMetadata(FileCategory.NOTICE, notice.getNoticeId(), addNoticeRequest.getFileNames());
+
+        // 메타데이터를 다시 조회하여 DTO 생성
+        List<FileMetadata> metadataList = s3Service.findFile(FileCategory.NOTICE, notice.getNoticeId());
+
+        return metadataList.stream()
+                .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
+                .collect(Collectors.toList());
     }
 
     // 공지사항 수정
     @Transactional
-    public Map<String, Object> updateNotice(Long noticeId, String noticeTitle, String noticeContent, List<String> newFileNames) {
+    public List<FileMetadataDto> updateNotice(Long noticeId, AddNoticeRequest request) {
+        // 공지 엔티티 조회 및 내용 수정
         Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
-        notice.update(noticeTitle, noticeContent);
+        notice.update(request.getNoticeTitle(), request.getNoticeContent());
 
-        // 기존 파일 모두 삭제
+        // 기존 파일과 메타데이터 모두 삭제
         List<FileMetadata> existingFiles = s3Service.findFile(FileCategory.NOTICE, noticeId);
-        existingFiles.forEach(file -> {
-            s3Service.deleteFile(file.getFilePath());
-        });
-
-        // 메타데이터도 삭제
+        existingFiles.forEach(file -> s3Service.deleteFile(file.getFilePath()));
         s3Service.deleteFileMetadata(FileCategory.NOTICE, noticeId);
 
-        // 새 파일 업로드
-        List<Map<String, String>> uploadUrls = s3Service.uploadFilesWithMetadata(
-                FileCategory.NOTICE, noticeId, newFileNames
-        );
+        // 새 파일 presigned URL 발급 및 메타데이터 저장
+        s3Service.uploadFilesWithMetadata(FileCategory.NOTICE, noticeId, request.getFileNames());
 
-        return Map.of(
-                "noticeId", noticeId,
-                "uploadUrls", uploadUrls
-        );
+        // 메타데이터 다시 조회하여 DTO 생성
+        List<FileMetadata> newFiles = s3Service.findFile(FileCategory.NOTICE, noticeId);
+
+        return newFiles.stream()
+                .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
+                .collect(Collectors.toList());
     }
 
     // 공지사항 삭제

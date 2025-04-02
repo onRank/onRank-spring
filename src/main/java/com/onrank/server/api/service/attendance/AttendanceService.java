@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public class AttendanceService {
 
     // 출석 조회를 위한 List<AttendanceResponse> 객체 생성
     public List<AttendanceResponse> getAttendanceResponsesByStudyId(Long studyId) {
-        return attendanceRepository.findAllByStudyId(studyId)
+        return attendanceRepository.findAllByScheduleStudyStudyId(studyId)
                 .stream()
                 .map(AttendanceResponse::new)
                 .collect(Collectors.toList());
@@ -50,10 +51,22 @@ public class AttendanceService {
 
     // 특정 일정(scheduleId)에 속한 모든 출석 정보 조회
     public List<AttendanceMemberResponse> getAttendanceMembersByScheduleId(Long scheduleId) {
-        return attendanceRepository.findAllByScheduleId(scheduleId)
+        return attendanceRepository.findAllByScheduleScheduleId(scheduleId)
                 .stream()
                 .map(AttendanceMemberResponse::new)
                 .collect(Collectors.toList());
+    }
+
+    public String getScheduleTitle(Long scheduleId) {
+        return attendanceRepository.findFirstByScheduleScheduleId(scheduleId)
+                .map(attendance -> attendance.getSchedule().getScheduleTitle())
+                .orElseThrow(() -> new IllegalArgumentException("No attendance found for scheduleId: " + scheduleId));
+    }
+
+    public LocalDateTime getScheduleStartingAt(Long scheduleId) {
+        return attendanceRepository.findFirstByScheduleScheduleId(scheduleId)
+                .map(attendance -> attendance.getSchedule().getScheduleStartingAt())
+                .orElseThrow(() -> new IllegalArgumentException("No attendance found for scheduleId: " + scheduleId));
     }
 
     //출석 상태 변경 (호스트만 가능)

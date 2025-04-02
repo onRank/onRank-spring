@@ -29,12 +29,6 @@ public class ScheduleService {
                 .collect(Collectors.toList());
     }
 
-    public ScheduleResponse getScheduleResponse(Long scheduleId) {
-        Schedule schedule = scheduleRepository.findByScheduleId(scheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("Schedule not found"));
-        return new ScheduleResponse(schedule);
-    }
-
     @Transactional
     public void createSchedule(Long studyId, AddScheduleRequest request) {
         Study study = studyService.findByStudyId(studyId)
