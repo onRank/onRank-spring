@@ -77,7 +77,7 @@ public class NoticeController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -102,7 +102,7 @@ public class NoticeController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -122,7 +122,7 @@ public class NoticeController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

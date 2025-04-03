@@ -29,7 +29,7 @@ public class MemberController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(memberService.getMembersForStudy(studyId));
@@ -42,7 +42,7 @@ public class MemberController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -63,7 +63,7 @@ public class MemberController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         memberService.updateMemberRole(studyId, memberId, memberRoleRequest.getMemberRole());
@@ -77,7 +77,7 @@ public class MemberController {
             @PathVariable Long memberId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

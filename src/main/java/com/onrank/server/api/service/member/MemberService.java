@@ -57,15 +57,17 @@ public class MemberService {
     }
 
     /**
-     * 사용자가 특정 스터디에서 HOST 역할을 가지고 있는지 확인
+     * 사용자가 특정 스터디에서 HOST 또는 CEREATER 역할을 가지고 있는지 확인
      */
-    public boolean isMemberHost(String username, Long studyId) {
+    public boolean isMemberCreaterOrHost(String username, Long studyId) {
         Student student = studentService.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
 
         Long studentId = student.getStudentId();
         return memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId)
-                .map(member -> member.getMemberRole().equals(MemberRole.HOST))
+                .map(member ->
+                        member.getMemberRole().equals(MemberRole.HOST) ||
+                        member.getMemberRole().equals(MemberRole.CREATER))
                 .orElse(false);
     }
 
@@ -105,6 +107,11 @@ public class MemberService {
     public void updateMemberRole(Long studyId, Long memberId, String newRole) {
         Member member = memberRepository.findByMemberIdAndStudyStudyId(memberId, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not in Study"));
+
+        // CREATER는 권한 변경 불가
+        if (member.getMemberRole() == MemberRole.CREATER) {
+            throw new IllegalStateException("CREATER는 권한을 수정할 수 없습니다.");
+        }
         member.changeRole(MemberRole.valueOf(newRole));
     }
 
