@@ -40,8 +40,8 @@ public class MemberService {
     public Optional<Member> findByUsernameAndStudyId(String username, Long studyId) {
         Student student = studentService.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
-
         Long studentId = student.getStudentId();
+        
         return memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId);
     }
 
