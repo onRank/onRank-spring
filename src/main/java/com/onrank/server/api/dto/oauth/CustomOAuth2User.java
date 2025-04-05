@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import java.util.Collection;
 import java.util.Map;
 
+
 @Getter // (?) record class로 바꿀 수 있음
 public class CustomOAuth2User implements OAuth2User {
 
