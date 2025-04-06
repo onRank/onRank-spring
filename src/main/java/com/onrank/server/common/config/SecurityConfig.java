@@ -35,18 +35,18 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 보호 비활성화 -> cookie를 사용하지 않으면 꺼도 된다. (cookie를 사용할 경우 httpOnly(XSS 방어), sameSite(CSRF 방어)로 방어해야 한다.)
-                .httpBasic(AbstractHttpConfigurer::disable) // 기본 인증 로그인 비활성화
+                                // request 인증, 인가 설정
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/oauth2/**", "/auth/add", "/auth/reissue",
+                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs").permitAll() // 인증 없이 접근 가능
+                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                )
+		
+		.httpBasic(AbstractHttpConfigurer::disable) // 기본 인증 로그인 비활성화
                 .formLogin(AbstractHttpConfigurer::disable) // 기본 login form 비활성화
                 .logout(AbstractHttpConfigurer::disable) // 기본 logout 비활성화
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
-
-                // request 인증, 인가 설정
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/oauth2/**", "/auth/add", "/auth/reissue",
-				"/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs").permitAll() // 인증 없이 접근 가능
-                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
-                )
 
                 // jwt 필터 등록
                 .addFilterAfter(new JWTOAuth2AuthenticationFilter(JWTUtil, studentService), OAuth2LoginAuthenticationFilter.class)
