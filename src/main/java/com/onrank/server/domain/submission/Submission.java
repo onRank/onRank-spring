@@ -2,14 +2,12 @@ package com.onrank.server.domain.submission;
 
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.member.Member;
-import com.onrank.server.domain.student.Student;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -41,8 +39,19 @@ public class Submission {
     @Column(nullable = false)
     private LocalDateTime submissionCreatedAt;
 
-    private int submissionScore;
+    private Integer submissionScore;
     private String submissionComment;
+
+    @Builder
+    public Submission(Assignment assignment, Member member, String submissionContent, SubmissionStatus submissionStatus, LocalDateTime submissionCreatedAt, Integer submissionScore, String submissionComment) {
+        this.assignment = assignment;
+        this.member = member;
+        this.submissionContent = submissionContent;
+        this.submissionStatus = submissionStatus;
+        this.submissionCreatedAt = submissionCreatedAt;
+        this.submissionScore = submissionScore;
+        this.submissionComment = submissionComment;
+    }
 
     // 과제 제출 업데이트 메서드
     public void update(String submissionContent, LocalDateTime submissionCreatedAt) {

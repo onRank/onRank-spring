@@ -46,7 +46,7 @@ public class AttendanceController {
     }
 
     /**
-     * 특정 일정의 출석 상세 조회 (HOST 만 가능)
+     * 특정 일정의 출석 상세 조회 (CREATOR, HOST 만 가능)
      */
     @GetMapping("/{scheduleId}")
     public ResponseEntity<AttendanceDetailContext<List<AttendanceMemberResponse>>> getAttendanceMemberList(
@@ -54,7 +54,7 @@ public class AttendanceController {
             @PathVariable Long scheduleId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -67,7 +67,7 @@ public class AttendanceController {
     }
 
     /**
-     * 출석 상태 변경 (HOST 만 가능)
+     * 출석 상태 변경 (CREATOR, HOST 만 가능)
      */
     @PutMapping("/{attendanceId}")
     public ResponseEntity<MemberRoleResponse> updateAttendanceStatus(
@@ -76,7 +76,7 @@ public class AttendanceController {
             @RequestParam String status,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

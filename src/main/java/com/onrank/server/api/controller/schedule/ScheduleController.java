@@ -49,7 +49,7 @@ public class ScheduleController {
             @RequestBody AddScheduleRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -67,7 +67,7 @@ public class ScheduleController {
             @RequestBody AddScheduleRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -84,7 +84,7 @@ public class ScheduleController {
             @PathVariable Long scheduleId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }

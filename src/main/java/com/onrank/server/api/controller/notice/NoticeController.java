@@ -68,7 +68,7 @@ public class NoticeController {
     }
 
     /**
-     * 공지사항 등록 (HOST 만 가능)
+     * 공지사항 등록 (CREATOR, HOST 만 가능)
      */
     @PostMapping("/add")
     public ResponseEntity<NoticeContext<List<FileMetadataDto>>> createNotice(
@@ -76,7 +76,7 @@ public class NoticeController {
             @RequestBody AddNoticeRequest addNoticeRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -85,14 +85,14 @@ public class NoticeController {
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
         // Pre-signed URL 생성 및 파일 메타데이터 저장
-        List<FileMetadataDto> presignedDtos = noticeService.createNotice(addNoticeRequest, study);
+        List<FileMetadataDto> fileDtos = noticeService.createNotice(addNoticeRequest, study);
         MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new NoticeContext<>(context, presignedDtos));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new NoticeContext<>(context, fileDtos));
     }
 
     /**
-     * 공지사항 수정 (HOST 만 가능)
+     * 공지사항 수정 (CREATOR, HOST 만 가능)
      */
     @PutMapping("/{noticeId}")
     public ResponseEntity<NoticeContext<List<FileMetadataDto>>> updateNotice(
@@ -101,7 +101,7 @@ public class NoticeController {
             @RequestBody AddNoticeRequest addNoticeRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -113,7 +113,7 @@ public class NoticeController {
     }
 
     /**
-     * 공지사항 삭제 (HOST 만 가능)
+     * 공지사항 삭제 (CREATOR, HOST 만 가능)
      */
     @DeleteMapping("/{noticeId}")
     public ResponseEntity<MemberRoleResponse> deleteNotice(
@@ -121,7 +121,7 @@ public class NoticeController {
             @PathVariable Long noticeId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
