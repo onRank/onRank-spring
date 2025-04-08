@@ -21,12 +21,14 @@ public class AddStudyRequest {
 
     private String fileName;
     private String studyGoogleFormUrl;
+    private int deposit;
 
     public Study toEntity() {
         return Study.builder()
                 .studyName(studyName)
                 .studyContent(studyContent)
                 .studyGoogleFormUrl(studyGoogleFormUrl)
+                .deposit(deposit)
                 .build();
     }
 }

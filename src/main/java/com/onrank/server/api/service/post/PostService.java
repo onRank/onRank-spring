@@ -59,45 +59,36 @@ public class PostService {
     }
 
     @Transactional
-    public Map<String, Object> createPost(AddPostRequest addPostRequest, Study study, Member member) {
+    public List<FileMetadataDto> createPost(AddPostRequest addPostRequest, Study study, Member member) {
         Post post = addPostRequest.toEntity(study, member);
         postRepository.save(post);
 
-        List<Map<String, String>> presignedUrls =
-                s3Service.uploadFilesWithMetadata(FileCategory.POST, post.getPostId(), addPostRequest.getFileNames());
+        s3Service.uploadFilesWithMetadata(FileCategory.POST, post.getPostId(), addPostRequest.getFileNames());
 
-        return Map.of(
-                "postId", post.getPostId(),
-                "uploadUrls", presignedUrls
-        );
+        List<FileMetadata> files = s3Service.findFile(FileCategory.POST, post.getPostId());
+        return files.stream()
+                .map(f -> new FileMetadataDto(f, s3Service.getBucketName()))
+                .collect(Collectors.toList());
     }
 
     // 게시판 수정
     @Transactional
-    public Map<String, Object> updatePost(Long postId, String postTitle, String postContent, List<String> newFileNames) {
+    public List<FileMetadataDto> updatePost(Long postId, AddPostRequest request) {
         Post post = postRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-        post.update(postTitle, postContent);
+        post.update(request.getPostTitle(), request.getPostContent());
 
-        // 기존 파일 모두 삭제
         List<FileMetadata> existingFiles = s3Service.findFile(FileCategory.POST, postId);
-        existingFiles.forEach(file -> {
-            s3Service.deleteFile(file.getFilePath());
-        });
-
-        // 메타데이터도 삭제
+        existingFiles.forEach(file -> s3Service.deleteFile(file.getFilePath()));
         s3Service.deleteFileMetadata(FileCategory.POST, postId);
 
-        // 새 파일 업로드
-        List<Map<String, String>> uploadUrls = s3Service.uploadFilesWithMetadata(
-                FileCategory.POST, postId, newFileNames
-        );
+        s3Service.uploadFilesWithMetadata(FileCategory.POST, postId, request.getFileNames());
 
-        return Map.of(
-                "postId", postId,
-                "uploadUrls", uploadUrls
-        );
+        List<FileMetadata> files = s3Service.findFile(FileCategory.POST, postId);
+        return files.stream()
+                .map(f -> new FileMetadataDto(f, s3Service.getBucketName()))
+                .collect(Collectors.toList());
     }
 
     // 게시판 삭제

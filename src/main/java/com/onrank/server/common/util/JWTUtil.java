@@ -98,23 +98,19 @@ public class JWTUtil {
             // 토큰이 만료된 경우 명시적으로 예외 발생
             throw new ExpiredJwtException(null, claims, "Token has expired");
         }
-
         return false;
     }
 
     public Boolean validateRefreshToken(String token) {
         log.info("refresh token: {}", token);
-
         return refreshTokenJpaRepository.existsByRefreshToken(token);
     }
 
     public void deleteRefreshToken(String token) {
-
         refreshTokenJpaRepository.deleteByRefreshToken(token);
     }
 
     public void save(String username, String refreshToken) {
-
         RefreshToken rtk = new RefreshToken();
         rtk.setUsername(username);
         rtk.setRefreshToken(refreshToken);

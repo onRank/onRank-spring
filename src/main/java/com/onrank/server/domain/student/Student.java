@@ -53,4 +53,11 @@ public class Student {
         this.roles = roles;
         this.username = username;
     }
+
+    public void update(String name, String school, String department, String phoneNumber) {
+        this.studentName = name;
+        this.studentSchool = school;
+        this.studentDepartment = department;
+        this.studentPhoneNumber = phoneNumber;
+    }
 }

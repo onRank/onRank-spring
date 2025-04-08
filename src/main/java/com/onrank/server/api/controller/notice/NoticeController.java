@@ -1,6 +1,9 @@
-package com.onrank.server.api.controller;
+package com.onrank.server.api.controller.notice;
 
+import com.onrank.server.api.dto.file.FileMetadataDto;
+import com.onrank.server.api.dto.member.MemberRoleResponse;
 import com.onrank.server.api.dto.notice.AddNoticeRequest;
+import com.onrank.server.api.dto.notice.NoticeContext;
 import com.onrank.server.api.dto.notice.NoticeResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.notice.NoticeService;
@@ -14,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -30,7 +32,7 @@ public class NoticeController {
      * 스터디 내 모든 공지사항 조회 (스터디 멤버만 가능)
      */
     @GetMapping
-    public ResponseEntity<List<NoticeResponse>> getNotices(
+    public ResponseEntity<NoticeContext<List<NoticeResponse>>> getNotices(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -39,14 +41,17 @@ public class NoticeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        return ResponseEntity.ok(noticeService.getNoticeResponsesByStudyId(studyId));
+        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        List<NoticeResponse> notices = noticeService.getNoticeResponsesByStudyId(studyId);
+
+        return ResponseEntity.ok(new NoticeContext<>(context, notices));
     }
 
     /**
      * 특정 공지사항 조회 (스터디 멤버만 가능)
      */
     @GetMapping("/{noticeId}")
-    public ResponseEntity<NoticeResponse> getNotice(
+    public ResponseEntity<NoticeContext<NoticeResponse>> getNotice(
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -56,20 +61,23 @@ public class NoticeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        return ResponseEntity.ok(noticeService.getNoticeResponse(noticeId));
+        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        NoticeResponse notice = noticeService.getNoticeResponse(noticeId);
+
+        return ResponseEntity.ok(new NoticeContext<>(context, notice));
     }
 
     /**
-     * 공지사항 등록 (HOST 만 가능)
+     * 공지사항 등록 (CREATOR, HOST 만 가능)
      */
     @PostMapping("/add")
-    public ResponseEntity<Map<String, Object>> createNotice(
+    public ResponseEntity<NoticeContext<List<FileMetadataDto>>> createNotice(
             @PathVariable Long studyId,
             @RequestBody AddNoticeRequest addNoticeRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
@@ -77,51 +85,50 @@ public class NoticeController {
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
         // Pre-signed URL 생성 및 파일 메타데이터 저장
-        Map<String, Object> result = noticeService.createNotice(addNoticeRequest, study);
+        List<FileMetadataDto> fileDtos = noticeService.createNotice(addNoticeRequest, study);
+        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new NoticeContext<>(context, fileDtos));
     }
 
     /**
-     * 공지사항 수정 (HOST 만 가능)
+     * 공지사항 수정 (CREATOR, HOST 만 가능)
      */
     @PutMapping("/{noticeId}")
-    public ResponseEntity<Map<String, Object>> updateNotice(
+    public ResponseEntity<NoticeContext<List<FileMetadataDto>>> updateNotice(
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @RequestBody AddNoticeRequest addNoticeRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        Map<String, Object> result = noticeService.updateNotice(
-                noticeId,
-                addNoticeRequest.getNoticeTitle(),
-                addNoticeRequest.getNoticeContent(),
-                addNoticeRequest.getFileNames()
-        );
-        return ResponseEntity.ok(result);
+        List<FileMetadataDto> fileDtos = noticeService.updateNotice(noticeId, addNoticeRequest);
+        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+
+        return ResponseEntity.ok(new NoticeContext<>(context, fileDtos));
     }
 
     /**
-     * 공지사항 삭제 (HOST 만 가능)
+     * 공지사항 삭제 (CREATOR, HOST 만 가능)
      */
     @DeleteMapping("/{noticeId}")
-    public ResponseEntity<Void> deleteNotice(
+    public ResponseEntity<MemberRoleResponse> deleteNotice(
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // HOST 만 가능
-        if (!memberService.isMemberHost(oAuth2User.getName(), studyId)) {
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         noticeService.deleteNotice(noticeId);
+        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        return ResponseEntity.ok(context);
 
-        return ResponseEntity.noContent().build();
     }
 }

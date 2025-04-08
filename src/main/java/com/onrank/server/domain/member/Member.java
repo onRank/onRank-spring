@@ -4,6 +4,7 @@ import com.onrank.server.domain.attendance.Attendance;
 import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
+import com.onrank.server.domain.submission.Submission;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,6 +37,9 @@ public class Member {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Attendance> attendances = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Submission> submissions = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

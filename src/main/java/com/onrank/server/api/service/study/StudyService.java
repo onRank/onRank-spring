@@ -2,6 +2,7 @@ package com.onrank.server.api.service.study;
 
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.study.AddStudyRequest;
+import com.onrank.server.api.dto.study.AddStudyResponse;
 import com.onrank.server.api.dto.study.StudyListResponse;
 import com.onrank.server.api.service.cloud.S3Service;
 import com.onrank.server.domain.file.FileCategory;
@@ -20,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;  // 이 줄도 필요합니다
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -41,7 +41,7 @@ public class StudyService {
 
 
     @Transactional
-    public Map<String, Object> createStudy(AddStudyRequest addStudyRequest, String username) {
+    public AddStudyResponse createStudy(AddStudyRequest addStudyRequest, String username) {
 
         Study study = studyRepository.save(addStudyRequest.toEntity());
 
@@ -56,16 +56,16 @@ public class StudyService {
         Member member = Member.builder()
                 .student(student)
                 .study(study)
-                .memberRole(MemberRole.HOST)
+                .memberRole(MemberRole.CREATOR)
                 .memberJoiningAt(LocalDate.now())
                 .build();
-
         memberJpaRepository.save(member);
-        return Map.of(
-                "studyId", study.getStudyId(),
-                "fileName", addStudyRequest.getFileName(),
-                "uploadUrl", presignedUrl
-        );
+
+        return AddStudyResponse.builder()
+                .studyId(study.getStudyId())
+                .fileName(addStudyRequest.getFileName())
+                .uploadUrl(presignedUrl)
+                .build();
     }
 
     public List<StudyListResponse> getStudyListResponsesByUsername(String username) {
@@ -81,7 +81,7 @@ public class StudyService {
                     FileMetadataDto fileDto = null;
                     if (!files.isEmpty()) {
                         FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-                        fileDto = new FileMetadataDto(file, "onrank-bucket"); // ← 버킷명 실제 사용 중인 값으로
+                        fileDto = new FileMetadataDto(file, "onrank-bucket");
                     }
 
                     return new StudyListResponse(study, fileDto);

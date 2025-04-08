@@ -4,6 +4,7 @@ import com.onrank.server.domain.attendance.Attendance;
 import com.onrank.server.domain.study.Study;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -36,4 +37,19 @@ public class Schedule {
 
     @Column(nullable = false)
     private LocalDateTime scheduleStartingAt;
+
+    @Builder
+    public Schedule(Study study, String scheduleTitle, String scheduleContent, LocalDateTime scheduleStartingAt) {
+        this.study = study;
+        this.scheduleTitle = scheduleTitle;
+        this.scheduleContent = scheduleContent;
+        this.scheduleStartingAt = scheduleStartingAt;
+    }
+
+    // 수정 매서드
+    public void update(String scheduleTitle, String scheduleContent, LocalDateTime scheduleStartingAt) {
+        this.scheduleTitle = scheduleTitle;
+        this.scheduleContent = scheduleContent;
+        this.scheduleStartingAt = scheduleStartingAt;
+    }
 }

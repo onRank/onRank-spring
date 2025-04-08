@@ -2,6 +2,7 @@ package com.onrank.server.api.service.attendance;
 
 import com.onrank.server.api.dto.attendance.AttendanceMemberResponse;
 import com.onrank.server.api.dto.attendance.AttendanceResponse;
+import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.domain.attendance.Attendance;
 import com.onrank.server.domain.attendance.AttendanceJpaRepository;
 import com.onrank.server.domain.attendance.AttendanceStatus;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +24,7 @@ public class AttendanceService {
 
     private final AttendanceJpaRepository attendanceRepository;
     private final MemberJpaRepository memberRepository;
+    private final MemberService memberService;
 
     // 새로운 일정(schedule) 등록 시 자동으로 Attendance 생성
     @Transactional
@@ -41,8 +44,12 @@ public class AttendanceService {
     }
 
     // 출석 조회를 위한 List<AttendanceResponse> 객체 생성
-    public List<AttendanceResponse> getAttendanceResponsesByStudyId(Long studyId) {
-        return attendanceRepository.findAllByStudyId(studyId)
+    public List<AttendanceResponse> getAttendanceResponsesByStudyId(String username, Long studyId) {
+
+        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new IllegalStateException("Member not found"));
+
+        return attendanceRepository.findAllByMemberMemberId(member.getMemberId())
                 .stream()
                 .map(AttendanceResponse::new)
                 .collect(Collectors.toList());
@@ -50,10 +57,22 @@ public class AttendanceService {
 
     // 특정 일정(scheduleId)에 속한 모든 출석 정보 조회
     public List<AttendanceMemberResponse> getAttendanceMembersByScheduleId(Long scheduleId) {
-        return attendanceRepository.findAllByScheduleId(scheduleId)
+        return attendanceRepository.findAllByScheduleScheduleId(scheduleId)
                 .stream()
                 .map(AttendanceMemberResponse::new)
                 .collect(Collectors.toList());
+    }
+
+    public String getScheduleTitle(Long scheduleId) {
+        return attendanceRepository.findFirstByScheduleScheduleId(scheduleId)
+                .map(attendance -> attendance.getSchedule().getScheduleTitle())
+                .orElseThrow(() -> new IllegalArgumentException("No attendance found for scheduleId: " + scheduleId));
+    }
+
+    public LocalDateTime getScheduleStartingAt(Long scheduleId) {
+        return attendanceRepository.findFirstByScheduleScheduleId(scheduleId)
+                .map(attendance -> attendance.getSchedule().getScheduleStartingAt())
+                .orElseThrow(() -> new IllegalArgumentException("No attendance found for scheduleId: " + scheduleId));
     }
 
     //출석 상태 변경 (호스트만 가능)

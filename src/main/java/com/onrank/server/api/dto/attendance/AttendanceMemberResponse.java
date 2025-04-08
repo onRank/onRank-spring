@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 public class AttendanceMemberResponse {
 
     private Long attendanceId;
-    private LocalDateTime scheduleStartingAt;
     private AttendanceStatus attendanceStatus;
     private Long memberId;
     private String studentName;
@@ -20,7 +19,6 @@ public class AttendanceMemberResponse {
     public AttendanceMemberResponse(Attendance attendance) {
         this.attendanceId = attendance.getAttendanceId();
         this.attendanceStatus = attendance.getAttendanceStatus();
-        this.scheduleStartingAt = attendance.getSchedule().getScheduleStartingAt();
         this.memberId = attendance.getMember().getMemberId();
         this.studentName = attendance.getMember().getStudent().getStudentName();
     }
