@@ -55,7 +55,7 @@ public class AttendanceController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // HOST 만 가능
-        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         List<AttendanceMemberResponse> responses = attendanceService.getAttendanceMembersByScheduleId(scheduleId);
@@ -77,7 +77,7 @@ public class AttendanceController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // HOST 만 가능
-        if (!memberService.isMemberCreaterOrHost(oAuth2User.getName(), studyId)) {
+        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         attendanceService.updateAttendanceStatus(attendanceId, status);

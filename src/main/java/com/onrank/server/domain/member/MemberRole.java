@@ -1,5 +1,5 @@
 package com.onrank.server.domain.member;
 
 public enum MemberRole {
-    HOST, PARTICIPANT, CREATER
+    HOST, PARTICIPANT, CREATOR
 }

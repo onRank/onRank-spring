@@ -56,7 +56,7 @@ public class StudyService {
         Member member = Member.builder()
                 .student(student)
                 .study(study)
-                .memberRole(MemberRole.CREATER)
+                .memberRole(MemberRole.CREATOR)
                 .memberJoiningAt(LocalDate.now())
                 .build();
         memberJpaRepository.save(member);
