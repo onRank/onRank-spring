@@ -13,6 +13,7 @@ public class AttendanceResponse {
 
     private Long attendanceId;
     private AttendanceStatus attendanceStatus;
+    private Long scheduleId;
     private String scheduleTitle;
     private LocalDateTime scheduleStartingAt;
 
@@ -20,6 +21,7 @@ public class AttendanceResponse {
         this.attendanceId = attendance.getAttendanceId();
         this.attendanceStatus = attendance.getAttendanceStatus();
 
+        this.scheduleId = attendance.getSchedule().getScheduleId();
         this.scheduleTitle = attendance.getSchedule().getScheduleTitle();
         this.scheduleStartingAt = attendance.getSchedule().getScheduleStartingAt();
     }

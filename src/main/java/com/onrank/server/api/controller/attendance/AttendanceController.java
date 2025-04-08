@@ -40,7 +40,7 @@ public class AttendanceController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
-        List<AttendanceResponse> attendances = attendanceService.getAttendanceResponsesByStudyId(studyId);
+        List<AttendanceResponse> attendances = attendanceService.getAttendanceResponsesByStudyId(oAuth2User.getName(), studyId);
 
         return ResponseEntity.ok(new AttendanceContext<>(context, attendances));
     }
