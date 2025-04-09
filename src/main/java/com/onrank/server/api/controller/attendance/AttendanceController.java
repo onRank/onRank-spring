@@ -1,13 +1,12 @@
 package com.onrank.server.api.controller.attendance;
 
-import com.onrank.server.api.dto.attendance.AttendanceContext;
-import com.onrank.server.api.dto.attendance.AttendanceDetailContext;
-import com.onrank.server.api.dto.attendance.AttendanceMemberResponse;
-import com.onrank.server.api.dto.attendance.AttendanceResponse;
+import com.onrank.server.api.dto.attendance.*;
 import com.onrank.server.api.dto.member.MemberRoleResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.attendance.AttendanceService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.study.StudyService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,6 +25,7 @@ public class AttendanceController {
 
     private final MemberService memberService;
     private final AttendanceService attendanceService;
+    private final StudyService studyService;
 
     /**
      * 출석 목록 조회 (스터디 멤버만 가능)
@@ -84,5 +84,38 @@ public class AttendanceController {
         MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
 
         return ResponseEntity.ok(context);
+    }
+
+    /**
+     * 출석 POINT 조회
+     */
+    @GetMapping("/point")
+    public ResponseEntity<AttendanceContext<AttendancePointResponse>> getAttendancePoint(
+            @PathVariable Long studyId,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        AttendanceContext<AttendancePointResponse> response = studyService.getAttendancePoint(studyId, oAuth2User.getName());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 출석 POINT 수정
+     */
+    @PutMapping("/point")
+    public ResponseEntity<MemberRoleResponse> updateAttendancePoint(
+            @PathVariable Long studyId,
+            @RequestBody @Valid AttendancePointRequest request,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        studyService.updateAttendancePoint(studyId, request);
+        MemberRoleResponse response = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        return ResponseEntity.ok(response);
     }
 }

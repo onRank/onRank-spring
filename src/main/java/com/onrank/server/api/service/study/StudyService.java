@@ -1,5 +1,9 @@
 package com.onrank.server.api.service.study;
 
+import com.onrank.server.api.dto.attendance.AttendanceContext;
+import com.onrank.server.api.dto.attendance.AttendancePointRequest;
+import com.onrank.server.api.dto.attendance.AttendancePointResponse;
+import com.onrank.server.api.dto.attendance.AttendancePointUpdateRequest;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.member.MemberRoleResponse;
 import com.onrank.server.api.dto.study.*;
@@ -130,5 +134,34 @@ public class StudyService {
         // 멤버 권한 포함
         MemberRoleResponse memberContext = memberService.getMyRoleInStudy(username, studyId);
         return new StudyContext<>(memberContext, response);
+    }
+
+    public AttendanceContext<AttendancePointResponse> getAttendancePoint(Long studyId, String username) {
+        Study study = studyRepository.findByStudyId(studyId)
+                .orElseThrow(() -> new IllegalArgumentException("Study not found"));
+
+        AttendancePointResponse response = new AttendancePointResponse(
+                study.getPresentPoint(),
+                study.getAbsentPoint(),
+                study.getLatePoint()
+        );
+        MemberRoleResponse memberContext = memberService.getMyRoleInStudy(username, studyId);
+        return new AttendanceContext<>(memberContext, response);
+    }
+
+    @Transactional
+    public void updateAttendancePoint(Long studyId, AttendancePointRequest request) {
+        Study study = studyRepository.findByStudyId(studyId)
+                .orElseThrow(() -> new IllegalArgumentException("Study not found"));
+
+        // 기존 정보 유지 (나머지는 그대로 두고 포인트만 갱신)
+        study.update(
+                study.getStudyName(),
+                study.getStudyContent(),
+                request.getPresentPoint(),
+                request.getAbsentPoint(),
+                request.getLatePoint(),
+                study.getStudyStatus()
+        );
     }
 }

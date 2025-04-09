@@ -5,8 +5,6 @@ import com.onrank.server.domain.attendance.AttendanceStatus;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Getter
 @RequiredArgsConstructor
 public class AttendanceMemberResponse {
