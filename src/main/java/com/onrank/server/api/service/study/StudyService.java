@@ -3,7 +3,6 @@ package com.onrank.server.api.service.study;
 import com.onrank.server.api.dto.attendance.AttendanceContext;
 import com.onrank.server.api.dto.attendance.AttendancePointRequest;
 import com.onrank.server.api.dto.attendance.AttendancePointResponse;
-import com.onrank.server.api.dto.attendance.AttendancePointUpdateRequest;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.member.MemberRoleResponse;
 import com.onrank.server.api.dto.study.*;

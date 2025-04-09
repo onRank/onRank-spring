@@ -37,6 +37,7 @@ public class MemberService {
     public MemberRoleResponse getMyRoleInStudy(String username, Long studyId) {
         Member member = findByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
         List<FileMetadata> files = fileMetadataRepository
                 .findByCategoryAndEntityId(FileCategory.STUDY, member.getStudy().getStudyId());
 
