@@ -7,6 +7,7 @@ import com.onrank.server.domain.schedule.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +27,10 @@ public class Study {
     @Column(nullable = false)
     private String studyContent;
 
-    private String studyGoogleFormUrl; // 스터디 구글폼 url
-    private int deposit; // 스터디 보증금
+    // 스터디 출석 point
+    private int presentPoint;
+    private int absentPoint;
+    private int latePoint;
 
     // Study와 Member의 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -44,14 +47,29 @@ public class Study {
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Assignment> assignments = new ArrayList<>();
 
-
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StudyStatus studyStatus = StudyStatus.PROGRESS; // 기본값 설정
 
     // 생성자
     @Builder
-    public Study(String studyName, String studyContent, String studyGoogleFormUrl, int deposit) {
+    public Study(String studyName, String studyContent, int presentPoint, int absentPoint, int latePoint) {
         this.studyName = studyName;
         this.studyContent = studyContent;
-        this.studyGoogleFormUrl = studyGoogleFormUrl;
-        this.deposit = deposit;
+        this.presentPoint = presentPoint;
+        this.absentPoint = absentPoint;
+        this.latePoint = latePoint;
+    }
+
+    /**
+     * 스터디 관리 - 수정 메서드
+     */
+    public void update(String studyName, String studyContent, int presentPoint, int absentPoint, int latePoint, StudyStatus studyStatus) {
+        this.studyName = studyName;
+        this.studyContent = studyContent;
+        this.presentPoint = presentPoint;
+        this.absentPoint = absentPoint;
+        this.latePoint = latePoint;
+        this.studyStatus = studyStatus;
     }
 }

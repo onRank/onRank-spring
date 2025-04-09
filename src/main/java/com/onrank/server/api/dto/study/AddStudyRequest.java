@@ -2,10 +2,7 @@ package com.onrank.server.api.dto.study;
 
 import com.onrank.server.domain.study.Study;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 @Getter
@@ -19,16 +16,19 @@ public class AddStudyRequest {
     @NotBlank
     private String studyContent;
 
+    private int presentPoint;
+    private int absentPoint;
+    private int latePoint;
+
     private String fileName;
-    private String studyGoogleFormUrl;
-    private int deposit;
 
     public Study toEntity() {
         return Study.builder()
                 .studyName(studyName)
                 .studyContent(studyContent)
-                .studyGoogleFormUrl(studyGoogleFormUrl)
-                .deposit(deposit)
+                .presentPoint(presentPoint)
+                .absentPoint(absentPoint)
+                .latePoint(latePoint)
                 .build();
     }
 }

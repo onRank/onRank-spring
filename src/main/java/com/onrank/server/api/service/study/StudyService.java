@@ -1,10 +1,10 @@
 package com.onrank.server.api.service.study;
 
 import com.onrank.server.api.dto.file.FileMetadataDto;
-import com.onrank.server.api.dto.study.AddStudyRequest;
-import com.onrank.server.api.dto.study.AddStudyResponse;
-import com.onrank.server.api.dto.study.StudyListResponse;
+import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.study.*;
 import com.onrank.server.api.service.cloud.S3Service;
+import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.file.FileMetadataJpaRepository;
@@ -30,7 +30,8 @@ public class StudyService {
 
     private final StudentJpaRepository studentRepository;
     private final StudyJpaRepository studyRepository;
-    private final MemberJpaRepository memberJpaRepository; // 이 줄 추가
+    private final MemberJpaRepository memberJpaRepository;
+    private final MemberService memberService;
     private final S3Service s3Service;
     private final FileMetadataJpaRepository fileMetadataRepository;
 
@@ -71,10 +72,8 @@ public class StudyService {
     public List<StudyListResponse> getStudyListResponsesByUsername(String username) {
 
         List<Study> studies = studyRepository.findAllByStudentUsername(username);
-
         return studies.stream()
                 .map(study -> {
-                    // 해당 스터디의 파일 중 하나 가져오기 (카테고리: STUDY)
                     List<FileMetadata> files = fileMetadataRepository
                             .findByCategoryAndEntityId(FileCategory.STUDY, study.getStudyId());
 
@@ -87,5 +86,49 @@ public class StudyService {
                     return new StudyListResponse(study, fileDto);
                 })
                 .toList();
+    }
+
+    public StudyContext<StudyDetailResponse> getStudyDetail(Long studyId, String username) {
+        Study study = studyRepository.findById(studyId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 스터디가 존재하지 않습니다."));
+
+        List<FileMetadata> files = fileMetadataRepository
+                .findByCategoryAndEntityId(FileCategory.STUDY, study.getStudyId());
+
+        FileMetadataDto fileDto = null;
+        if (!files.isEmpty()) {
+            FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
+            fileDto = new FileMetadataDto(file, "onrank-bucket");
+        }
+
+        MemberRoleResponse memberContext = memberService.getMyRoleInStudy(username, studyId);
+        StudyDetailResponse detail = new StudyDetailResponse(study);
+
+        return new StudyContext<>(memberContext, detail);
+    }
+
+    public StudyContext<AddStudyResponse> updateStudy(Long studyId, String username, StudyUpdateRequest request) {
+        Study study = studyRepository.findById(studyId)
+                .orElseThrow(() -> new IllegalArgumentException("Study not found"));
+
+        study.update(request.getStudyName(), request.getStudyContent(), request.getPresentPoint(), request.getAbsentPoint(), request.getLatePoint(), request.getStudyStatus());
+
+
+        // 기존 파일과 메타데이터 모두 삭제
+        List<FileMetadata> existingFiles = s3Service.findFile(FileCategory.STUDY, studyId);
+        existingFiles.forEach(file -> s3Service.deleteFile(file.getFilePath()));
+        s3Service.deleteFileMetadata(FileCategory.STUDY, studyId);
+
+        String presignedUrl = s3Service.generatePresignedUrl(FileCategory.STUDY, studyId, request.getFileName());
+
+        AddStudyResponse response = AddStudyResponse.builder()
+                .studyId(studyId)
+                .fileName(request.getFileName())
+                .uploadUrl(presignedUrl)
+                .build();
+
+        // 멤버 권한 포함
+        MemberRoleResponse memberContext = memberService.getMyRoleInStudy(username, studyId);
+        return new StudyContext<>(memberContext, response);
     }
 }
