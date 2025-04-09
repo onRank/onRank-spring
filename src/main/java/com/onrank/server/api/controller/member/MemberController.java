@@ -1,9 +1,6 @@
 package com.onrank.server.api.controller.member;
 
-import com.onrank.server.api.dto.member.AddMemberRequest;
-import com.onrank.server.api.dto.member.MemberListResponse;
-import com.onrank.server.api.dto.member.MemberRoleRequest;
-import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.member.*;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.student.StudentService;
@@ -24,7 +21,7 @@ public class MemberController {
     private final StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<MemberListResponse> getMembers(
+    public ResponseEntity<MemberContext<MemberListResponse>> getMembers(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -32,7 +29,9 @@ public class MemberController {
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.ok(memberService.getMembersForStudy(studyId));
+        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberListResponse response = memberService.getMembersForStudy(studyId);
+        return ResponseEntity.ok(new MemberContext<>(context, response));
     }
 
     @PostMapping("/add")
