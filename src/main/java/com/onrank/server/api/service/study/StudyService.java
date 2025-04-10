@@ -110,12 +110,12 @@ public class StudyService {
         return new StudyContext<>(memberContext, detail);
     }
 
+    @Transactional
     public StudyContext<AddStudyResponse> updateStudy(Long studyId, String username, StudyUpdateRequest request) {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
         study.update(request.getStudyName(), request.getStudyContent(), request.getPresentPoint(), request.getAbsentPoint(), request.getLatePoint(), request.getStudyStatus());
-
 
         // 기존 파일과 메타데이터 모두 삭제
         List<FileMetadata> existingFiles = s3Service.findFile(FileCategory.STUDY, studyId);
