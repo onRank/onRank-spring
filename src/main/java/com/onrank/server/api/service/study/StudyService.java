@@ -19,6 +19,7 @@ import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
