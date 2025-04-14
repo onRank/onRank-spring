@@ -3,7 +3,7 @@ package com.onrank.server.api.service.notice;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.notice.AddNoticeRequest;
 import com.onrank.server.api.dto.notice.NoticeResponse;
-import com.onrank.server.api.service.cloud.S3Service;
+import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.notice.Notice;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class NoticeService {
 
     private final NoticeJpaRepository noticeRepository;
-    private final S3Service s3Service;
+    private final FileService fileService;
 
     public Optional<Notice> findByNoticeId(Long noticeId) {
         return noticeRepository.findByNoticeId(noticeId);
@@ -40,13 +40,13 @@ public class NoticeService {
         noticeRepository.save(notice);
 
         // 파일 presigned URL 발급 및 메타데이터 저장
-        s3Service.uploadFilesWithMetadata(FileCategory.NOTICE, notice.getNoticeId(), addNoticeRequest.getFileNames());
+        fileService.createMultiplePresignedUrls(FileCategory.NOTICE, notice.getNoticeId(), addNoticeRequest.getFileNames());
 
         // 메타데이터를 다시 조회하여 DTO 생성
-        List<FileMetadata> metadataList = s3Service.findFile(FileCategory.NOTICE, notice.getNoticeId());
+        List<FileMetadata> metadataList = fileService.findFile(FileCategory.NOTICE, notice.getNoticeId());
 
         return metadataList.stream()
-                .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
+                .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
                 .collect(Collectors.toList());
     }
 
@@ -60,18 +60,18 @@ public class NoticeService {
         notice.update(request.getNoticeTitle(), request.getNoticeContent());
 
         // 기존 파일과 메타데이터 모두 삭제
-        List<FileMetadata> existingFiles = s3Service.findFile(FileCategory.NOTICE, noticeId);
-        existingFiles.forEach(file -> s3Service.deleteFile(file.getFilePath()));
-        s3Service.deleteFileMetadata(FileCategory.NOTICE, noticeId);
+        List<FileMetadata> existingFiles = fileService.findFile(FileCategory.NOTICE, noticeId);
+        existingFiles.forEach(file -> fileService.deleteFile(file.getFileKey()));
+        fileService.deleteFileMetadata(FileCategory.NOTICE, noticeId);
 
         // 새 파일 presigned URL 발급 및 메타데이터 저장
-        s3Service.uploadFilesWithMetadata(FileCategory.NOTICE, noticeId, request.getFileNames());
+        fileService.createMultiplePresignedUrls(FileCategory.NOTICE, noticeId, request.getFileNames());
 
         // 메타데이터 다시 조회하여 DTO 생성
-        List<FileMetadata> newFiles = s3Service.findFile(FileCategory.NOTICE, noticeId);
+        List<FileMetadata> newFiles = fileService.findFile(FileCategory.NOTICE, noticeId);
 
         return newFiles.stream()
-                .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
+                .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
                 .collect(Collectors.toList());
     }
 
@@ -82,9 +82,9 @@ public class NoticeService {
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
         // S3 파일 및 메타데이터 삭제
-        List<FileMetadata> files = s3Service.findFile(FileCategory.NOTICE, noticeId);
+        List<FileMetadata> files = fileService.findFile(FileCategory.NOTICE, noticeId);
         files.forEach(file -> {
-            s3Service.deleteFile(file.getFilePath());
+            fileService.deleteFile(file.getFileKey());
         });
 
         noticeRepository.delete(notice);
@@ -95,9 +95,9 @@ public class NoticeService {
         Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
-        List<FileMetadata> files = s3Service.findFile(FileCategory.NOTICE, noticeId);
+        List<FileMetadata> files = fileService.findFile(FileCategory.NOTICE, noticeId);
         List<FileMetadataDto> fileDtos = files.stream()
-                .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
+                .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
                 .collect(Collectors.toList());
 
         return new NoticeResponse(notice, fileDtos);
@@ -108,9 +108,9 @@ public class NoticeService {
         return noticeRepository.findByStudyStudyId(studyId)
                 .stream()
                 .map(notice -> {
-                    List<FileMetadata> files = s3Service.findFile(FileCategory.NOTICE, notice.getNoticeId());
+                    List<FileMetadata> files = fileService.findFile(FileCategory.NOTICE, notice.getNoticeId());
                     List<FileMetadataDto> fileDtos = files.stream()
-                            .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
+                            .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
                             .collect(Collectors.toList());
 
                     return new NoticeResponse(notice, fileDtos);

@@ -1,7 +1,8 @@
 package com.onrank.server.api.controller.attendance;
 
 import com.onrank.server.api.dto.attendance.*;
-import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.common.ContextResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.attendance.AttendanceService;
 import com.onrank.server.api.service.member.MemberService;
@@ -31,7 +32,7 @@ public class AttendanceController {
      * 출석 목록 조회 (스터디 멤버만 가능)
      */
     @GetMapping
-    public ResponseEntity<AttendanceContext<List<AttendanceResponse>>> getAttendances(
+    public ResponseEntity<ContextResponse<List<AttendanceResponse>>> getAttendances(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -39,10 +40,10 @@ public class AttendanceController {
         if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         List<AttendanceResponse> attendances = attendanceService.getAttendanceResponsesByStudyId(oAuth2User.getName(), studyId);
 
-        return ResponseEntity.ok(new AttendanceContext<>(context, attendances));
+        return ResponseEntity.ok(new ContextResponse<>(context, attendances));
     }
 
     /**
@@ -61,7 +62,7 @@ public class AttendanceController {
         List<AttendanceMemberResponse> responses = attendanceService.getAttendanceMembersByScheduleId(scheduleId);
         String scheduleTitle = attendanceService.getScheduleTitle(scheduleId);
         LocalDateTime scheduleStartingAt = attendanceService.getScheduleStartingAt(scheduleId);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
         return ResponseEntity.ok(new AttendanceDetailContext<>(context, scheduleTitle, scheduleStartingAt, responses));
     }
@@ -70,7 +71,7 @@ public class AttendanceController {
      * 출석 상태 변경 (CREATOR, HOST 만 가능)
      */
     @PutMapping("/{attendanceId}")
-    public ResponseEntity<MemberRoleResponse> updateAttendanceStatus(
+    public ResponseEntity<MemberStudyContext> updateAttendanceStatus(
             @PathVariable Long studyId,
             @PathVariable Long attendanceId,
             @RequestParam String status,
@@ -81,7 +82,7 @@ public class AttendanceController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         attendanceService.updateAttendanceStatus(attendanceId, status);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
         return ResponseEntity.ok(context);
     }
@@ -90,14 +91,14 @@ public class AttendanceController {
      * 출석 POINT 조회
      */
     @GetMapping("/point")
-    public ResponseEntity<AttendanceContext<AttendancePointResponse>> getAttendancePoint(
+    public ResponseEntity<ContextResponse<AttendancePointResponse>> getAttendancePoint(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
         // 스터디 멤버만 가능
         if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        AttendanceContext<AttendancePointResponse> response = studyService.getAttendancePoint(studyId, oAuth2User.getName());
+        ContextResponse<AttendancePointResponse> response = studyService.getAttendancePoint(studyId, oAuth2User.getName());
         return ResponseEntity.ok(response);
     }
 
@@ -105,7 +106,7 @@ public class AttendanceController {
      * 출석 POINT 수정
      */
     @PutMapping("/point")
-    public ResponseEntity<MemberRoleResponse> updateAttendancePoint(
+    public ResponseEntity<MemberStudyContext> updateAttendancePoint(
             @PathVariable Long studyId,
             @RequestBody @Valid AttendancePointRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -115,7 +116,7 @@ public class AttendanceController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         studyService.updateAttendancePoint(studyId, request);
-        MemberRoleResponse response = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext response = memberService.getContext(oAuth2User.getName(), studyId);
         return ResponseEntity.ok(response);
     }
 }

@@ -1,12 +1,12 @@
 package com.onrank.server.api.service.study;
 
-import com.onrank.server.api.dto.attendance.AttendanceContext;
 import com.onrank.server.api.dto.attendance.AttendancePointRequest;
 import com.onrank.server.api.dto.attendance.AttendancePointResponse;
+import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
-import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.study.*;
-import com.onrank.server.api.service.cloud.S3Service;
+import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -19,7 +19,6 @@ import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +35,7 @@ public class StudyService {
     private final StudyJpaRepository studyRepository;
     private final MemberJpaRepository memberJpaRepository;
     private final MemberService memberService;
-    private final S3Service s3Service;
+    private final FileService fileService;
     private final FileMetadataJpaRepository fileMetadataRepository;
 
 
@@ -51,7 +50,7 @@ public class StudyService {
         Study study = studyRepository.save(addStudyRequest.toEntity());
 
         // url 추가
-        String presignedUrl = s3Service.generatePresignedUrl(FileCategory.STUDY, study.getStudyId(), addStudyRequest.getFileName());
+        String presignedUrl = fileService.createPresignedUrlAndSaveMetadata(FileCategory.STUDY, study.getStudyId(), addStudyRequest.getFileName());
 
         // 현재 사용자 찾기
         Student student = studentRepository.findByUsername(username)
@@ -92,7 +91,7 @@ public class StudyService {
                 .toList();
     }
 
-    public StudyContext<StudyDetailResponse> getStudyDetail(Long studyId, String username) {
+    public ContextResponse<StudyDetailResponse> getStudyDetail(Long studyId, String username) {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스터디가 존재하지 않습니다."));
 
@@ -105,25 +104,25 @@ public class StudyService {
             fileDto = new FileMetadataDto(file, "onrank-bucket");
         }
 
-        MemberRoleResponse memberContext = memberService.getMyRoleInStudy(username, studyId);
+        MemberStudyContext memberContext = memberService.getContext(username, studyId);
         StudyDetailResponse detail = new StudyDetailResponse(study);
 
-        return new StudyContext<>(memberContext, detail);
+        return new ContextResponse<>(memberContext, detail);
     }
 
     @Transactional
-    public StudyContext<AddStudyResponse> updateStudy(Long studyId, String username, StudyUpdateRequest request) {
+    public ContextResponse<AddStudyResponse> updateStudy(Long studyId, String username, StudyUpdateRequest request) {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
         study.update(request.getStudyName(), request.getStudyContent(), request.getPresentPoint(), request.getAbsentPoint(), request.getLatePoint(), request.getStudyStatus());
 
         // 기존 파일과 메타데이터 모두 삭제
-        List<FileMetadata> existingFiles = s3Service.findFile(FileCategory.STUDY, studyId);
-        existingFiles.forEach(file -> s3Service.deleteFile(file.getFilePath()));
-        s3Service.deleteFileMetadata(FileCategory.STUDY, studyId);
+        List<FileMetadata> existingFiles = fileService.findFile(FileCategory.STUDY, studyId);
+        existingFiles.forEach(file -> fileService.deleteFile(file.getFileKey()));
+        fileService.deleteFileMetadata(FileCategory.STUDY, studyId);
 
-        String presignedUrl = s3Service.generatePresignedUrl(FileCategory.STUDY, studyId, request.getFileName());
+        String presignedUrl = fileService.createPresignedUrlAndSaveMetadata(FileCategory.STUDY, studyId, request.getFileName());
 
         AddStudyResponse response = AddStudyResponse.builder()
                 .studyId(studyId)
@@ -132,11 +131,11 @@ public class StudyService {
                 .build();
 
         // 멤버 권한 포함
-        MemberRoleResponse memberContext = memberService.getMyRoleInStudy(username, studyId);
-        return new StudyContext<>(memberContext, response);
+        MemberStudyContext memberContext = memberService.getContext(username, studyId);
+        return new ContextResponse<>(memberContext, response);
     }
 
-    public AttendanceContext<AttendancePointResponse> getAttendancePoint(Long studyId, String username) {
+    public ContextResponse<AttendancePointResponse> getAttendancePoint(Long studyId, String username) {
         Study study = studyRepository.findByStudyId(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
@@ -145,8 +144,8 @@ public class StudyService {
                 study.getAbsentPoint(),
                 study.getLatePoint()
         );
-        MemberRoleResponse memberContext = memberService.getMyRoleInStudy(username, studyId);
-        return new AttendanceContext<>(memberContext, response);
+        MemberStudyContext memberContext = memberService.getContext(username, studyId);
+        return new ContextResponse<>(memberContext, response);
     }
 
     @Transactional

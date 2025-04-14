@@ -1,5 +1,6 @@
 package com.onrank.server.api.controller.study;
 
+import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.*;
 import com.onrank.server.api.service.member.MemberService;
@@ -21,7 +22,7 @@ public class StudyManagementController {
     private final MemberService memberService;
 
     @GetMapping
-    public ResponseEntity<StudyContext<StudyDetailResponse>> getStudyDetail(
+    public ResponseEntity<ContextResponse<StudyDetailResponse>> getStudyDetail(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -29,12 +30,12 @@ public class StudyManagementController {
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        StudyContext<StudyDetailResponse> response = studyService.getStudyDetail(studyId, oAuth2User.getName());
+        ContextResponse<StudyDetailResponse> response = studyService.getStudyDetail(studyId, oAuth2User.getName());
         return ResponseEntity.ok(response);
     }
 
     @PutMapping
-    public ResponseEntity<StudyContext<AddStudyResponse>> updateStudy(
+    public ResponseEntity<ContextResponse<AddStudyResponse>> updateStudy(
             @PathVariable Long studyId,
             @RequestBody StudyUpdateRequest studyUpdateRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -43,7 +44,7 @@ public class StudyManagementController {
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        StudyContext<AddStudyResponse> response = studyService.updateStudy(studyId, oAuth2User.getName(), studyUpdateRequest);
+        ContextResponse<AddStudyResponse> response = studyService.updateStudy(studyId, oAuth2User.getName(), studyUpdateRequest);
         return ResponseEntity.ok(response);
     }
 

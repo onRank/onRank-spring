@@ -1,6 +1,6 @@
 package com.onrank.server.api.dto.attendance;
 
-import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 public class AttendanceDetailContext<T> {
-    private MemberRoleResponse memberContext;
+    private MemberStudyContext memberContext;
     private String scheduleTitle;
     private LocalDateTime scheduleStartingAt;
 

@@ -1,5 +1,6 @@
-package com.onrank.server.api.service.cloud;
+package com.onrank.server.api.service.file;
 
+import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.file.FileMetadataJpaRepository;
@@ -11,20 +12,19 @@ import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
+import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Getter
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class S3Service {
+public class FileService {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
@@ -37,49 +37,47 @@ public class S3Service {
      * 파일 1개 업로드: Pre-signed URL 발급 및 파일 메타데이터 저장
      */
     @Transactional
-    public String generatePresignedUrl(FileCategory category, Long entityId, String fileName) {
-        String uniqueFileName = category.name().toLowerCase() + "/" + entityId + "/" +  UUID.randomUUID() + "_" + fileName;
+    public String createPresignedUrlAndSaveMetadata(FileCategory category, Long entityId, String fileName) {
+        String fileKey = category.name().toLowerCase() + "/" + entityId + "/" +  UUID.randomUUID() + "_" + fileName;
 
         PutObjectPresignRequest request = PutObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(10)) // 10분 유효
                 .putObjectRequest(builder -> builder
                         .bucket(bucketName)
-                        .key(uniqueFileName)
+                        .key(fileKey)
                         .build())
                 .build();
 
-        PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(request);
+        URL presignedUrl = s3Presigner.presignPutObject(request).url();
 
         // file metadata 정보를 데이터베이스에 저장
         FileMetadata fileMetadata = FileMetadata.builder()
                 .category(category)
                 .entityId(entityId)
                 .fileName(fileName)
-                .filePath(uniqueFileName)
+                .filePath(fileKey)
                 .build();
         fileMetadataRepository.save(fileMetadata);
 
-        return presignedRequest.url().toString();
+        return presignedUrl.toString();
     }
 
     /**
      * 여러 파일 업로드: Pre-signed URL 발급 및 메타데이터 일괄 저장
      */
     @Transactional
-    public List<Map<String, String>> uploadFilesWithMetadata(
+    public List<PresignedUrlResponse> createMultiplePresignedUrls(
             FileCategory category, Long entityId, List<String> fileNames) {
 
         if(fileNames == null || fileNames.isEmpty()) return List.of();
 
-        List<Map<String, String>> presignedUrls = new ArrayList<>();
+        List<PresignedUrlResponse> presignedUrls = new ArrayList<>();
 
         for (String fileName : fileNames) {
-            String uploadUrl = generatePresignedUrl(category, entityId, fileName);
-            presignedUrls.add(Map.of(
-                    "fileName", fileName,
-                    "uploadUrl", uploadUrl
-            ));
+            String uploadUrl = createPresignedUrlAndSaveMetadata(category, entityId, fileName);
+            presignedUrls.add(new PresignedUrlResponse(fileName, uploadUrl));
         }
+
         return presignedUrls;
     }
 

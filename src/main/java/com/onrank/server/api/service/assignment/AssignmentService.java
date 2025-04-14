@@ -2,16 +2,16 @@ package com.onrank.server.api.service.assignment;
 
 import com.onrank.server.api.dto.assignment.AddAssignmentRequest;
 import com.onrank.server.api.dto.assignment.AssignmentResponse;
-import com.onrank.server.api.dto.file.FileMetadataDto;
-import com.onrank.server.api.service.cloud.S3Service;
+import com.onrank.server.api.dto.common.ContextResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
+import com.onrank.server.api.dto.file.PresignedUrlResponse;
+import com.onrank.server.api.service.file.FileService;
+import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
-import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
-import com.onrank.server.domain.student.Student;
-import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
 import com.onrank.server.domain.submission.Submission;
@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +31,10 @@ public class AssignmentService {
 
     private final AssignmentJpaRepository assignmentRepository;
     private final StudyJpaRepository studyRepository;
-    private final StudentJpaRepository studentRepository;
     private final MemberJpaRepository memberRepository;
     private final SubmissionJpaRepository submissionRepository;
-    private final S3Service s3Service;
+    private final FileService fileService;
+    private final MemberService memberService;
 
     /**
      * 과제 리스트 조회 (현재 사용자 기준)
@@ -48,7 +47,7 @@ public class AssignmentService {
      * 과제 생성 (스터디 멤버 전체에게 Submission 생성 포함)
      */
     @Transactional
-    public List<FileMetadataDto> createAssignment(Long studyId, AddAssignmentRequest request) {
+    public ContextResponse<List<PresignedUrlResponse>> createAssignment(String username, Long studyId, AddAssignmentRequest request) {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
@@ -66,14 +65,13 @@ public class AssignmentService {
                     .submissionCreatedAt(LocalDateTime.now())
                     .build();
             submissionRepository.save(submission);
+            assignment.getSubmissions().add(submission);
         }
 
-        // S3 presigned URL 발급 및 메타데이터 저장
-        s3Service.uploadFilesWithMetadata(FileCategory.ASSIGNMENT, assignment.getAssignmentId(), request.getFileNames());
+        MemberStudyContext context = memberService.getContext(username, studyId);
 
-        List<FileMetadata> metadataList = s3Service.findFile(FileCategory.ASSIGNMENT, assignment.getAssignmentId());
-        return metadataList.stream()
-                .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
-                .collect(Collectors.toList());
+        // S3 presigned URL 발급 및 메타데이터 저장
+        List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.ASSIGNMENT, assignment.getAssignmentId(), request.getFileNames());
+        return new ContextResponse<>(context, responses);
     }
 }

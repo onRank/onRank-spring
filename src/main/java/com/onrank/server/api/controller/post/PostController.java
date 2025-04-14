@@ -1,10 +1,10 @@
 package com.onrank.server.api.controller.post;
 
+import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
-import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.post.AddPostRequest;
-import com.onrank.server.api.dto.post.PostContext;
 import com.onrank.server.api.dto.post.PostResponse;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.post.PostService;
@@ -19,7 +19,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -35,7 +34,7 @@ public class PostController {
      * 스터디 내 모든 게시판 조회 (스터디 멤버만 가능)
      */
     @GetMapping
-    public ResponseEntity<PostContext<List<PostResponse>>> getPosts (
+    public ResponseEntity<ContextResponse<List<PostResponse>>> getPosts (
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -44,17 +43,17 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         List<PostResponse> posts = postService.getPostResponsesByStudyId(studyId);
 
-        return ResponseEntity.ok(new PostContext<>(context, posts));
+        return ResponseEntity.ok(new ContextResponse<>(context, posts));
     }
 
     /**
      * 특정 게시판 조회 (스터디 멤버만 가능)
      */
     @GetMapping("/{postId}")
-    public ResponseEntity<PostContext<PostResponse>> getPost (
+    public ResponseEntity<ContextResponse<PostResponse>> getPost (
             @PathVariable Long studyId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -64,17 +63,17 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         PostResponse post = postService.getPostResponse(postId);
 
-        return ResponseEntity.ok(new PostContext<>(context, post));
+        return ResponseEntity.ok(new ContextResponse<>(context, post));
     }
 
     /**
      * 게시판 등록 (스터디 멤버만 가능)
      */
     @PostMapping("/add")
-    public ResponseEntity<PostContext<List<FileMetadataDto>>> createPost(
+    public ResponseEntity<ContextResponse<List<FileMetadataDto>>> createPost(
             @PathVariable Long studyId,
             @RequestBody AddPostRequest addPostRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -92,16 +91,16 @@ public class PostController {
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
         List<FileMetadataDto> fileDtos = postService.createPost(addPostRequest, study, member);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new PostContext<>(context, fileDtos));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ContextResponse<>(context, fileDtos));
     }
 
     /**
      * 게시판 수정 (Post 의 작성자만 가능)
      */
     @PutMapping("/{postId}")
-    public ResponseEntity<PostContext<List<FileMetadataDto>>> updatePost(
+    public ResponseEntity<ContextResponse<List<FileMetadataDto>>> updatePost(
             @PathVariable Long studyId,
             @PathVariable Long postId,
             @RequestBody AddPostRequest addPostRequest,
@@ -114,16 +113,16 @@ public class PostController {
         }
 
         List<FileMetadataDto> fileDtos = postService.updatePost(postId, addPostRequest);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
-        return ResponseEntity.ok(new PostContext<>(context, fileDtos));
+        return ResponseEntity.ok(new ContextResponse<>(context, fileDtos));
     }
 
     /**
      * 게시판 삭제 (Post 의 작성자만 가능)
      */
     @DeleteMapping("/{postId}")
-    public ResponseEntity<MemberRoleResponse> deletePost(
+    public ResponseEntity<MemberStudyContext> deletePost(
             @PathVariable Long studyId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -134,7 +133,7 @@ public class PostController {
         }
 
         postService.deletePost(postId);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
         return ResponseEntity.ok(context);
     }

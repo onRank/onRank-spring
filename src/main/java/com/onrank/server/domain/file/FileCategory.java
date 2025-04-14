@@ -1,5 +1,5 @@
 package com.onrank.server.domain.file;
 
 public enum FileCategory {
-    POST, NOTICE, STUDY, ASSIGNMENT
+    POST, NOTICE, STUDY, ASSIGNMENT, SUBMISSION
 }

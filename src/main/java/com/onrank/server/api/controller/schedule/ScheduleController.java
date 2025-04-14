@@ -1,9 +1,9 @@
 package com.onrank.server.api.controller.schedule;
 
-import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.common.ContextResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.schedule.AddScheduleRequest;
-import com.onrank.server.api.dto.schedule.ScheduleContext;
 import com.onrank.server.api.dto.schedule.ScheduleResponse;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.schedule.ScheduleService;
@@ -29,7 +29,7 @@ public class ScheduleController {
      * 스터디 내 모든 일정 조회 (스터디 멤버만 가능)
      */
     @GetMapping
-    public ResponseEntity<ScheduleContext<List<ScheduleResponse>>> getSchedules(
+    public ResponseEntity<ContextResponse<List<ScheduleResponse>>> getSchedules(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -37,14 +37,14 @@ public class ScheduleController {
         if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         List<ScheduleResponse> schedules = scheduleService.getScheduleResponsesByStudyId(studyId);
 
-        return ResponseEntity.ok(new ScheduleContext<>(context, schedules));
+        return ResponseEntity.ok(new ContextResponse<>(context, schedules));
     }
 
     @PostMapping("/add")
-    public ResponseEntity<MemberRoleResponse> createSchedule(
+    public ResponseEntity<MemberStudyContext> createSchedule(
             @PathVariable Long studyId,
             @RequestBody AddScheduleRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -54,14 +54,14 @@ public class ScheduleController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         scheduleService.createSchedule(studyId, request);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(context);
     }
 
     // 스케줄 수정
     @PutMapping("/{scheduleId}")
-    public ResponseEntity<MemberRoleResponse> updateSchedule(
+    public ResponseEntity<MemberStudyContext> updateSchedule(
             @PathVariable Long studyId,
             @PathVariable Long scheduleId,
             @RequestBody AddScheduleRequest request,
@@ -73,13 +73,13 @@ public class ScheduleController {
         }
 
         scheduleService.updateSchedule(scheduleId, request);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         return ResponseEntity.ok(context);
     }
 
     // 스케줄 삭제
     @DeleteMapping("/{scheduleId}")
-    public ResponseEntity<MemberRoleResponse> deleteSchedule(
+    public ResponseEntity<MemberStudyContext> deleteSchedule(
             @PathVariable Long studyId,
             @PathVariable Long scheduleId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -90,7 +90,7 @@ public class ScheduleController {
         }
 
         scheduleService.deleteSchedule(scheduleId, studyId);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         return ResponseEntity.ok(context);
     }
 }

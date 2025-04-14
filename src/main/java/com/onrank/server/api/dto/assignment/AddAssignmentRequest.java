@@ -14,6 +14,7 @@ public class AddAssignmentRequest {
     private String assignmentTitle;
     private String assignmentContent;
     private LocalDateTime assignmentDueDate;
+    private Long assignmentMaxPoint;
 
     // 업로드하기 위한 파일명들
     private List<String> fileNames;
@@ -25,6 +26,7 @@ public class AddAssignmentRequest {
                 .assignmentContent(assignmentContent)
                 .assignmentCreatedAt(LocalDate.now())
                 .assignmentDueDate(assignmentDueDate)
+                .assignmentMaxPoint(assignmentMaxPoint)
                 .build();
     }
 }

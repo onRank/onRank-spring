@@ -1,9 +1,9 @@
 package com.onrank.server.api.controller.notice;
 
+import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
-import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.notice.AddNoticeRequest;
-import com.onrank.server.api.dto.notice.NoticeContext;
 import com.onrank.server.api.dto.notice.NoticeResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.notice.NoticeService;
@@ -32,7 +32,7 @@ public class NoticeController {
      * 스터디 내 모든 공지사항 조회 (스터디 멤버만 가능)
      */
     @GetMapping
-    public ResponseEntity<NoticeContext<List<NoticeResponse>>> getNotices(
+    public ResponseEntity<ContextResponse<List<NoticeResponse>>> getNotices(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -41,17 +41,17 @@ public class NoticeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         List<NoticeResponse> notices = noticeService.getNoticeResponsesByStudyId(studyId);
 
-        return ResponseEntity.ok(new NoticeContext<>(context, notices));
+        return ResponseEntity.ok(new ContextResponse<>(context, notices));
     }
 
     /**
      * 특정 공지사항 조회 (스터디 멤버만 가능)
      */
     @GetMapping("/{noticeId}")
-    public ResponseEntity<NoticeContext<NoticeResponse>> getNotice(
+    public ResponseEntity<ContextResponse<NoticeResponse>> getNotice(
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -61,17 +61,17 @@ public class NoticeController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         NoticeResponse notice = noticeService.getNoticeResponse(noticeId);
 
-        return ResponseEntity.ok(new NoticeContext<>(context, notice));
+        return ResponseEntity.ok(new ContextResponse<>(context, notice));
     }
 
     /**
      * 공지사항 등록 (CREATOR, HOST 만 가능)
      */
     @PostMapping("/add")
-    public ResponseEntity<NoticeContext<List<FileMetadataDto>>> createNotice(
+    public ResponseEntity<ContextResponse<List<FileMetadataDto>>> createNotice(
             @PathVariable Long studyId,
             @RequestBody AddNoticeRequest addNoticeRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -86,16 +86,16 @@ public class NoticeController {
 
         // Pre-signed URL 생성 및 파일 메타데이터 저장
         List<FileMetadataDto> fileDtos = noticeService.createNotice(addNoticeRequest, study);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(new NoticeContext<>(context, fileDtos));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ContextResponse<>(context, fileDtos));
     }
 
     /**
      * 공지사항 수정 (CREATOR, HOST 만 가능)
      */
     @PutMapping("/{noticeId}")
-    public ResponseEntity<NoticeContext<List<FileMetadataDto>>> updateNotice(
+    public ResponseEntity<ContextResponse<List<FileMetadataDto>>> updateNotice(
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @RequestBody AddNoticeRequest addNoticeRequest,
@@ -107,16 +107,16 @@ public class NoticeController {
         }
 
         List<FileMetadataDto> fileDtos = noticeService.updateNotice(noticeId, addNoticeRequest);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
-        return ResponseEntity.ok(new NoticeContext<>(context, fileDtos));
+        return ResponseEntity.ok(new ContextResponse<>(context, fileDtos));
     }
 
     /**
      * 공지사항 삭제 (CREATOR, HOST 만 가능)
      */
     @DeleteMapping("/{noticeId}")
-    public ResponseEntity<MemberRoleResponse> deleteNotice(
+    public ResponseEntity<MemberStudyContext> deleteNotice(
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -127,7 +127,7 @@ public class NoticeController {
         }
 
         noticeService.deleteNotice(noticeId);
-        MemberRoleResponse context = memberService.getMyRoleInStudy(oAuth2User.getName(), studyId);
+        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
         return ResponseEntity.ok(context);
 
     }

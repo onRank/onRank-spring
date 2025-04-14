@@ -22,5 +22,5 @@ public class FileMetadata {
 
     private String fileName;
 
-    private String filePath; // S3 저장경로 (uniqueFileName)
+    private String fileKey; // S3 저장경로 (uniqueFileName)
 }

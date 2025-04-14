@@ -3,7 +3,7 @@ package com.onrank.server.api.service.post;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.post.AddPostRequest;
 import com.onrank.server.api.dto.post.PostResponse;
-import com.onrank.server.api.service.cloud.S3Service;
+import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.member.Member;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -30,7 +29,7 @@ public class PostService {
     private final PostJpaRepository postRepository;
     private final StudentJpaRepository studentRepository;
     private final MemberJpaRepository memberRepository;
-    private final S3Service s3Service;
+    private final FileService fileService;
 
     public Optional<Post> findByPostId(Long postId) {
         return postRepository.findByPostId(postId);
@@ -63,11 +62,11 @@ public class PostService {
         Post post = addPostRequest.toEntity(study, member);
         postRepository.save(post);
 
-        s3Service.uploadFilesWithMetadata(FileCategory.POST, post.getPostId(), addPostRequest.getFileNames());
+        fileService.createMultiplePresignedUrls(FileCategory.POST, post.getPostId(), addPostRequest.getFileNames());
 
-        List<FileMetadata> files = s3Service.findFile(FileCategory.POST, post.getPostId());
+        List<FileMetadata> files = fileService.findFile(FileCategory.POST, post.getPostId());
         return files.stream()
-                .map(f -> new FileMetadataDto(f, s3Service.getBucketName()))
+                .map(f -> new FileMetadataDto(f, fileService.getBucketName()))
                 .collect(Collectors.toList());
     }
 
@@ -79,15 +78,15 @@ public class PostService {
 
         post.update(request.getPostTitle(), request.getPostContent());
 
-        List<FileMetadata> existingFiles = s3Service.findFile(FileCategory.POST, postId);
-        existingFiles.forEach(file -> s3Service.deleteFile(file.getFilePath()));
-        s3Service.deleteFileMetadata(FileCategory.POST, postId);
+        List<FileMetadata> existingFiles = fileService.findFile(FileCategory.POST, postId);
+        existingFiles.forEach(file -> fileService.deleteFile(file.getFileKey()));
+        fileService.deleteFileMetadata(FileCategory.POST, postId);
 
-        s3Service.uploadFilesWithMetadata(FileCategory.POST, postId, request.getFileNames());
+        fileService.createMultiplePresignedUrls(FileCategory.POST, postId, request.getFileNames());
 
-        List<FileMetadata> files = s3Service.findFile(FileCategory.POST, postId);
+        List<FileMetadata> files = fileService.findFile(FileCategory.POST, postId);
         return files.stream()
-                .map(f -> new FileMetadataDto(f, s3Service.getBucketName()))
+                .map(f -> new FileMetadataDto(f, fileService.getBucketName()))
                 .collect(Collectors.toList());
     }
 
@@ -98,9 +97,9 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         // S3 파일 및 메타데이터 삭제
-        List<FileMetadata> files = s3Service.findFile(FileCategory.POST, postId);
+        List<FileMetadata> files = fileService.findFile(FileCategory.POST, postId);
         files.forEach(file -> {
-            s3Service.deleteFile(file.getFilePath());
+            fileService.deleteFile(file.getFileKey());
         });
 
         postRepository.delete(post);
@@ -111,9 +110,9 @@ public class PostService {
         Post post = postRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-        List<FileMetadata> files = s3Service.findFile(FileCategory.POST, postId);
+        List<FileMetadata> files = fileService.findFile(FileCategory.POST, postId);
         List<FileMetadataDto> fileDtos = files.stream()
-                .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
+                .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
                 .collect(Collectors.toList());
 
         return new PostResponse(post, fileDtos);
@@ -124,9 +123,9 @@ public class PostService {
         return postRepository.findByStudyStudyId(studyId)
                 .stream()
                 .map(post -> {
-                    List<FileMetadata> files = s3Service.findFile(FileCategory.POST, post.getPostId());
+                    List<FileMetadata> files = fileService.findFile(FileCategory.POST, post.getPostId());
                     List<FileMetadataDto> fileDtos = files.stream()
-                            .map(file -> new FileMetadataDto(file, s3Service.getBucketName()))
+                            .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
                             .collect(Collectors.toList());
 
                     return new PostResponse(post, fileDtos);

@@ -42,21 +42,26 @@ public class Assignment {
     @Column(nullable = false)
     private LocalDateTime assignmentDueDate;
 
+    @Column(nullable = false)
+    private Long assignmentMaxPoint;
+
     @Builder
-    public Assignment(Study study, String assignmentTitle, String assignmentContent, LocalDate assignmentCreatedAt, LocalDateTime assignmentDueDate) {
+    public Assignment(Study study, String assignmentTitle, String assignmentContent, LocalDate assignmentCreatedAt, LocalDateTime assignmentDueDate, Long assignmentMaxPoint) {
         this.study = study;
         this.assignmentTitle = assignmentTitle;
         this.assignmentContent = assignmentContent;
         this.assignmentCreatedAt = assignmentCreatedAt;
         this.assignmentDueDate = assignmentDueDate;
+        this.assignmentMaxPoint = assignmentMaxPoint;
     }
 
     /**
      * 과제 수정 메서드
      */
-    public void update(String assignmentTitle, String assignmentContent, LocalDateTime assignmentDueDate) {
+    public void update(String assignmentTitle, String assignmentContent, LocalDateTime assignmentDueDate, Long assignmentMaxPoint) {
         this.assignmentTitle = assignmentTitle;
         this.assignmentContent = assignmentContent;
         this.assignmentDueDate = assignmentDueDate;
+        this.assignmentMaxPoint = assignmentMaxPoint;
     }
 }

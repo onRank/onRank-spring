@@ -4,7 +4,7 @@ import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.member.AddMemberRequest;
 import com.onrank.server.api.dto.member.MemberListResponse;
 import com.onrank.server.api.dto.member.MemberResponse;
-import com.onrank.server.api.dto.member.MemberRoleResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -34,7 +34,7 @@ public class MemberService {
     private final StudentService studentService;
     private final FileMetadataJpaRepository fileMetadataRepository;
 
-    public MemberRoleResponse getMyRoleInStudy(String username, Long studyId) {
+    public MemberStudyContext getContext(String username, Long studyId) {
         Member member = findByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
@@ -46,8 +46,9 @@ public class MemberService {
             FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
             fileDto = new FileMetadataDto(file, "onrank-bucket");
         }
-        return new MemberRoleResponse(member, fileDto);
+        return new MemberStudyContext(member, fileDto);
     }
+
     /**
      * username과 StudyId에 해당하는 Member 조회
      */
