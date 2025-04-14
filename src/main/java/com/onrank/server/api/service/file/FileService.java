@@ -55,7 +55,7 @@ public class FileService {
                 .category(category)
                 .entityId(entityId)
                 .fileName(fileName)
-                .filePath(fileKey)
+                .fileKey(fileKey)
                 .build();
         fileMetadataRepository.save(fileMetadata);
 
