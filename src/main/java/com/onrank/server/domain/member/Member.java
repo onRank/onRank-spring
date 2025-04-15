@@ -1,6 +1,7 @@
 package com.onrank.server.domain.member;
 
 import com.onrank.server.domain.attendance.Attendance;
+import com.onrank.server.domain.notification.Notification;
 import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
