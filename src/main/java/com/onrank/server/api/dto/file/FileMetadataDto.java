@@ -5,9 +5,9 @@ import lombok.Getter;
 
 @Getter
 public class FileMetadataDto {
-    private Long fileId;
-    private String fileName;
-    private String fileUrl;
+    private final Long fileId;
+    private final String fileName;
+    private final String fileUrl;
 
     public FileMetadataDto(FileMetadata fileMetadata, String bucketName) {
         this.fileId = fileMetadata.getFileId();

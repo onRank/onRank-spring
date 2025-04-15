@@ -30,7 +30,7 @@ public class Submission {
     private Member member;
 
     @Column(nullable = false)
-    private String submissionContent;
+    private String submissionContent = "";
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -39,8 +39,8 @@ public class Submission {
     @Column(nullable = false)
     private LocalDateTime submissionCreatedAt;
 
-    private Integer submissionScore;
-    private String submissionComment;
+    private Integer submissionScore = null;
+    private String submissionComment = null;
 
     @Builder
     public Submission(Assignment assignment, Member member, String submissionContent, SubmissionStatus submissionStatus, LocalDateTime submissionCreatedAt, Integer submissionScore, String submissionComment) {

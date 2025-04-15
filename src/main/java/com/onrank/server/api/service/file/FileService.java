@@ -1,5 +1,6 @@
 package com.onrank.server.api.service.file;
 
+import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -71,14 +72,20 @@ public class FileService {
 
         if(fileNames == null || fileNames.isEmpty()) return List.of();
 
-        List<PresignedUrlResponse> presignedUrls = new ArrayList<>();
+        return fileNames.stream()
+                .map(fileName -> new PresignedUrlResponse(fileName, createPresignedUrlAndSaveMetadata(category, entityId, fileName)))
+                .toList();
+    }
 
-        for (String fileName : fileNames) {
-            String uploadUrl = createPresignedUrlAndSaveMetadata(category, entityId, fileName);
-            presignedUrls.add(new PresignedUrlResponse(fileName, uploadUrl));
-        }
+    /**
+     * 특정 엔티티(Post, Notice 등)의 모든 파일 조회
+     */
+    public List<FileMetadataDto> getMultipleFileMetadata(FileCategory category, Long entityId) {
+        List<FileMetadata> fileMetadataList = fileMetadataRepository.findByCategoryAndEntityId(category, entityId);
 
-        return presignedUrls;
+        return fileMetadataList.stream()
+                .map(fileMetadata -> new FileMetadataDto(fileMetadata, bucketName))
+                .toList();
     }
 
     /**
