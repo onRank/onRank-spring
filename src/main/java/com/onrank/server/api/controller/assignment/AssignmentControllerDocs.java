@@ -26,10 +26,7 @@ public interface AssignmentControllerDocs {
             security = {@SecurityRequirement(name = "bearer-key")}
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "과제 생성 성공"),
-            @ApiResponse(responseCode = "403", description = "권한 없음"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
-            @ApiResponse(responseCode = "500", description = "서버 오류")
+            @ApiResponse(responseCode = "201", description = "과제 생성 성공")
     })
     ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> createAssignment(
             @Parameter(description = "스터디 ID", example = "1") @PathVariable Long studyId,

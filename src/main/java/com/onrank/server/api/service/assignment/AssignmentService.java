@@ -111,7 +111,7 @@ public class AssignmentService {
         // 멤버 제출물 조회
         Submission submission = submissionService.findByAssignmentAndMember(assignment, member);
 
-        // 6. 제출물 파일 조회 (있으면)
+        // 제출물 파일 조회 (있으면)
         List<FileMetadataDto> submissionFiles = List.of();
         if (submission.getSubmissionStatus() != SubmissionStatus.NOTSUBMITTED) {
             submissionFiles = fileService.getMultipleFileMetadata(FileCategory.SUBMISSION, submission.getSubmissionId());
