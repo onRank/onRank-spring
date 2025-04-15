@@ -3,6 +3,7 @@ package com.onrank.server.domain.study;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.notice.Notice;
+import com.onrank.server.domain.notification.Notification;
 import com.onrank.server.domain.schedule.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
@@ -46,6 +47,9 @@ public class Study {
 
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Assignment> assignments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
