@@ -33,8 +33,11 @@ jobs:
             docker stop onrank-api || true
             docker rm onrank-api || true
 
-            echo "[4] Docker 이미지 빌드 (태그: ${{ env.TAG }})"
+            echo "[4] Gradle 빌드 (기존 파일 정리 후 재빌드)"
+            ./gradlew clean build -x test
+
+            echo "[5] Docker 이미지 빌드 (태그: ${{ env.TAG }})"
             docker build -t onrank-api:${{ env.TAG }} .
 
-            echo "[5] Docker 컨테이너 실행"
+            echo "[6] Docker 컨테이너 실행"
             docker run -d --name onrank-api -p 8080:8080 onrank-api:${{ env.TAG }}
