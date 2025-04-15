@@ -48,6 +48,9 @@ public class Member {
     @Column(nullable = false)
     private LocalDate memberJoiningAt;
 
+    @Column(nullable = false)
+    private Long memberSubmissionPoint = 0L;
+
     // 생성자
     @Builder
     public Member(Student student, Study study, MemberRole memberRole, LocalDate memberJoiningAt) {
