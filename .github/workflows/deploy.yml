@@ -1,0 +1,40 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ "develop" ]  # develop 브랜치에 push될 때 자동 배포
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Generate Docker image tag from Git commit
+        id: vars
+        run: echo "TAG=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            echo "[1] 이동: 프로젝트 디렉토리로"
+            cd /home/ec2-user/onRank/onRank-spring
+
+            echo "[2] Git 최신화"
+            git pull origin develop
+
+            echo "[3] 기존 Docker 컨테이너 정리"
+            docker stop onrank-api || true
+            docker rm onrank-api || true
+
+            echo "[4] Docker 이미지 빌드 (태그: ${{ env.TAG }})"
+            docker build -t onrank-api:${{ env.TAG }} .
+
+            echo "[5] Docker 컨테이너 실행"
+            docker run -d --name onrank-api -p 8080:8080 onrank-api:${{ env.TAG }}
