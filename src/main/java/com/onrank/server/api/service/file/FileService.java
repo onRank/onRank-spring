@@ -111,4 +111,29 @@ public class FileService {
         List<FileMetadata> files = fileMetadataRepository.findByCategoryAndEntityId(category, entityId);
         fileMetadataRepository.deleteAll(files);
     }
+
+    @Transactional
+    public List<PresignedUrlResponse> replaceFiles(
+            FileCategory category,
+            Long entityId,
+            List<Long> remainingFileIds, // 남길 파일
+            List<String> newFileNames) { // 신규 업로드할 파일
+
+        // 기존 모든 파일 조회
+        List<FileMetadata> existingFiles = fileMetadataRepository.findByCategoryAndEntityId(category, entityId);
+
+        // 삭제할 파일 필터링
+        List<FileMetadata> toDelete = existingFiles.stream()
+                .filter(file -> !remainingFileIds.contains(file.getFileId()))
+                .toList();
+
+        // S3 및 DB 에서 삭제
+        for (FileMetadata file : toDelete) {
+            deleteFile(file.getFileKey());
+            fileMetadataRepository.delete(file);
+        }
+
+        // 신규 파일 업로드 URL 발급 및 메타데이터 저장
+        return createMultiplePresignedUrls(category, entityId, newFileNames);
+    }
 }
