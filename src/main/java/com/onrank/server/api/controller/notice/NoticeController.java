@@ -104,10 +104,6 @@ public class NoticeController implements NoticeControllerDocs {
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        noticeService.deleteNotice(noticeId);
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-        return ResponseEntity.ok(context);
-
+        return ResponseEntity.ok(noticeService.deleteNotice(oAuth2User.getName(), studyId, noticeId));
     }
 }

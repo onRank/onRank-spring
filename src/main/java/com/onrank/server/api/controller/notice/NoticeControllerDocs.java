@@ -1,6 +1,7 @@
 package com.onrank.server.api.controller.notice;
 
 import com.onrank.server.api.dto.common.ContextResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.notice.NoticeDetailResponse;
 import com.onrank.server.api.dto.notice.NoticeListResponse;
@@ -12,10 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -62,4 +60,18 @@ public interface NoticeControllerDocs {
             @Parameter(hidden = true) CustomOAuth2User oAuth2User
     );
 
+    @Operation(summary = "공지사항 삭제", description = "공지사항 작성자(CREATOR, HOST)만 해당 공지사항을 삭제할 수 있습니다.\n\n" +
+            "- 공지사항에 첨부된 파일들도 함께 S3에서 삭제됩니다.\n" +
+            "- 삭제 후 스터디 내 사용자 컨텍스트 정보(MemberStudyContext)를 반환합니다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "공지사항 삭제 성공"),
+            @ApiResponse(responseCode = "403", description = "공지사항 삭제 권한 없음"),
+            @ApiResponse(responseCode = "404", description = "해당 ID의 공지사항이 존재하지 않음")
+    })
+    @DeleteMapping("/studies/{studyId}/notices/{noticeId}")
+    ResponseEntity<MemberStudyContext> deleteNotice(
+            @Parameter(description = "스터디 ID", example = "1") @PathVariable Long studyId,
+            @Parameter(description = "공지사항 ID", example = "5") @PathVariable Long noticeId,
+            @Parameter(hidden = true) CustomOAuth2User oAuth2User
+    );
 }

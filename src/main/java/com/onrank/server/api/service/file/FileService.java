@@ -17,7 +17,6 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 import java.net.URL;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -95,9 +94,7 @@ public class FileService {
         return fileMetadataRepository.findByCategoryAndEntityId(category, entityId);
     }
 
-    /**
-     * 파일 삭제 (단일 파일 S3에서 삭제)
-     */
+    // S3 파일 삭제
     @Transactional
     public void deleteFile(String filePath) {
         s3Client.deleteObject(DeleteObjectRequest.builder()
@@ -106,9 +103,17 @@ public class FileService {
                 .build());
     }
 
+    // 해당 Entity 의 모든 파일 삭제 (S3 & DB)
     @Transactional
-    public void deleteFileMetadata(FileCategory category, Long entityId) {
+    public void deleteAllFilesAndMetadata(FileCategory category, Long entityId) {
         List<FileMetadata> files = fileMetadataRepository.findByCategoryAndEntityId(category, entityId);
+
+        // S3에서 삭제
+        for (FileMetadata file : files) {
+            deleteFile(file.getFileKey());
+        }
+
+        // 메타데이터 삭제
         fileMetadataRepository.deleteAll(files);
     }
 

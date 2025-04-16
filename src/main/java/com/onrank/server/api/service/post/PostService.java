@@ -1,9 +1,15 @@
 package com.onrank.server.api.service.post;
 
+import com.onrank.server.api.dto.common.ContextResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.FileMetadataDto;
+import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.post.AddPostRequest;
-import com.onrank.server.api.dto.post.PostResponse;
+import com.onrank.server.api.dto.post.PostDetailResponse;
+import com.onrank.server.api.dto.post.PostListResponse;
+import com.onrank.server.api.dto.post.UpdatePostRequest;
 import com.onrank.server.api.service.file.FileService;
+import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.member.Member;
@@ -18,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,19 +34,32 @@ public class PostService {
     private final PostJpaRepository postRepository;
     private final StudentJpaRepository studentRepository;
     private final MemberJpaRepository memberRepository;
+    private final MemberService memberService;
     private final FileService fileService;
 
-    public Optional<Post> findByPostId(Long postId) {
-        return postRepository.findByPostId(postId);
+    // 게시판 상세 조회
+    public ContextResponse<PostDetailResponse> getPostDetail(String username, Long studyId, Long postId) {
+        Post post = postRepository.findByPostId(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+
+        List<FileMetadataDto> fileDtos = fileService.getMultipleFileMetadata(FileCategory.POST, postId);
+
+        MemberStudyContext context = memberService.getContext(username, studyId);
+        return new ContextResponse<>(context, PostDetailResponse.from(post, fileDtos));
     }
 
-    public List<Post> findByStudyId(Long studyId) {
-        return postRepository.findByStudyStudyId(studyId);
+    // 게시판 목록 조회
+    public ContextResponse<List<PostListResponse>> getPosts(String username, Long studyId) {
+        List<PostListResponse> responses = postRepository.findByStudyStudyId(studyId)
+                .stream()
+                .map(PostListResponse::from)
+                .toList();
+
+        MemberStudyContext context = memberService.getContext(username, studyId);
+        return new ContextResponse<>(context, responses);
     }
 
-    /**
-     * 게시물(Post)의 작성자 인지 검증하는 메서드
-     */
+    // 게시물(Post)의 작성자 인지 검증하는 메서드
     public boolean isMemberWriter(String username, Long studyId, Long postId) {
         Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
@@ -72,64 +90,32 @@ public class PostService {
 
     // 게시판 수정
     @Transactional
-    public List<FileMetadataDto> updatePost(Long postId, AddPostRequest request) {
+    public ContextResponse<List<PresignedUrlResponse>> updatePost(String username, Long StudyId, Long postId, UpdatePostRequest request) {
+
+        // 게시판 엔티티 조회 및 내용 수정
         Post post = postRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
         post.update(request.getPostTitle(), request.getPostContent());
 
-        List<FileMetadata> existingFiles = fileService.findFile(FileCategory.POST, postId);
-        existingFiles.forEach(file -> fileService.deleteFile(file.getFileKey()));
-        fileService.deleteFileMetadata(FileCategory.POST, postId);
+        // 파일 수정
+        List<PresignedUrlResponse> responses =
+                fileService.replaceFiles(FileCategory.POST, postId, request.getRemainingFileIds(), request.getNewFileNames());
 
-        fileService.createMultiplePresignedUrls(FileCategory.POST, postId, request.getFileNames());
-
-        List<FileMetadata> files = fileService.findFile(FileCategory.POST, postId);
-        return files.stream()
-                .map(f -> new FileMetadataDto(f, fileService.getBucketName()))
-                .collect(Collectors.toList());
+        MemberStudyContext context = memberService.getContext(username, StudyId);
+        return new ContextResponse<>(context, responses);
     }
 
     // 게시판 삭제
     @Transactional
-    public void deletePost(Long postId) {
+    public MemberStudyContext deletePost(String username, Long studyId, Long postId) {
         Post post = postRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
-        // S3 파일 및 메타데이터 삭제
-        List<FileMetadata> files = fileService.findFile(FileCategory.POST, postId);
-        files.forEach(file -> {
-            fileService.deleteFile(file.getFileKey());
-        });
-
+        // 파일 삭제 (S3 + 메타데이터)
+        fileService.deleteAllFilesAndMetadata(FileCategory.POST, postId);
+        // 게시판 삭제
         postRepository.delete(post);
-    }
 
-    // 게시판 상세 조회를 위한 PostResponse 객체 생성
-    public PostResponse getPostResponse(Long postId) {
-        Post post = postRepository.findByPostId(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
-        List<FileMetadata> files = fileService.findFile(FileCategory.POST, postId);
-        List<FileMetadataDto> fileDtos = files.stream()
-                .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
-                .collect(Collectors.toList());
-
-        return new PostResponse(post, fileDtos);
-    }
-
-    // 게시판 목록 조회를 위한 List<PostResponse> 객체 생성
-    public List<PostResponse> getPostResponsesByStudyId(Long studyId) {
-        return postRepository.findByStudyStudyId(studyId)
-                .stream()
-                .map(post -> {
-                    List<FileMetadata> files = fileService.findFile(FileCategory.POST, post.getPostId());
-                    List<FileMetadataDto> fileDtos = files.stream()
-                            .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
-                            .collect(Collectors.toList());
-
-                    return new PostResponse(post, fileDtos);
-                })
-                .collect(Collectors.toList());
+        return memberService.getContext(username, studyId);
     }
 }

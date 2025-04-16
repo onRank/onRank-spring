@@ -13,6 +13,7 @@ import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
+import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.notice.NoticeJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -94,16 +94,15 @@ public class NoticeService {
 
     // 공지사항 삭제
     @Transactional
-    public void deleteNotice(Long noticeId) {
+    public MemberStudyContext deleteNotice(String username, Long studyId, Long noticeId) {
         Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
-        // S3 파일 및 메타데이터 삭제
-        List<FileMetadata> files = fileService.findFile(FileCategory.NOTICE, noticeId);
-        files.forEach(file -> {
-            fileService.deleteFile(file.getFileKey());
-        });
-
+        // 파일 삭제 (S3 + 메타데이터)
+        fileService.deleteAllFilesAndMetadata(FileCategory.NOTICE, noticeId);
+        // 공지사항 삭제
         noticeRepository.delete(notice);
+
+        return memberService.getContext(username, studyId);
     }
 }

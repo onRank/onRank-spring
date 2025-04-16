@@ -3,9 +3,12 @@ package com.onrank.server.api.controller.post;
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
+import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.post.AddPostRequest;
-import com.onrank.server.api.dto.post.PostResponse;
+import com.onrank.server.api.dto.post.PostDetailResponse;
+import com.onrank.server.api.dto.post.PostListResponse;
+import com.onrank.server.api.dto.post.UpdatePostRequest;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.post.PostService;
 import com.onrank.server.api.service.study.StudyService;
@@ -24,17 +27,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/studies/{studyId}/posts")
 @RequiredArgsConstructor
-public class PostController {
+public class PostController implements PostControllerDocs {
 
     private final PostService postService;
-    private final StudyService studyService;
     private final MemberService memberService;
+    private final StudyService studyService;
 
     /**
-     * 스터디 내 모든 게시판 조회 (스터디 멤버만 가능)
+     * 게시판 목록 조회 (스터디 멤버만 가능)
      */
     @GetMapping
-    public ResponseEntity<ContextResponse<List<PostResponse>>> getPosts (
+    public ResponseEntity<ContextResponse<List<PostListResponse>>> getPosts (
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -42,18 +45,14 @@ public class PostController {
         if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-        List<PostResponse> posts = postService.getPostResponsesByStudyId(studyId);
-
-        return ResponseEntity.ok(new ContextResponse<>(context, posts));
+        return ResponseEntity.ok(postService.getPosts(oAuth2User.getName(), studyId));
     }
 
     /**
      * 특정 게시판 조회 (스터디 멤버만 가능)
      */
     @GetMapping("/{postId}")
-    public ResponseEntity<ContextResponse<PostResponse>> getPost (
+    public ResponseEntity<ContextResponse<PostDetailResponse>> getPost (
             @PathVariable Long studyId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -62,11 +61,7 @@ public class PostController {
         if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-        PostResponse post = postService.getPostResponse(postId);
-
-        return ResponseEntity.ok(new ContextResponse<>(context, post));
+        return ResponseEntity.ok(postService.getPostDetail(oAuth2User.getName(), studyId, postId));
     }
 
     /**
@@ -78,16 +73,14 @@ public class PostController {
             @RequestBody AddPostRequest addPostRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        String username = oAuth2User.getName();
-
         // 스터디 멤버만 가능
-        if (!memberService.isMemberInStudy(username, studyId)) {
+        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findByUsernameAndStudyId(oAuth2User.getName(), studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
         List<FileMetadataDto> fileDtos = postService.createPost(addPostRequest, study, member);
@@ -100,22 +93,17 @@ public class PostController {
      * 게시판 수정 (Post 의 작성자만 가능)
      */
     @PutMapping("/{postId}")
-    public ResponseEntity<ContextResponse<List<FileMetadataDto>>> updatePost(
+    public ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> updatePost(
             @PathVariable Long studyId,
             @PathVariable Long postId,
-            @RequestBody AddPostRequest addPostRequest,
+            @RequestBody UpdatePostRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
 
         // 작성자만 수정 가능
         if (!postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        List<FileMetadataDto> fileDtos = postService.updatePost(postId, addPostRequest);
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-
-        return ResponseEntity.ok(new ContextResponse<>(context, fileDtos));
+        return ResponseEntity.ok(postService.updatePost(oAuth2User.getName(), studyId, postId, request));
     }
 
     /**
@@ -131,10 +119,6 @@ public class PostController {
         if (!postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        postService.deletePost(postId);
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-
-        return ResponseEntity.ok(context);
+        return ResponseEntity.ok(postService.deletePost(oAuth2User.getName(), studyId, postId));
     }
 }

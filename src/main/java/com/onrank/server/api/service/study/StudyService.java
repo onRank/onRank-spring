@@ -120,7 +120,7 @@ public class StudyService {
         // 기존 파일과 메타데이터 모두 삭제
         List<FileMetadata> existingFiles = fileService.findFile(FileCategory.STUDY, studyId);
         existingFiles.forEach(file -> fileService.deleteFile(file.getFileKey()));
-        fileService.deleteFileMetadata(FileCategory.STUDY, studyId);
+        fileService.deleteAllFilesAndMetadata(FileCategory.STUDY, studyId);
 
         String presignedUrl = fileService.createPresignedUrlAndSaveMetadata(FileCategory.STUDY, studyId, request.getFileName());
 
