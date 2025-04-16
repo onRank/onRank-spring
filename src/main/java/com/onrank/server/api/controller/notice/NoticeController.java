@@ -81,6 +81,7 @@ public class NoticeController implements NoticeControllerDocs {
         List<FileMetadataDto> fileDtos = noticeService.createNotice(addNoticeRequest, study);
         MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
+
         return ResponseEntity.status(HttpStatus.CREATED).body(new ContextResponse<>(context, fileDtos));
     }
 
