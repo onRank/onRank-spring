@@ -1,9 +1,13 @@
 package com.onrank.server.api.service.notice;
 
+import com.onrank.server.api.dto.common.ContextResponse;
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.notice.AddNoticeRequest;
-import com.onrank.server.api.dto.notice.NoticeResponse;
+import com.onrank.server.api.dto.notice.NoticeListResponse;
+import com.onrank.server.api.dto.notice.NoticeDetailResponse;
 import com.onrank.server.api.service.file.FileService;
+import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.notice.Notice;
@@ -24,6 +28,7 @@ public class NoticeService {
 
     private final NoticeJpaRepository noticeRepository;
     private final FileService fileService;
+    private final MemberService memberService;
 
     public Optional<Notice> findByNoticeId(Long noticeId) {
         return noticeRepository.findByNoticeId(noticeId);
@@ -90,31 +95,26 @@ public class NoticeService {
         noticeRepository.delete(notice);
     }
 
-    // 공지사항 상세 조회를 위한 NoticeResponse 객체 생성
-    public NoticeResponse getNoticeResponse(Long noticeId) {
+    // 공지사항 상세 조회
+    public ContextResponse<NoticeDetailResponse> getNoticeDetail(String username, Long studyId, Long noticeId) {
         Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
-        List<FileMetadata> files = fileService.findFile(FileCategory.NOTICE, noticeId);
-        List<FileMetadataDto> fileDtos = files.stream()
-                .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
-                .collect(Collectors.toList());
+        List<FileMetadataDto> fileDtos = fileService.getMultipleFileMetadata(FileCategory.NOTICE, noticeId);
 
-        return new NoticeResponse(notice, fileDtos);
+        MemberStudyContext context = memberService.getContext(username, studyId);
+        return new ContextResponse<>(context, NoticeDetailResponse.from(notice, fileDtos));
     }
 
-    // 공지사항 목록 조회를 위한 List<NoticeResponse> 객체 생성
-    public List<NoticeResponse> getNoticeResponsesByStudyId(Long studyId) {
-        return noticeRepository.findByStudyStudyId(studyId)
-                .stream()
-                .map(notice -> {
-                    List<FileMetadata> files = fileService.findFile(FileCategory.NOTICE, notice.getNoticeId());
-                    List<FileMetadataDto> fileDtos = files.stream()
-                            .map(file -> new FileMetadataDto(file, fileService.getBucketName()))
-                            .collect(Collectors.toList());
+    // 공지사항 목록 조회
+    public ContextResponse<List<NoticeListResponse>> getNotices(String username, Long studyId) {
 
-                    return new NoticeResponse(notice, fileDtos);
-                })
-                .collect(Collectors.toList());
+        List<NoticeListResponse> responses = noticeRepository.findByStudyStudyId(studyId)
+                .stream()
+                .map(NoticeListResponse::from)
+                .toList();
+
+        MemberStudyContext context = memberService.getContext(username, studyId);
+        return new ContextResponse<>(context, responses);
     }
 }

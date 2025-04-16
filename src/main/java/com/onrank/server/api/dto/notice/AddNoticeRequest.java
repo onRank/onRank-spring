@@ -4,7 +4,6 @@ import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.study.Study;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

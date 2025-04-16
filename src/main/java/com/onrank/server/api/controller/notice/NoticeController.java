@@ -4,7 +4,8 @@ import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.notice.AddNoticeRequest;
-import com.onrank.server.api.dto.notice.NoticeResponse;
+import com.onrank.server.api.dto.notice.NoticeListResponse;
+import com.onrank.server.api.dto.notice.NoticeDetailResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.notice.NoticeService;
 import com.onrank.server.api.service.study.StudyService;
@@ -22,17 +23,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/studies/{studyId}/notices")
 @RequiredArgsConstructor
-public class NoticeController {
+public class NoticeController implements NoticeControllerDocs {
 
     private final NoticeService noticeService;
     private final StudyService studyService;
     private final MemberService memberService;
 
     /**
-     * 스터디 내 모든 공지사항 조회 (스터디 멤버만 가능)
+     * 공지사항 목록 조회 (스터디 멤버만 가능)
      */
     @GetMapping
-    public ResponseEntity<ContextResponse<List<NoticeResponse>>> getNotices(
+    public ResponseEntity<ContextResponse<List<NoticeListResponse>>> getNotices(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -40,18 +41,14 @@ public class NoticeController {
         if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-        List<NoticeResponse> notices = noticeService.getNoticeResponsesByStudyId(studyId);
-
-        return ResponseEntity.ok(new ContextResponse<>(context, notices));
+        return ResponseEntity.ok(noticeService.getNotices(oAuth2User.getName(), studyId));
     }
 
     /**
      * 특정 공지사항 조회 (스터디 멤버만 가능)
      */
     @GetMapping("/{noticeId}")
-    public ResponseEntity<ContextResponse<NoticeResponse>> getNotice(
+    public ResponseEntity<ContextResponse<NoticeDetailResponse>> getNotice(
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -60,11 +57,7 @@ public class NoticeController {
         if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-        NoticeResponse notice = noticeService.getNoticeResponse(noticeId);
-
-        return ResponseEntity.ok(new ContextResponse<>(context, notice));
+        return ResponseEntity.ok(noticeService.getNoticeDetail(oAuth2User.getName(), studyId, noticeId));
     }
 
     /**
