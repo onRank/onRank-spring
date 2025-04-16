@@ -128,3 +128,4 @@ public class AssignmentController implements AssignmentControllerDocs {
 // request: 점수, 코멘트
 // response:
 // 멤버 엔티티 과제 총점수 속성 업데이트
+
