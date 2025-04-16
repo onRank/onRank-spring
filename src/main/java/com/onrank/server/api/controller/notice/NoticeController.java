@@ -1,16 +1,15 @@
 package com.onrank.server.api.controller.notice;
 
 import com.onrank.server.api.dto.common.ContextResponse;
-import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
+import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.notice.AddNoticeRequest;
 import com.onrank.server.api.dto.notice.NoticeListResponse;
 import com.onrank.server.api.dto.notice.NoticeDetailResponse;
+import com.onrank.server.api.dto.notice.UpdateNoticeRequest;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.notice.NoticeService;
-import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.api.service.member.MemberService;
-import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,6 @@ import java.util.List;
 public class NoticeController implements NoticeControllerDocs {
 
     private final NoticeService noticeService;
-    private final StudyService studyService;
     private final MemberService memberService;
 
     /**
@@ -64,46 +62,33 @@ public class NoticeController implements NoticeControllerDocs {
      * 공지사항 등록 (CREATOR, HOST 만 가능)
      */
     @PostMapping("/add")
-    public ResponseEntity<ContextResponse<List<FileMetadataDto>>> createNotice(
+    public ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> createNotice(
             @PathVariable Long studyId,
-            @RequestBody AddNoticeRequest addNoticeRequest,
+            @RequestBody AddNoticeRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        Study study = studyService.findByStudyId(studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Study not found"));
-
-        // Pre-signed URL 생성 및 파일 메타데이터 저장
-        List<FileMetadataDto> fileDtos = noticeService.createNotice(addNoticeRequest, study);
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ContextResponse<>(context, fileDtos));
+        return ResponseEntity.status(HttpStatus.CREATED).body(noticeService.createNotice(oAuth2User.getName(), studyId, request));
     }
 
     /**
      * 공지사항 수정 (CREATOR, HOST 만 가능)
      */
     @PutMapping("/{noticeId}")
-    public ResponseEntity<ContextResponse<List<FileMetadataDto>>> updateNotice(
+    public ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> updateNotice(
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
-            @RequestBody AddNoticeRequest addNoticeRequest,
+            @RequestBody UpdateNoticeRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        List<FileMetadataDto> fileDtos = noticeService.updateNotice(noticeId, addNoticeRequest);
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-
-        return ResponseEntity.ok(new ContextResponse<>(context, fileDtos));
+        return ResponseEntity.ok(noticeService.updateNotice(oAuth2User.getName(), studyId, noticeId, request));
     }
 
     /**

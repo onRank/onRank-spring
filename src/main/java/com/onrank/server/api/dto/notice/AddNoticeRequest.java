@@ -2,8 +2,7 @@ package com.onrank.server.api.dto.notice;
 
 import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.study.Study;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,16 +11,16 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
+@Schema(description = "공지사항 생성용 요청 DTO")
 public class AddNoticeRequest {
 
-    @NotBlank
-    @Size(max = 255)
+    @Schema(description = "공자사항 제목", example = "1주차 공지사항")
     private String noticeTitle;
 
-    @NotBlank
+    @Schema(description = "공자사항 내용", example = "1주차 공지사항 내용입니다.")
     private String noticeContent;
 
-    // 업로드하기 위한 파일명들
+    @Schema(description = "공지사항 업로드할 파일 이름 목록", example = "[\"곽민서이력서.pdf\", \"README.md\"]")
     private List<String> fileNames;
 
     public Notice toEntity(Study study) {
