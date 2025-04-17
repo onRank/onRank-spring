@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.net.URL;
@@ -48,8 +49,6 @@ public class FileService {
                         .build())
                 .build();
 
-        URL presignedUrl = s3Presigner.presignPutObject(request).url();
-
         // file metadata 정보를 데이터베이스에 저장
         FileMetadata fileMetadata = FileMetadata.builder()
                 .category(category)
@@ -59,8 +58,11 @@ public class FileService {
                 .build();
         fileMetadataRepository.save(fileMetadata);
 
-        return presignedUrl.toString();
+//        URL presignedUrl = s3Presigner.presignPutObject(request).url();
+//        return presignedUrl.toString();
+        return s3Presigner.presignPutObject(request).url().toString();
     }
+
 
     /**
      * 여러 파일 업로드: Pre-signed URL 발급 및 메타데이터 일괄 저장
