@@ -1,7 +1,6 @@
 package com.onrank.server.api.controller.study;
 
 import com.onrank.server.api.dto.common.ContextResponse;
-import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.*;
@@ -50,7 +49,7 @@ public class StudyManagementController implements StudyManagementControllerDocs 
     }
 
     @DeleteMapping
-    public ResponseEntity<MemberStudyContext> deleteStudy(
+    public ResponseEntity<Void> deleteStudy(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -58,6 +57,7 @@ public class StudyManagementController implements StudyManagementControllerDocs 
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.ok(studyService.deleteStudy(oAuth2User.getName(), studyId));
+        studyService.deleteStudy(oAuth2User.getName(), studyId);
+        return ResponseEntity.noContent().build();
     }
 }

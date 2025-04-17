@@ -1,7 +1,6 @@
 package com.onrank.server.api.controller.study;
 
 import com.onrank.server.api.dto.common.ContextResponse;
-import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.StudyUpdateRequest;
@@ -43,12 +42,12 @@ public interface StudyManagementControllerDocs {
             description = "스터디 및 관련 데이터(공지, 과제, 게시글, 파일 등)를 삭제합니다. CREATOR 또는 HOST만 수행 가능합니다."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "스터디 삭제 성공"),
+            @ApiResponse(responseCode = "204", description = "스터디 삭제 성공"),
             @ApiResponse(responseCode = "403", description = "접근 권한 없음"),
             @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음")
     })
     @DeleteMapping
-    ResponseEntity<MemberStudyContext> deleteStudy(
+    ResponseEntity<Void> deleteStudy(
             @Parameter(description = "삭제할 스터디 ID", required = true)
             @PathVariable Long studyId,
 

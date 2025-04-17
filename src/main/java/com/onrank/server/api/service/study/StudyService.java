@@ -168,7 +168,7 @@ public class StudyService {
         );
     }
 
-    public MemberStudyContext deleteStudy(String username, Long studyId) {
+    public void deleteStudy(String username, Long studyId) {
 
         // 1. 공지사항 파일 삭제
         noticeRepository.findByStudyStudyId(studyId)
@@ -188,8 +188,5 @@ public class StudyService {
 
         // 5. 스터디 삭제(cascade 또는 orphanRemoval로 연결된 엔티티 자동 삭제)
         studyRepository.deleteById(studyId);
-
-        MemberStudyContext context = memberService.getContext(username, studyId);
-        return context;
     }
 }
