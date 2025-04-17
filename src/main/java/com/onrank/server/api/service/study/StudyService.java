@@ -6,14 +6,22 @@ import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.study.*;
+import com.onrank.server.api.service.assignment.AssignmentService;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.notice.NoticeService;
+import com.onrank.server.domain.assignment.Assignment;
+import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;  // 이 줄 추가
+import com.onrank.server.domain.notice.Notice;
+import com.onrank.server.domain.notice.NoticeJpaRepository;
+import com.onrank.server.domain.post.Post;
+import com.onrank.server.domain.post.PostJpaRepository;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -37,9 +45,13 @@ public class StudyService {
     private final MemberService memberService;
     private final FileService fileService;
     private final FileMetadataJpaRepository fileMetadataRepository;
-
+    private final NoticeJpaRepository noticeRepository;
+    private final PostJpaRepository postRepository;
+    private final AssignmentJpaRepository assignmentRepository;
+    private final AssignmentService assignmentService;
 
     public Optional<Study> findByStudyId(Long id) {
+
         return studyRepository.findByStudyId(id);
     }
 
@@ -162,5 +174,30 @@ public class StudyService {
                 request.getLatePoint(),
                 study.getStudyStatus()
         );
+    }
+
+    public MemberStudyContext deleteStudy(String username, Long studyId) {
+
+        // 1. 공지사항 파일 삭제
+        noticeRepository.findByStudyStudyId(studyId)
+                .forEach(notice -> fileService.deleteAllFilesAndMetadata(FileCategory.NOTICE, notice.getNoticeId()));
+
+
+        // 2. 게시글 파일 삭제
+        postRepository.findByStudyStudyId(studyId)
+                .forEach(post -> fileService.deleteAllFilesAndMetadata(FileCategory.POST, post.getPostId()));
+
+        // 3. 과제 파일 삭제
+        assignmentRepository.findByStudyStudyId(studyId)
+                .forEach(assignment -> fileService.deleteAllFilesAndMetadata(FileCategory.ASSIGNMENT, assignment.getAssignmentId()));
+
+        // 4. 스터디 파일 S3 및 FileMetadata 삭제
+        fileService.deleteAllFilesAndMetadata(FileCategory.STUDY, studyId);
+
+        // 5. 스터디 삭제(cascade 또는 orphanRemoval로 연결된 엔티티 자동 삭제)
+        studyRepository.deleteById(studyId);
+
+        MemberStudyContext context = memberService.getContext(username, studyId);
+        return context;
     }
 }

@@ -1,5 +1,6 @@
 package com.onrank.server.api.controller.study;
 
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.AddStudyRequest;
 import com.onrank.server.api.dto.study.AddStudyResponse;
