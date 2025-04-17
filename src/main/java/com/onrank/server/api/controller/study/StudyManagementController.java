@@ -49,7 +49,7 @@ public class StudyManagementController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{studyId}")
+    @DeleteMapping
     public ResponseEntity<MemberStudyContext> deleteStudy(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
