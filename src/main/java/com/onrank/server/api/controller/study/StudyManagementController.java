@@ -2,6 +2,7 @@ package com.onrank.server.api.controller.study;
 
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
+import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.*;
 import com.onrank.server.api.service.member.MemberService;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/studies/{studyId}/management")
 @RequiredArgsConstructor
-public class StudyManagementController {
+public class StudyManagementController implements StudyManagementControllerDocs {
 
     private final StudyService studyService;
     private final MemberService memberService;
@@ -36,7 +37,7 @@ public class StudyManagementController {
     }
 
     @PutMapping
-    public ResponseEntity<ContextResponse<AddStudyResponse>> updateStudy(
+    public ResponseEntity<ContextResponse<PresignedUrlResponse>> updateStudy(
             @PathVariable Long studyId,
             @RequestBody StudyUpdateRequest studyUpdateRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
@@ -45,8 +46,7 @@ public class StudyManagementController {
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        ContextResponse<AddStudyResponse> response = studyService.updateStudy(studyId, oAuth2User.getName(), studyUpdateRequest);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(studyService.updateStudy(oAuth2User.getName(), studyId, studyUpdateRequest));
     }
 
     @DeleteMapping
