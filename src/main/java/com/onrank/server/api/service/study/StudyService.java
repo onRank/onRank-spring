@@ -5,12 +5,11 @@ import com.onrank.server.api.dto.attendance.AttendancePointResponse;
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
+import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.study.*;
 import com.onrank.server.api.service.assignment.AssignmentService;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
-import com.onrank.server.api.service.notice.NoticeService;
-import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -18,9 +17,7 @@ import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;  // 이 줄 추가
-import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.notice.NoticeJpaRepository;
-import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.post.PostJpaRepository;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
@@ -29,6 +26,7 @@ import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;  // 이 줄도 필요합니다
 import java.util.List;
@@ -123,24 +121,18 @@ public class StudyService {
     }
 
     @Transactional
-    public ContextResponse<AddStudyResponse> updateStudy(Long studyId, String username, StudyUpdateRequest request) {
+    public ContextResponse<PresignedUrlResponse> updateStudy(String username, Long studyId, StudyUpdateRequest request) {
+
+        // 스터디 정보 수정
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
-
         study.update(request.getStudyName(), request.getStudyContent(), request.getPresentPoint(), request.getAbsentPoint(), request.getLatePoint(), request.getStudyStatus());
 
-        // 기존 파일과 메타데이터 모두 삭제
-        List<FileMetadata> existingFiles = fileService.findFile(FileCategory.STUDY, studyId);
-        existingFiles.forEach(file -> fileService.deleteFile(file.getFileKey()));
-        fileService.deleteAllFilesAndMetadata(FileCategory.STUDY, studyId);
-
-        String presignedUrl = fileService.createPresignedUrlAndSaveMetadata(FileCategory.STUDY, studyId, request.getFileName());
-
-        AddStudyResponse response = AddStudyResponse.builder()
-                .studyId(studyId)
-                .fileName(request.getFileName())
-                .uploadUrl(presignedUrl)
-                .build();
+        // 스터디 파일(이미지) 수정 - newFileName 존재시
+        PresignedUrlResponse response = null;
+        if(StringUtils.hasText(request.getNewFileName())) {
+            response = fileService.replaceStudyFile(studyId, request.getNewFileName());
+        }
 
         // 멤버 권한 포함
         MemberStudyContext memberContext = memberService.getContext(username, studyId);
@@ -176,7 +168,7 @@ public class StudyService {
         );
     }
 
-    public MemberStudyContext deleteStudy(String username, Long studyId) {
+    public void deleteStudy(String username, Long studyId) {
 
         // 1. 공지사항 파일 삭제
         noticeRepository.findByStudyStudyId(studyId)
@@ -196,8 +188,5 @@ public class StudyService {
 
         // 5. 스터디 삭제(cascade 또는 orphanRemoval로 연결된 엔티티 자동 삭제)
         studyRepository.deleteById(studyId);
-
-        MemberStudyContext context = memberService.getContext(username, studyId);
-        return context;
     }
 }

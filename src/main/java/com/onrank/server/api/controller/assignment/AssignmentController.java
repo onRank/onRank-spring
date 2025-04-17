@@ -127,4 +127,4 @@ public class AssignmentController implements AssignmentControllerDocs {
 // 제출물 채점 (관리자 기준)
 // request: 점수, 코멘트
 // response:
-// 멤버 엔티티 과제 총점수 속성 업데이트 
+// 멤버 엔티티 과제 총점수 속성 업데이트

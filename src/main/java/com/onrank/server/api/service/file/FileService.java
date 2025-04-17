@@ -119,6 +119,22 @@ public class FileService {
         fileMetadataRepository.deleteAll(files);
     }
 
+    // 단일 파일 수정 (Study 이미지용)
+    @Transactional
+    public PresignedUrlResponse replaceStudyFile(Long studyId, String newFileName) {
+
+        // 기존 스터디 사진 삭제
+        fileMetadataRepository.findByCategoryAndEntityId(FileCategory.STUDY, studyId).stream()
+                .findFirst()
+                .ifPresent(file -> {
+                    deleteFile(file.getFileKey());
+                    fileMetadataRepository.delete(file);
+                });
+
+        return new PresignedUrlResponse(newFileName, createPresignedUrlAndSaveMetadata(FileCategory.STUDY, studyId, newFileName));
+    }
+
+    // 다중 파일 수정
     @Transactional
     public List<PresignedUrlResponse> replaceFiles(
             FileCategory category,
