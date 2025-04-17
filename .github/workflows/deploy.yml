@@ -26,10 +26,8 @@ jobs:
             echo "[1] 이동: 프로젝트 디렉토리로"
             cd /home/ec2-user/onRank/onRank-spring
 
-            echo "[2] Git 최신화 (브랜치 강제 지정)"
-            git fetch origin
-            git checkout develop
-            git reset --hard origin/develop
+            echo "[2] Git 최신화"
+            git pull origin develop
 
             echo "[3] 기존 Docker 컨테이너 정리"
             docker stop onrank-api || true
@@ -41,9 +39,5 @@ jobs:
             echo "[5] Docker 이미지 빌드 (태그: ${{ env.TAG }})"
             docker build -t onrank-api:${{ env.TAG }} .
 
-            echo "[6] Docker 컨테이너 실행 (자동 재시작 설정)"
-            docker run -d \
-              --name onrank-api \
-              --restart unless-stopped \
-              -p 8080:8080 \
-              onrank-api:${{ env.TAG }}
+            echo "[6] Docker 컨테이너 실행"
+            docker run -d --name onrank-api -p 8080:8080 onrank-api:${{ env.TAG }}
