@@ -1,8 +1,9 @@
 package com.onrank.server.api.service.assignment;
 
-import com.onrank.server.api.dto.assignment.AddAssignmentRequest;
+import com.onrank.server.api.dto.assignment.CreateAssignmentRequest;
 import com.onrank.server.api.dto.assignment.AssignmentDetailResponse;
-import com.onrank.server.api.dto.assignment.AssignmentSummaryResponse;
+import com.onrank.server.api.dto.assignment.AssignmentListResponse;
+import com.onrank.server.api.dto.assignment.CreateSubmissionRequest;
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.FileMetadataDto;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +46,7 @@ public class AssignmentService {
      * 과제 업로드 (스터디 멤버 전체에게 Submission 생성 포함)
      */
     @Transactional
-    public ContextResponse<List<PresignedUrlResponse>> createAssignment(String username, Long studyId, AddAssignmentRequest request) {
+    public ContextResponse<List<PresignedUrlResponse>> createAssignment(String username, Long studyId, CreateAssignmentRequest request) {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
@@ -78,7 +80,7 @@ public class AssignmentService {
     /**
      * 과제 리스트 조회 (멤버 기준)
      */
-    public ContextResponse<List<AssignmentSummaryResponse>> getAssignments(String username, Long studyId) {
+    public ContextResponse<List<AssignmentListResponse>> getAssignments(String username, Long studyId) {
         List<Assignment> assignments = assignmentRepository.findByStudyStudyId(studyId);
 
         Member member = memberService.findByUsernameAndStudyId(username, studyId)
@@ -86,8 +88,8 @@ public class AssignmentService {
 
         MemberStudyContext context = memberService.getContext(username, studyId);
 
-        List<AssignmentSummaryResponse> responses = assignments.stream()
-                .map(assignment -> AssignmentSummaryResponse.from(assignment, submissionService.findByAssignmentAndMember(assignment, member)))
+        List<AssignmentListResponse> responses = assignments.stream()
+                .map(assignment -> AssignmentListResponse.from(assignment, submissionService.findByAssignmentAndMember(assignment, member)))
                 .toList();
 
         return new ContextResponse<>(context, responses);
@@ -99,11 +101,11 @@ public class AssignmentService {
     public ContextResponse<AssignmentDetailResponse> getAssignmentDetail(String username, Long studyId, Long assignmentId) {
         // 멤버 조회
         Member member = memberService.findByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+                .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Assignment not found"));
+                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
 
         // 과제 파일 조회
         List<FileMetadataDto> assignmentFiles = fileService.getMultipleFileMetadata(FileCategory.ASSIGNMENT, assignmentId);
@@ -134,5 +136,29 @@ public class AssignmentService {
         MemberStudyContext context = memberService.getContext(username, studyId);
 
         return new ContextResponse<>(context, detailResponse);
+    }
+
+    public ContextResponse<List<PresignedUrlResponse>> createSubmission(String username, Long studyId, Long assignmentId, CreateSubmissionRequest request) {
+
+        // 과제 조회
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
+
+        // 멤버 조회
+        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new NoSuchElementException("Member not found"));
+
+        // 제출물 조회 (과제 생성 시에 멤버별 제출물 엔티티를 생성해 놓음)
+        Submission submission = submissionService.findByAssignmentAndMember(assignment, member);
+
+        submission.update(request.getSubmissionContent(), LocalDateTime.now());
+
+        // S3 presigned URL 발급 및 메타데이터 저장
+        List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.SUBMISSION, submission.getSubmissionId(), request.getFileNames());
+
+        MemberStudyContext context = memberService.getContext(username, studyId);
+
+        return new ContextResponse<>(context, responses);
+
     }
 }

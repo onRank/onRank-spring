@@ -7,6 +7,8 @@ import com.onrank.server.domain.submission.SubmissionJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 @RequiredArgsConstructor
 public class SubmissionService {
@@ -15,6 +17,6 @@ public class SubmissionService {
 
     public Submission findByAssignmentAndMember(Assignment assignment, Member member) {
         return submissionRepository.findByAssignmentAndMember(assignment, member)
-                .orElseThrow(() -> new IllegalArgumentException("Assignment not found"));
+                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
     }
 }

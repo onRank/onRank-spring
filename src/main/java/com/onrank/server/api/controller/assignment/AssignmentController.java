@@ -1,8 +1,9 @@
 package com.onrank.server.api.controller.assignment;
 
-import com.onrank.server.api.dto.assignment.AddAssignmentRequest;
+import com.onrank.server.api.dto.assignment.CreateAssignmentRequest;
 import com.onrank.server.api.dto.assignment.AssignmentDetailResponse;
-import com.onrank.server.api.dto.assignment.AssignmentSummaryResponse;
+import com.onrank.server.api.dto.assignment.AssignmentListResponse;
+import com.onrank.server.api.dto.assignment.CreateSubmissionRequest;
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
@@ -30,7 +31,7 @@ public class AssignmentController implements AssignmentControllerDocs {
     @PostMapping
     public ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> createAssignment(
             @PathVariable Long studyId,
-            @RequestBody AddAssignmentRequest request,
+            @RequestBody CreateAssignmentRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
         // CREATOR, HOST 만 가능
@@ -44,7 +45,7 @@ public class AssignmentController implements AssignmentControllerDocs {
      * 과제 목록 조회 - 멤버 기준
      */
     @GetMapping
-    public ResponseEntity<ContextResponse<List<AssignmentSummaryResponse>>> getAssignments(
+    public ResponseEntity<ContextResponse<List<AssignmentListResponse>>> getAssignments(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
@@ -72,23 +73,25 @@ public class AssignmentController implements AssignmentControllerDocs {
 
         return ResponseEntity.ok(assignmentService.getAssignmentDetail(oAuth2User.getName(), studyId, assignmentId));
     }
+
+    /**
+     * 제출물 업로드 - 멤버 기준
+     */
+    @PostMapping("/{assignmentId}")
+    public ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> createSubmission(
+            @PathVariable Long studyId,
+            @PathVariable Long assignmentId,
+            @RequestBody CreateSubmissionRequest request,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return ResponseEntity.status((HttpStatus.CREATED)).body(assignmentService.createSubmission(oAuth2User.getName(), studyId, assignmentId, request));
+    }
 }
-
-// 과제 업로드 (관리자 기준)
-// request: 제목, 지시사항, 마감기한, 최대포인트 / 새로 업로드한 과제 파일 List(파일 이름)
-// response: 새로 업로드한 과제 파일 List(FileMetadataDto)
-// 과제, 제출물 엔티티 생성
-
-// 과제 목록 조회 (멤버 기준)
-// request:
-// response: 과제 List(과제 ID, 제목, 마감기한, 제출여부, 점수(SCORED))
-
-// 과제 상세 조회 (멤버 기준)
-// request:
-// response:
-// NOTSUBMITTED: 제목, 지시사항, 마감기한, 최대포인트 / 과제 파일 List(FileUrl)
-// SUBMITTED: + 제출물 내용 / 제출물 파일 List(FileUrl)
-// SCORED: + 점수, 코멘트
 
 // 제출물 업로드 (멤버 기준)
 // request: 제출물 내용 / 새로 제출한 제출물 파일 List(파일 이름)

@@ -1,6 +1,6 @@
 package com.onrank.server.api.controller.assignment;
 
-import com.onrank.server.api.dto.assignment.AddAssignmentRequest;
+import com.onrank.server.api.dto.assignment.CreateAssignmentRequest;
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
@@ -30,7 +30,7 @@ public interface AssignmentControllerDocs {
     })
     ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> createAssignment(
             @Parameter(description = "스터디 ID", example = "1") @PathVariable Long studyId,
-            @RequestBody AddAssignmentRequest request,
+            @RequestBody CreateAssignmentRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User
     );
 }

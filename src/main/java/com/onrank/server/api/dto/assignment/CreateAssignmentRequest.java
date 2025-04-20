@@ -11,7 +11,7 @@ import java.util.List;
 
 @Getter
 @Schema(description = "과제 생성 요청 DTO")
-public class AddAssignmentRequest {
+public class CreateAssignmentRequest {
 
     @Schema(description = "과제 제목", example = "퀵정렬 구현 과제")
     private String assignmentTitle;
