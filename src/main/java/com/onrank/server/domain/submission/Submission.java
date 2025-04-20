@@ -54,8 +54,9 @@ public class Submission {
     }
 
     // 과제 제출 업데이트 메서드
-    public void update(String submissionContent, LocalDateTime submissionCreatedAt) {
+    public void updateSubmission(String submissionContent, LocalDateTime submissionCreatedAt) {
         this.submissionContent = submissionContent;
+        this.submissionStatus = SubmissionStatus.SUBMITTED;
         this.submissionCreatedAt = LocalDateTime.now();
     }
 

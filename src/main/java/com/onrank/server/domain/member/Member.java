@@ -90,4 +90,8 @@ public class Member {
     public void changeRole(MemberRole memberRole) {
         this.memberRole = memberRole;
     }
+
+    public void changeSubmissionPoint(Long submissionPoint) {
+        this.memberSubmissionPoint = submissionPoint;
+    }
 }
