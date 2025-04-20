@@ -6,10 +6,10 @@ import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.submission.ScoreSubmissionRequest;
 import com.onrank.server.api.dto.submission.SubmissionDetailResponse;
 import com.onrank.server.api.dto.submission.SubmissionListResponse;
-import com.onrank.server.api.service.assignment.AssignmentService;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.domain.assignment.Assignment;
+import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.submission.Submission;
@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 public class SubmissionService {
 
     private final SubmissionJpaRepository submissionRepository;
-    private final AssignmentService assignmentService;
+    private final AssignmentJpaRepository assignmentRepository;
     private final MemberService memberService;
     private final FileService fileService;
 
@@ -65,7 +65,8 @@ public class SubmissionService {
         MemberStudyContext context = memberService.getContext(username, studyId);
 
         // 과제 조회
-        Assignment assignment = assignmentService.findById(assignmentId);
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
 
         // 제출물 조회
         List<Submission> submissions = submissionRepository.findAllByAssignment(assignment);
@@ -96,7 +97,8 @@ public class SubmissionService {
         MemberStudyContext context = memberService.getContext(username, studyId);
 
         // 과제 조회
-        Assignment assignment = assignmentService.findById(assignmentId);
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
 
         // 멤버 조회
         Member member = memberService.findByUsernameAndStudyId(username, studyId)
@@ -149,7 +151,8 @@ public class SubmissionService {
         }
 
         // 과제 조회
-        Assignment assignment = assignmentService.findById(assignmentId);
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
 
         // 멤버 조회
         Member member = memberService.findByUsernameAndStudyId(username, studyId)
