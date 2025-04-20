@@ -9,6 +9,8 @@ import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -44,7 +46,7 @@ public interface AssignmentControllerDocs {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "과제 목록 조회 성공"),
-            @ApiResponse(responseCode = "403", description = "스터디 멤버가 아님")
+            @ApiResponse(responseCode = "403", description = "스터디 멤버가 아님", content = @Content(schema = @Schema(hidden = true)))
     })
     ResponseEntity<ContextResponse<List<AssignmentListResponse>>> getAssignments(
             @Parameter(description = "스터디 ID", example = "1") @PathVariable Long studyId,
@@ -58,7 +60,7 @@ public interface AssignmentControllerDocs {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "과제 상세 조회 성공"),
-            @ApiResponse(responseCode = "403", description = "스터디 멤버가 아님")
+            @ApiResponse(responseCode = "403", description = "스터디 멤버가 아님", content = @Content(schema = @Schema(hidden = true)))
     })
     ResponseEntity<ContextResponse<AssignmentDetailResponse>> getAssignmentDetail(
             @Parameter(description = "스터디 ID", example = "1") @PathVariable Long studyId,
@@ -73,7 +75,7 @@ public interface AssignmentControllerDocs {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "제출물 업로드 성공"),
-            @ApiResponse(responseCode = "403", description = "스터디 멤버가 아님")
+            @ApiResponse(responseCode = "403", description = "스터디 멤버가 아님", content = @Content(schema = @Schema(hidden = true)))
     })
     ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> createSubmission(
             @Parameter(description = "스터디 ID", example = "1") @PathVariable Long studyId,
