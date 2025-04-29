@@ -86,6 +86,9 @@ public class AttendanceService {
         // 유효한 출석 상태 값인지 검증 후 변경
         try {
             AttendanceStatus newStatus = AttendanceStatus.valueOf(status);
+            AttendanceStatus oldStatus = attendance.getAttendanceStatus();
+            Member member = attendance.getMember();
+            member.updateAttendanceCount(oldStatus, newStatus);
             attendance.updateStatus(newStatus);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Attendance status " + status + " is not valid");
