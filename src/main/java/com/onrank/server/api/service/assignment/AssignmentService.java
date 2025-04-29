@@ -250,6 +250,7 @@ public class AssignmentService {
     /**
      * 과제 제출 (멤버 기준)
      */
+    @Transactional
     public ContextResponse<List<PresignedUrlResponse>> submitAssignment(
             String username,
             Long studyId,
@@ -280,6 +281,7 @@ public class AssignmentService {
     /**
      * 과제 재제출 (멤버 기준)
      */
+    @Transactional
     public ContextResponse<List<PresignedUrlResponse>> resubmitAssignment(
             String username,
             Long studyId,
