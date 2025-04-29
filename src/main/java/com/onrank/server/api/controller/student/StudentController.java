@@ -1,4 +1,4 @@
-package com.onrank.server.api.controller.auth;
+package com.onrank.server.api.controller.student;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.student.AddStudentRequest;

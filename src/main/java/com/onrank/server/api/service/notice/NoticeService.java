@@ -12,8 +12,6 @@ import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.domain.file.FileCategory;
-import com.onrank.server.domain.file.FileMetadata;
-import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.notice.NoticeJpaRepository;
 import com.onrank.server.domain.study.Study;
