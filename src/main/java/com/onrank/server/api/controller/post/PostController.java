@@ -40,11 +40,6 @@ public class PostController implements PostControllerDocs {
     public ResponseEntity<ContextResponse<List<PostListResponse>>> getPosts (
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        // 스터디 멤버만 가능
-        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.ok(postService.getPosts(oAuth2User.getName(), studyId));
     }
 
@@ -56,11 +51,6 @@ public class PostController implements PostControllerDocs {
             @PathVariable Long studyId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        // 스터디 멤버만 가능
-        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.ok(postService.getPostDetail(oAuth2User.getName(), studyId, postId));
     }
 
@@ -73,14 +63,9 @@ public class PostController implements PostControllerDocs {
             @RequestBody AddPostRequest addPostRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // 스터디 멤버만 가능
-        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
-        Member member = memberService.findByUsernameAndStudyId(oAuth2User.getName(), studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(oAuth2User.getName(), studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
         List<FileMetadataDto> fileDtos = postService.createPost(addPostRequest, study, member);
@@ -99,10 +84,6 @@ public class PostController implements PostControllerDocs {
             @RequestBody UpdatePostRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // 작성자만 수정 가능
-        if (!postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.ok(postService.updatePost(oAuth2User.getName(), studyId, postId, request));
     }
 
@@ -114,11 +95,6 @@ public class PostController implements PostControllerDocs {
             @PathVariable Long studyId,
             @PathVariable Long postId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        // 작성자만 삭제 가능
-        if (!postService.isMemberWriter(oAuth2User.getName(), studyId, postId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.ok(postService.deletePost(oAuth2User.getName(), studyId, postId));
     }
 }

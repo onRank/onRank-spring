@@ -2,6 +2,7 @@ package com.onrank.server.common.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,47 +15,36 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler({CustomException.class})
-    protected ResponseEntity<ErrorResponseBody> handleCustomException(HttpServletRequest request, CustomException ex) {
+    protected ResponseEntity<ErrorResponse> handleCustomException(CustomException ex) {
+
         CustomErrorInfo customErrorInfo = ex.getCustomErrorInfo();
-        ErrorResponseBody errorResponseBody = ErrorResponseBody.builder()
-                .detailStatusCode(customErrorInfo.getStatusCode())
+        ErrorResponse response = ErrorResponse.builder()
+                .code(customErrorInfo.name())
                 .message(customErrorInfo.getMessage())
                 .build();
 
-        log.error("\tException at {}", request.getRequestURI());
-        log.error("\tCustomException : {}\n", customErrorInfo.getMessage());
-
         return ResponseEntity
-                .status(customErrorInfo.getStatusCode())
-                .body(errorResponseBody);
+                .status(customErrorInfo.getHttpStatus())
+                .body(response);
     }
 
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity handleValidationExceptions(HttpServletRequest request, Exception ex) {
-//        Sentry.captureException(ex);
-
-        log.error("\tException at {}", request.getRequestURI());
-        log.error("\tUnhandled Exception : {}\n", ex.getMessage());
+    protected ResponseEntity<Object> handleValidationExceptions(Exception ex) {
 
         return ResponseEntity
-                .status(500)
+                .status(HttpStatus.INTERNAL_SERVER_ERROR) // 500
                 .body(Map.of("message", ex.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity handleValidationExceptions(HttpServletRequest request, MethodArgumentNotValidException ex) {
-        ErrorResponseBody errorResponseBody = ErrorResponseBody.builder()
-                .detailStatusCode(400)
+    protected ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+
+        ErrorResponse response = ErrorResponse.builder()
                 .message(ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage())
                 .build();
 
-        log.error("\tException at {}", request.getRequestURI());
-        ex.getBindingResult().getFieldErrors().forEach(error -> {
-            log.error("\tValidation Error : {} -> {}\n", error.getField(), error.getDefaultMessage());
-        });
-
         return ResponseEntity
-                .status(400)
-                .body(errorResponseBody);
+                .status(HttpStatus.BAD_REQUEST) // 400
+                .body(response);
     }
 }

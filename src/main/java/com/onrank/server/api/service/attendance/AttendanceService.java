@@ -46,7 +46,7 @@ public class AttendanceService {
     // 출석 조회를 위한 List<AttendanceResponse> 객체 생성
     public List<AttendanceResponse> getAttendanceResponsesByStudyId(String username, Long studyId) {
 
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new IllegalStateException("Member not found"));
 
         return attendanceRepository.findAllByMemberMemberId(member.getMemberId())

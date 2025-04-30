@@ -6,7 +6,6 @@
     import com.onrank.server.api.dto.oauth.CustomOAuth2User;
     import com.onrank.server.api.dto.submission.UpdateSubmissionRequest;
     import com.onrank.server.api.service.assignment.AssignmentService;
-    import com.onrank.server.api.service.member.MemberService;
     import lombok.RequiredArgsConstructor;
     import org.springframework.http.HttpStatus;
     import org.springframework.http.ResponseEntity;
@@ -15,13 +14,14 @@
 
     import java.util.List;
 
+    import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
+
     @RestController
     @RequiredArgsConstructor
     @RequestMapping("/studies/{studyId}/assignments")
     public class AssignmentController implements AssignmentControllerDocs {
 
         private final AssignmentService assignmentService;
-        private final MemberService memberService;
 
         /**
          * 과제 업로드 - HOST 또는 CREATOR 만 가능
@@ -31,12 +31,6 @@
                 @PathVariable Long studyId,
                 @RequestBody CreateAssignmentRequest request,
                 @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-            // CREATOR, HOST 만 가능
-            if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             return ResponseEntity.status(HttpStatus.CREATED).body(assignmentService.createAssignment(oAuth2User.getName(), studyId, request));
         }
 
@@ -48,11 +42,6 @@
                 @PathVariable Long studyId,
                 @PathVariable Long assignmentId,
                 @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-            if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             try {
                 return ResponseEntity.ok(assignmentService.getAssignmentForEdit(oAuth2User.getName(), studyId, assignmentId));
             } catch (IllegalAccessException e) {
@@ -100,12 +89,6 @@
         public ResponseEntity<ContextResponse<List<AssignmentListResponse>>> getAssignments(
                 @PathVariable Long studyId,
                 @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-            // 스터디 멤버만 가능
-            if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             return ResponseEntity.ok(assignmentService.getAssignments(oAuth2User.getName(), studyId));
         }
 
@@ -117,12 +100,6 @@
                 @PathVariable Long studyId,
                 @PathVariable Long assignmentId,
                 @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-            // 스터디 멤버만 가능
-            if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             return ResponseEntity.ok(assignmentService.getAssignmentDetail(oAuth2User.getName(), studyId, assignmentId));
         }
 
@@ -135,12 +112,6 @@
                 @PathVariable Long assignmentId,
                 @RequestBody CreateSubmissionRequest request,
                 @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-            // 스터디 멤버만 가능
-            if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-
             return ResponseEntity.status((HttpStatus.CREATED)).body(assignmentService.submitAssignment(oAuth2User.getName(), studyId, assignmentId, request));
         }
 
@@ -153,7 +124,6 @@
                 @PathVariable Long assignmentId,
                 @RequestBody UpdateSubmissionRequest request,
                 @AuthenticationPrincipal CustomOAuth2User oAuth2User) throws IllegalAccessException {
-
             return ResponseEntity.ok(assignmentService.resubmitAssignment(oAuth2User.getName(), studyId, assignmentId, request));
         }
     }

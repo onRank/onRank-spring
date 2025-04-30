@@ -6,6 +6,7 @@ import com.onrank.server.api.dto.member.MemberListResponse;
 import com.onrank.server.api.dto.member.MemberResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.service.student.StudentService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.file.FileMetadataJpaRepository;
@@ -23,6 +24,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
+import static com.onrank.server.common.exception.CustomErrorInfo.STUDENT_NOT_FOUND;
+
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +39,7 @@ public class MemberService {
     private final FileMetadataJpaRepository fileMetadataRepository;
 
     public MemberStudyContext getContext(String username, Long studyId) {
-        Member member = findByUsernameAndStudyId(username, studyId)
+        Member member = findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
         List<FileMetadata> files = fileMetadataRepository
@@ -52,11 +56,11 @@ public class MemberService {
     /**
      * username과 StudyId에 해당하는 Member 조회
      */
-    public Optional<Member> findByUsernameAndStudyId(String username, Long studyId) {
+    public Optional<Member> findMemberByUsernameAndStudyId(String username, Long studyId) {
         Student student = studentService.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+                .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
         Long studentId = student.getStudentId();
-        
+
         return memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId);
     }
 
@@ -65,7 +69,7 @@ public class MemberService {
      */
     public boolean isMemberInStudy(String username, Long studyId) {
         Student student = studentService.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+                .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
 
         Long studentId = student.getStudentId();
         return memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId).isPresent();
@@ -76,20 +80,25 @@ public class MemberService {
      */
     public boolean isMemberCreatorOrHost(String username, Long studyId) {
         Student student = studentService.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+                .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
 
         Long studentId = student.getStudentId();
         return memberRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId)
                 .map(member ->
                         member.getMemberRole().equals(MemberRole.HOST) ||
-                        member.getMemberRole().equals(MemberRole.CREATOR))
+                                member.getMemberRole().equals(MemberRole.CREATOR))
                 .orElse(false);
     }
 
     /**
      *  스터디에 속한 멤버 목록 조회
      */
-    public MemberListResponse getMembersForStudy(Long studyId) {
+    public MemberListResponse getMembersForStudy(String username, Long studyId) {
+
+        // CREATOR, HOST 만 가능
+        if (!isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
 
         List<Member> members = memberRepository.findByStudyStudyId(studyId);
         List<MemberResponse> memberResponses = members.stream()
@@ -106,7 +115,12 @@ public class MemberService {
     }
 
     @Transactional
-    public void addMemberToStudy(Long studyId, AddMemberRequest request) {
+    public void addMemberToStudy(String username, Long studyId, AddMemberRequest request) {
+
+        // CREATOR, HOST 만 가능
+        if (!isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
 
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found with id: " + studyId));
@@ -119,7 +133,13 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateMemberRole(Long studyId, Long memberId, String newRole) {
+    public void updateMemberRole(String username, Long studyId, Long memberId, String newRole) {
+
+        // CREATOR, HOST 만 가능
+        if (!isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
         Member member = memberRepository.findByMemberIdAndStudyStudyId(memberId, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not in Study"));
 
@@ -132,13 +152,19 @@ public class MemberService {
 
 
     @Transactional
-    public void deleteMember(Long studyId, Long memberIdToDelete, String usernameOfRequester) {
+    public void deleteMember(String username, Long studyId, Long memberIdToDelete, String usernameOfRequester) {
+
+        // CREATOR, HOST 만 가능
+        if (!isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
         // 삭제할 멤버 조회
         Member targetMember = memberRepository.findByMemberIdAndStudyStudyId(memberIdToDelete, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스터디에 멤버가 없습니다."));
 
         // 요청자 본인의 멤버 객체 조회
-        Member requester = findByUsernameAndStudyId(usernameOfRequester, studyId)
+        Member requester = findMemberByUsernameAndStudyId(usernameOfRequester, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스터디에 소속되지 않은 사용자입니다."));
 
         // 자기 자신 삭제 방지

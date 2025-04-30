@@ -9,6 +9,7 @@ import com.onrank.server.api.dto.submission.UpdateSubmissionRequest;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.submission.SubmissionService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
@@ -26,6 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
+import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +54,11 @@ public class AssignmentService {
      */
     @Transactional
     public ContextResponse<List<PresignedUrlResponse>> createAssignment(String username, Long studyId, CreateAssignmentRequest request) {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
 
         // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
@@ -89,9 +98,9 @@ public class AssignmentService {
      */
     public ContextResponse<AssignmentEditResponse> getAssignmentForEdit(String username, Long studyId, Long assignmentId) throws IllegalAccessException {
 
-        // 권한 확인
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
-            throw new IllegalAccessException("Creator, Host만 접근 가능");
+            throw new CustomException(ACCESS_DENIED);
         }
 
         // 컨텍스트 조회
@@ -123,9 +132,9 @@ public class AssignmentService {
     public ContextResponse<List<PresignedUrlResponse>> updateAssignment(
             String username, Long studyId, Long assignmentId, UpdateAssignmentRequest request) throws IllegalAccessException {
 
-        // 권한 확인
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
-            throw new IllegalAccessException("Creator, Host만 접근 가능");
+            throw new CustomException(ACCESS_DENIED);
         }
 
         // 컨텍스트
@@ -159,9 +168,9 @@ public class AssignmentService {
     @Transactional
     public ContextResponse<Void> deleteAssignment(String username, Long studyId, Long assignmentId) throws IllegalAccessException {
 
-        // 권한 확인
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
-            throw new IllegalAccessException("Creator, Host만 접근 가능");
+            throw new CustomException(ACCESS_DENIED);
         }
 
         // 컨텍스트 조회
@@ -189,9 +198,14 @@ public class AssignmentService {
      * 과제 목록 조회 (멤버 기준)
      */
     public ContextResponse<List<AssignmentListResponse>> getAssignments(String username, Long studyId) {
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         List<Assignment> assignments = assignmentRepository.findByStudyStudyId(studyId);
 
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         MemberStudyContext context = memberService.getContext(username, studyId);
@@ -208,6 +222,11 @@ public class AssignmentService {
      */
     public ContextResponse<AssignmentDetailResponse> getAssignmentDetail(String username, Long studyId, Long assignmentId) {
 
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
 
@@ -218,7 +237,7 @@ public class AssignmentService {
         List<FileMetadataDto> assignmentFiles = fileService.getMultipleFileMetadata(FileCategory.ASSIGNMENT, assignmentId);
 
         // 멤버 조회
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 멤버 제출물 조회
@@ -257,12 +276,17 @@ public class AssignmentService {
             Long assignmentId,
             CreateSubmissionRequest request) {
 
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
 
         // 과제 & 멤버 조회
         Assignment assignment = this.findById(assignmentId);
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 제출물 조회 (과제 생성 시에 멤버별 제출물 엔티티를 생성해 놓음)
@@ -290,7 +314,7 @@ public class AssignmentService {
 
         // 스터디 멤버만 가능
         if (!memberService.isMemberInStudy(username, studyId)) {
-            throw new IllegalAccessException("해당 스터디 멤버만 접근 가능");
+            throw new CustomException(NOT_STUDY_MEMBER);
         }
 
         // 컨텍스트
@@ -298,7 +322,7 @@ public class AssignmentService {
 
         // 과제 & 멤버 조회
         Assignment assignment = this.findById(assignmentId);
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 제출물 조회

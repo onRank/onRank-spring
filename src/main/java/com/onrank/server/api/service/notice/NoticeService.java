@@ -11,6 +11,7 @@ import com.onrank.server.api.dto.notice.UpdateNoticeRequest;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.study.StudyService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.notice.NoticeJpaRepository;
@@ -20,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
+import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +37,12 @@ public class NoticeService {
 
     // 공지사항 상세 조회
     public ContextResponse<NoticeDetailResponse> getNoticeDetail(String username, Long studyId, Long noticeId) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
@@ -44,6 +54,11 @@ public class NoticeService {
 
     // 공지사항 목록 조회
     public ContextResponse<List<NoticeListResponse>> getNotices(String username, Long studyId) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
 
         List<NoticeListResponse> responses = noticeRepository.findByStudyStudyId(studyId)
                 .stream()
@@ -57,6 +72,11 @@ public class NoticeService {
     // 공지사항 생성
     @Transactional
     public ContextResponse<List<PresignedUrlResponse>> createNotice(String username, Long studyId, AddNoticeRequest request) {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
@@ -77,6 +97,11 @@ public class NoticeService {
     @Transactional
     public ContextResponse<List<PresignedUrlResponse>> updateNotice(String username, Long studyId, Long noticeId, UpdateNoticeRequest request) {
 
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
         // 공지 엔티티 조회 및 내용 수정
         Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
@@ -93,6 +118,12 @@ public class NoticeService {
     // 공지사항 삭제
     @Transactional
     public MemberStudyContext deleteNotice(String username, Long studyId, Long noticeId) {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
         Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 

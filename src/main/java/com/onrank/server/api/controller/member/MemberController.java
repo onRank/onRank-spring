@@ -27,12 +27,8 @@ public class MemberController {
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-        MemberListResponse response = memberService.getMembersForStudy(studyId);
+        MemberListResponse response = memberService.getMembersForStudy(oAuth2User.getName(), studyId);
         return ResponseEntity.ok(new ContextResponse<>(context, response));
     }
 
@@ -42,16 +38,11 @@ public class MemberController {
             @RequestBody AddMemberRequest addMemberRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         // 서비스에 존재 여부
         if (!studentService.checkIfExist(addMemberRequest.getStudentEmail())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        memberService.addMemberToStudy(studyId, addMemberRequest);
+        memberService.addMemberToStudy(oAuth2User.getName(), studyId, addMemberRequest);
         MemberStudyContext response = memberService.getContext(oAuth2User.getName(), studyId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -63,11 +54,7 @@ public class MemberController {
             @RequestBody MemberRoleRequest memberRoleRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        memberService.updateMemberRole(studyId, memberId, memberRoleRequest.getMemberRole());
+        memberService.updateMemberRole(oAuth2User.getName(), studyId, memberId, memberRoleRequest.getMemberRole());
         MemberStudyContext response = memberService.getContext(oAuth2User.getName(), studyId);
         return ResponseEntity.ok(response);
     }
@@ -78,13 +65,8 @@ public class MemberController {
             @PathVariable Long memberId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         try {
-            memberService.deleteMember(studyId, memberId, oAuth2User.getName());
+            memberService.deleteMember(oAuth2User.getName(), studyId, memberId, oAuth2User.getName());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
         }

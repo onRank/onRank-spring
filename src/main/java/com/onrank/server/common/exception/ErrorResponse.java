@@ -3,8 +3,8 @@ package com.onrank.server.common.exception;
 import lombok.Builder;
 
 @Builder
-public record ErrorResponseBody(
-        int detailStatusCode,
+public record ErrorResponse(
+        String code,
         String message
 ){}
 

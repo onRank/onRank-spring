@@ -10,6 +10,7 @@ import com.onrank.server.api.dto.post.PostListResponse;
 import com.onrank.server.api.dto.post.UpdatePostRequest;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.member.Member;
@@ -26,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -39,6 +42,12 @@ public class PostService {
 
     // 게시판 상세 조회
     public ContextResponse<PostDetailResponse> getPostDetail(String username, Long studyId, Long postId) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         Post post = postRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
@@ -50,6 +59,12 @@ public class PostService {
 
     // 게시판 목록 조회
     public ContextResponse<List<PostListResponse>> getPosts(String username, Long studyId) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         List<PostListResponse> responses = postRepository.findByStudyStudyId(studyId)
                 .stream()
                 .map(PostListResponse::from)
@@ -77,6 +92,12 @@ public class PostService {
 
     @Transactional
     public List<FileMetadataDto> createPost(AddPostRequest addPostRequest, Study study, Member member) {
+
+//        // 스터디 멤버만 가능
+//        if (!memberService.isMemberInStudy(username, studyId)) {
+//            throw new CustomException(NOT_STUDY_MEMBER);
+//        }
+
         Post post = addPostRequest.toEntity(study, member);
         postRepository.save(post);
 
@@ -90,7 +111,13 @@ public class PostService {
 
     // 게시판 수정
     @Transactional
-    public ContextResponse<List<PresignedUrlResponse>> updatePost(String username, Long StudyId, Long postId, UpdatePostRequest request) {
+    public ContextResponse<List<PresignedUrlResponse>> updatePost(String username, Long studyId, Long postId, UpdatePostRequest request) {
+
+
+        // 작성자만 삭제 가능
+        if (!isMemberWriter(username, studyId, postId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
 
         // 게시판 엔티티 조회 및 내용 수정
         Post post = postRepository.findByPostId(postId)
@@ -101,13 +128,19 @@ public class PostService {
         List<PresignedUrlResponse> responses =
                 fileService.replaceFiles(FileCategory.POST, postId, request.getRemainingFileIds(), request.getNewFileNames());
 
-        MemberStudyContext context = memberService.getContext(username, StudyId);
+        MemberStudyContext context = memberService.getContext(username, studyId);
         return new ContextResponse<>(context, responses);
     }
 
     // 게시판 삭제
     @Transactional
     public MemberStudyContext deletePost(String username, Long studyId, Long postId) {
+
+        // 작성자만 삭제 가능
+        if (!isMemberWriter(username, studyId, postId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         Post post = postRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
@@ -119,3 +152,4 @@ public class PostService {
         return memberService.getContext(username, studyId);
     }
 }
+

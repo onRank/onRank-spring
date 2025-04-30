@@ -8,6 +8,7 @@ import com.onrank.server.api.dto.submission.SubmissionDetailResponse;
 import com.onrank.server.api.dto.submission.SubmissionListResponse;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+
+import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +62,7 @@ public class SubmissionService {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
-            throw new IllegalAccessException("Creator, Host만 접근 가능");
+            throw new CustomException(ACCESS_DENIED);
         }
         // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
@@ -88,9 +91,9 @@ public class SubmissionService {
             Long assignmentId,
             Long submissionId) throws IllegalAccessException {
 
-        // 접근 권한 확인
+        // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
-            throw new IllegalAccessException("Creator, Host만 접근 가능");
+            throw new CustomException(ACCESS_DENIED);
         }
 
         // 컨텍스트 조회
@@ -101,7 +104,7 @@ public class SubmissionService {
                 .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
 
         // 멤버 조회
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 제출물 조회 (과제 생성 시에 멤버별 제출물 엔티티를 생성해 놓음)
@@ -147,7 +150,7 @@ public class SubmissionService {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
-            throw new IllegalAccessException("Creator, Host만 접근 가능");
+            throw new CustomException(ACCESS_DENIED);
         }
 
         // 과제 조회
@@ -155,7 +158,7 @@ public class SubmissionService {
                 .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
 
         // 멤버 조회
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 제출물 조회 (과제 생성 시에 멤버별 제출물 엔티티를 생성해 놓음)

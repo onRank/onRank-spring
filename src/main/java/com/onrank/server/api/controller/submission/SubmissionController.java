@@ -30,7 +30,6 @@ public class SubmissionController {
             @PathVariable("studyId") Long studyId,
             @PathVariable("assignmentId") Long assignmentId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) throws IllegalAccessException {
-
         return  ResponseEntity.ok(submissionService.getSubmissions(oAuth2User.getName(), studyId, assignmentId));
     }
 
@@ -43,7 +42,6 @@ public class SubmissionController {
             @PathVariable("assignmentId") Long assignmentId,
             @PathVariable("submissionId") Long submissionId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) throws IllegalAccessException {
-
         return  ResponseEntity.ok(submissionService.getSubmissionDetail(oAuth2User.getName(), studyId, assignmentId, submissionId));
     }
 
@@ -57,7 +55,6 @@ public class SubmissionController {
             @PathVariable("submissionId") Long submissionId,
             @RequestBody ScoreSubmissionRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) throws IllegalAccessException {
-
         return ResponseEntity.ok(submissionService.scoreSubmission(oAuth2User.getName(), studyId, assignmentId, submissionId, request));
     }
 }
