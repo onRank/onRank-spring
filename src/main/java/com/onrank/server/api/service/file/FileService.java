@@ -98,16 +98,17 @@ public class FileService {
 
     // S3 파일 삭제
     @Transactional
-    public void deleteFile(String filePath) {
+    public void deleteFile(String fileKey) {
         s3Client.deleteObject(DeleteObjectRequest.builder()
                 .bucket(bucketName)
-                .key(filePath)
+                .key(fileKey)
                 .build());
     }
 
     // 해당 Entity 의 모든 파일 삭제 (S3 & DB)
     @Transactional
     public void deleteAllFilesAndMetadata(FileCategory category, Long entityId) {
+
         List<FileMetadata> files = fileMetadataRepository.findByCategoryAndEntityId(category, entityId);
 
         // S3에서 삭제

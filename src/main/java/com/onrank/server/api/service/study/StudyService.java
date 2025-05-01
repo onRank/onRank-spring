@@ -186,6 +186,7 @@ public class StudyService {
         );
     }
 
+    @Transactional
     public void deleteStudy(String username, Long studyId) {
 
         // CREATOR, HOST 만 가능

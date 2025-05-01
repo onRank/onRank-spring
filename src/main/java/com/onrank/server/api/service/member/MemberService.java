@@ -179,16 +179,4 @@ public class MemberService {
         }
         memberRepository.delete(targetMember);
     }
-
-    public FileMetadataDto getStudyImage(Member member) {
-        List<FileMetadata> files = fileMetadataRepository
-                .findByCategoryAndEntityId(FileCategory.STUDY, member.getStudy().getStudyId());
-
-        FileMetadataDto fileDto = null;
-        if (!files.isEmpty()) {
-            FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-            fileDto = new FileMetadataDto(file, "onrank-bucket");
-        }
-        return fileDto;
-    }
 }
