@@ -27,7 +27,7 @@ public class Assignment {
     @JoinColumn(name = "study_id", nullable = false)
     private Study study;
 
-    @OneToMany(mappedBy = "assignment", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @OneToMany(mappedBy = "assignment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Submission> submissions = new ArrayList<>();
 
     @Column(nullable = false)

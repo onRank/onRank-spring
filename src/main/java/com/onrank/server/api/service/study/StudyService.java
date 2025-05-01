@@ -33,8 +33,7 @@ import java.time.LocalDate;  // 이 줄도 필요합니다
 import java.util.List;
 import java.util.Optional;
 
-import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
-import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
+import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -210,7 +209,8 @@ public class StudyService {
         fileService.deleteAllFilesAndMetadata(FileCategory.STUDY, studyId);
 
         // 5. 스터디 삭제(cascade 또는 OrphanRemoval로 연결된 엔티티 자동 삭제)
-        studyRepository.deleteById(studyId);
+        Study study = studyRepository.findByStudyId(studyId).orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
+        studyRepository.delete(study);
     }
 
     public ContextResponse<StudyPageResponse> getStudyPage(String name, Long studyId) {
