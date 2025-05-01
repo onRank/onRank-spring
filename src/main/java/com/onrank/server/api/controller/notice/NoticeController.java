@@ -25,7 +25,6 @@ import java.util.List;
 public class NoticeController implements NoticeControllerDocs {
 
     private final NoticeService noticeService;
-    private final MemberService memberService;
 
     /**
      * 공지사항 목록 조회 (스터디 멤버만 가능)
