@@ -14,7 +14,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
-    protected ResponseEntity<ErrorResponse> handleCustomException(CustomException ex) {
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomException ex) {
 
         CustomErrorInfo customErrorInfo = ex.getCustomErrorInfo();
         ErrorResponse response = ErrorResponse.builder()
@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    protected ResponseEntity<Object> handleValidationExceptions(Exception ex) {
+    public ResponseEntity<Object> handleValidationExceptions(Exception ex) {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR) // 500
@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    protected ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
 
         ErrorResponse response = ErrorResponse.builder()
                 .message(ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage())
