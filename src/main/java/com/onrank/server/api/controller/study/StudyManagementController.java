@@ -48,10 +48,6 @@ public class StudyManagementController implements StudyManagementControllerDocs 
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         studyService.deleteStudy(oAuth2User.getName(), studyId);
         return ResponseEntity.noContent().build();
     }

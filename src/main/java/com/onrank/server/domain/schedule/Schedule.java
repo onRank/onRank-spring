@@ -26,7 +26,7 @@ public class Schedule {
     @JoinColumn(name = "study_id")
     private Study study;
 
-    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Attendance> attendances = new ArrayList<>();
 
     @Column(nullable = false)

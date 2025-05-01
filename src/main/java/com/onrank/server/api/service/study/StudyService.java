@@ -198,7 +198,6 @@ public class StudyService {
         noticeRepository.findByStudyStudyId(studyId)
                 .forEach(notice -> fileService.deleteAllFilesAndMetadata(FileCategory.NOTICE, notice.getNoticeId()));
 
-
         // 2. 게시글 파일 삭제
         postRepository.findByStudyStudyId(studyId)
                 .forEach(post -> fileService.deleteAllFilesAndMetadata(FileCategory.POST, post.getPostId()));
@@ -210,12 +209,11 @@ public class StudyService {
         // 4. 스터디 파일 S3 및 FileMetadata 삭제
         fileService.deleteAllFilesAndMetadata(FileCategory.STUDY, studyId);
 
-        // 5. 스터디 삭제(cascade 또는 orphanRemoval로 연결된 엔티티 자동 삭제)
+        // 5. 스터디 삭제(cascade 또는 OrphanRemoval로 연결된 엔티티 자동 삭제)
         studyRepository.deleteById(studyId);
     }
 
     public ContextResponse<StudyPageResponse> getStudyPage(String name, Long studyId) {
-
         return null;
     }
 }

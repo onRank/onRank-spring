@@ -8,7 +8,6 @@ import com.onrank.server.domain.schedule.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,21 +33,21 @@ public class Study {
     private int latePoint;
 
     // Study와 Member의 1:N 관계 설정
-    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Member> members = new ArrayList<>();
 
     // Study와 Notice의 1:N 관계 설정
-    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Notice> notices = new ArrayList<>();
 
     // Study와 Schedule 1:N 관계 설정
-    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
-    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Assignment> assignments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "study", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
