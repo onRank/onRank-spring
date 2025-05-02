@@ -5,6 +5,8 @@ import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +29,12 @@ public interface StudyControllerDocs {
 
     @Operation(summary = "스터디 상세 정보 조회", description = "스터디 페이지(랭킹 포함)를 조회합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = StudyPageResponse.class)
+                    )
+            ),
             @ApiResponse(responseCode = "403", description = "스터디에 가입되지 않은 사용자"),
             @ApiResponse(responseCode = "404", description = "스터디를 찾을 수 없음")
     })
@@ -39,6 +46,7 @@ public interface StudyControllerDocs {
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomOAuth2User oAuth2User
     );
+
 
     @Operation(summary = "스터디 생성", description = "새로운 스터디를 생성합니다.")
     @ApiResponses({

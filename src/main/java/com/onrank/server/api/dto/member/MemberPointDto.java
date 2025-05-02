@@ -15,5 +15,6 @@ public record MemberPointDto(
 
         @Schema(description = "총점수", example = "100000")
         Long totalPoint
-) {}
+) {
+}
 
