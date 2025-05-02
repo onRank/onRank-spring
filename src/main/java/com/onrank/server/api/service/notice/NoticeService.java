@@ -73,9 +73,9 @@ public class NoticeService {
     @Transactional
     public ContextResponse<List<PresignedUrlResponse>> createNotice(String username, Long studyId, AddNoticeRequest request) {
 
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
-            throw new CustomException(ACCESS_DENIED);
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
         }
 
         Study study = studyService.findByStudyId(studyId)
