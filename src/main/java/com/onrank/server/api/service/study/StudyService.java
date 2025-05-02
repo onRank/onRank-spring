@@ -7,7 +7,6 @@ import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.study.*;
-import com.onrank.server.api.service.assignment.AssignmentService;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.common.exception.CustomException;
@@ -208,9 +207,8 @@ public class StudyService {
         // 4. 스터디 파일 S3 및 FileMetadata 삭제
         fileService.deleteAllFilesAndMetadata(FileCategory.STUDY, studyId);
 
-        // 5. 스터디 삭제(cascade 또는 OrphanRemoval로 연결된 엔티티 자동 삭제)
-        Study study = studyRepository.findByStudyId(studyId).orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
-        studyRepository.delete(study);
+        // 5. 스터디 삭제(cascade 또는 OrphanRemoval 로 연결된 엔티티 자동 삭제)
+        studyRepository.deleteById(studyId);
     }
 
     public ContextResponse<StudyPageResponse> getStudyPage(String name, Long studyId) {
