@@ -1,9 +1,9 @@
 package com.onrank.server.domain.notification;
 
 import com.onrank.server.domain.student.Student;
-import com.onrank.server.domain.study.Study;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -23,17 +23,42 @@ public class Notification {
     private NotificationCategory notificationCategory;
 
     @Column(nullable = false)
+    private String studyName;
+
+    private String fileKey;
+
+    @Column(nullable = false)
+    private String notificationTitle;
+
+    @Column(nullable = false)
     private String notificationMessage;
 
-    private boolean isRead;
+    @Column(nullable = false)
+    private String relatedUrl;
 
+    @Column(nullable = false)
+    private boolean read = false;
+
+    @Column(nullable = false)
     private LocalDateTime notificationCreatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "study_id", nullable = false)
-    private Study study;
+    @Builder
+    public Notification(NotificationCategory notificationCategory, String studyName, String fileKey, String notificationTitle, String notificationMessage, String relatedUrl, LocalDateTime notificationCreatedAt, Student student) {
+        this.notificationCategory = notificationCategory;
+        this.studyName = studyName;
+        this.fileKey = fileKey;
+        this.notificationTitle = notificationTitle;
+        this.notificationMessage = notificationMessage;
+        this.relatedUrl = relatedUrl;
+        this.notificationCreatedAt = notificationCreatedAt;
+        this.student = student;
+    }
+
+    public void markAsRead() {
+        this.read = true;
+    }
 }

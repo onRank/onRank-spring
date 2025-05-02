@@ -22,6 +22,7 @@ public enum CustomErrorInfo {
     ASSIGNMENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "Assignment not found"),
     SUBMISSION_NOT_FOUND(HttpStatus.BAD_REQUEST, "Submission not found"),
     ATTENDANCE_NOT_FOUND(HttpStatus.BAD_REQUEST, "Attendance not found"),
+    NOTIFICATION_NOT_FOUND(HttpStatus.BAD_REQUEST, "Notification not found"),
     FILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "File not found"),
     SCHEDULE_NOT_FOUND(HttpStatus.BAD_REQUEST, "Schedule not found"),
     INVALID_ASSIGNMENT_DUE_DATE(HttpStatus.BAD_REQUEST, "Assignment due date is invalid"),

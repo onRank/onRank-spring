@@ -10,11 +10,14 @@ import com.onrank.server.api.dto.notice.NoticeDetailResponse;
 import com.onrank.server.api.dto.notice.UpdateNoticeRequest;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
+import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.notice.NoticeJpaRepository;
+import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,8 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
-import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
+import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +36,7 @@ public class NoticeService {
     private final FileService fileService;
     private final MemberService memberService;
     private final StudyService studyService;
+    private final NotificationService notificationService;
 
     // 공지사항 상세 조회
     public ContextResponse<NoticeDetailResponse> getNoticeDetail(String username, Long studyId, Long noticeId) {
@@ -79,7 +82,9 @@ public class NoticeService {
         }
 
         Study study = studyService.findByStudyId(studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Study not found"));
+                .orElseThrow(() -> new CustomException(NOT_STUDY_MEMBER));
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // 공지 생성 및 저장
         Notice notice = request.toEntity(study);
@@ -89,7 +94,12 @@ public class NoticeService {
         List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(
                 FileCategory.NOTICE, notice.getNoticeId(), request.getFileNames());
 
+        // 알림 생성
+        notificationService.createNotification(NotificationCategory.NOTICE, studyId, notice.getNoticeTitle(), notice.getNoticeContent(),
+                "/studies/" + studyId + "/notices/" + notice.getNoticeTitle(), member.getStudent());
+
         MemberStudyContext context = memberService.getContext(username, studyId);
+
         return new ContextResponse<>(context, responses);
     }
 

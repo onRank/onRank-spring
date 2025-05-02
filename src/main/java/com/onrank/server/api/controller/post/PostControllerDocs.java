@@ -2,7 +2,6 @@ package com.onrank.server.api.controller.post;
 
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
-import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.post.AddPostRequest;
@@ -57,7 +56,7 @@ public interface PostControllerDocs {
     @PostMapping("/add")
     ResponseEntity<ContextResponse<List<PresignedUrlResponse>>> createPost(
             @Parameter(description = "스터디 ID", example = "1") @PathVariable Long studyId,
-            @Parameter(description = "게시글 등록 요청 DTO", required = true) @RequestBody AddPostRequest addPostRequest,
+            @Parameter(description = "게시글 등록 요청 DTO", required = true) @RequestBody AddPostRequest request,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomOAuth2User oAuth2User
     );
 

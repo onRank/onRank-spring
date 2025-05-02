@@ -9,7 +9,6 @@ import com.onrank.server.api.dto.notice.NoticeDetailResponse;
 import com.onrank.server.api.dto.notice.UpdateNoticeRequest;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.notice.NoticeService;
-import com.onrank.server.api.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
