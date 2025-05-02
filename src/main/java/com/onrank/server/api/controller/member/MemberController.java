@@ -6,12 +6,15 @@ import com.onrank.server.api.dto.member.*;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.student.StudentService;
+import com.onrank.server.common.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
 
 @Slf4j
 @RestController
