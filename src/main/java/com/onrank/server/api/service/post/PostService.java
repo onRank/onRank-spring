@@ -110,7 +110,8 @@ public class PostService {
         postRepository.save(post);
 
         // Presigned- URL 발급 및 FileMetadata 저장
-        List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.POST, post.getPostId(), request.getFileNames());
+        List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(
+                FileCategory.POST, post.getPostId(), request.getFileNames());
 
         MemberStudyContext context = memberService.getContext(username, studyId);
         return new ContextResponse<>(context, responses);
