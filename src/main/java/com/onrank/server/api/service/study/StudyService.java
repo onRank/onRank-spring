@@ -6,10 +6,11 @@ import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
+import com.onrank.server.api.dto.member.MemberPointDto;
 import com.onrank.server.api.dto.study.*;
-import com.onrank.server.api.service.assignment.AssignmentService;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -29,8 +30,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;  // 이 줄도 필요합니다
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+
+import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +51,7 @@ public class StudyService {
     private final NoticeJpaRepository noticeRepository;
     private final PostJpaRepository postRepository;
     private final AssignmentJpaRepository assignmentRepository;
-    private final AssignmentService assignmentService;
+    private final MemberJpaRepository memberRepository;
 
     public Optional<Study> findByStudyId(Long id) {
 
@@ -101,7 +106,7 @@ public class StudyService {
                 .toList();
     }
 
-    public ContextResponse<StudyDetailResponse> getStudyDetail(Long studyId, String username) {
+    public ContextResponse<StudyDetailResponse> getStudyDetail(String username, Long studyId) {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스터디가 존재하지 않습니다."));
 
@@ -122,6 +127,10 @@ public class StudyService {
 
     @Transactional
     public ContextResponse<PresignedUrlResponse> updateStudy(String username, Long studyId, StudyUpdateRequest request) {
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
 
         // 스터디 정보 수정
         Study study = studyRepository.findById(studyId)
@@ -140,6 +149,11 @@ public class StudyService {
     }
 
     public ContextResponse<AttendancePointResponse> getAttendancePoint(Long studyId, String username) {
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         Study study = studyRepository.findByStudyId(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
@@ -153,7 +167,13 @@ public class StudyService {
     }
 
     @Transactional
-    public void updateAttendancePoint(Long studyId, AttendancePointRequest request) {
+    public void updateAttendancePoint(String username, Long studyId, AttendancePointRequest request) {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
         Study study = studyRepository.findByStudyId(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found"));
 
@@ -168,12 +188,17 @@ public class StudyService {
         );
     }
 
+    @Transactional
     public void deleteStudy(String username, Long studyId) {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
 
         // 1. 공지사항 파일 삭제
         noticeRepository.findByStudyStudyId(studyId)
                 .forEach(notice -> fileService.deleteAllFilesAndMetadata(FileCategory.NOTICE, notice.getNoticeId()));
-
 
         // 2. 게시글 파일 삭제
         postRepository.findByStudyStudyId(studyId)
@@ -186,7 +211,62 @@ public class StudyService {
         // 4. 스터디 파일 S3 및 FileMetadata 삭제
         fileService.deleteAllFilesAndMetadata(FileCategory.STUDY, studyId);
 
-        // 5. 스터디 삭제(cascade 또는 orphanRemoval로 연결된 엔티티 자동 삭제)
+        // 5. 스터디 삭제(cascade 또는 OrphanRemoval 로 연결된 엔티티 자동 삭제)
         studyRepository.deleteById(studyId);
+    }
+
+    public ContextResponse<StudyPageResponse> getStudyPage(String username, Long studyId) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
+        List<Member> members = memberRepository.findByStudyStudyId(studyId);
+        Member loginMember = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+        Study study = studyRepository.findByStudyId(studyId)
+                .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
+
+        // 점수 기준
+        int StudyPresentPoint = study.getPresentPoint();
+        int StudyAbsentPoint = study.getAbsentPoint();
+        int StudyLatePoint = study.getLatePoint();
+
+        // 전체 랭킹용 DTO 목록 (List<MemberPointDto> memberPointList 생성)
+        List<MemberPointDto> memberPointDtos = members.stream()
+                .map(member -> {
+                    Long totalPoint = member.getMemberPresentCount() * StudyPresentPoint
+                            + member.getMemberAbsentCount() * StudyAbsentPoint
+                            + member.getMemberLateCount() * StudyLatePoint
+                            + member.getMemberSubmissionPoint();
+
+                    return MemberPointDto.builder()
+                            .studentName(member.getStudent().getStudentName())
+                            .memberId(member.getMemberId())
+                            .totalPoint(totalPoint)
+                            .build();
+                })
+                .sorted(Comparator.comparingLong(MemberPointDto::totalPoint).reversed())
+                .toList();
+
+        // 본인 점수 계산
+        Long memberPresentPoint = loginMember.getMemberPresentCount() * StudyPresentPoint;
+        Long memberLatePoint = loginMember.getMemberLateCount() * StudyLatePoint;
+        Long memberAbsentPoint = loginMember.getMemberAbsentCount() * StudyAbsentPoint;
+        Long memberSubmissionPoint = loginMember.getMemberSubmissionPoint();
+
+        // 응답 Dto 완성
+        StudyPageResponse response = StudyPageResponse.builder()
+                .studyId(studyId)
+                .memberId(loginMember.getMemberId())
+                .memberSubmissionPoint(memberSubmissionPoint)
+                .memberPresentPoint(memberPresentPoint)
+                .memberLatePoint(memberLatePoint)
+                .memberAbsentPoint(memberAbsentPoint)
+                .memberPointList(memberPointDtos)
+                .build();
+        MemberStudyContext memberContext = memberService.getContext(username, studyId);
+        return new ContextResponse<>(memberContext, response);
     }
 }

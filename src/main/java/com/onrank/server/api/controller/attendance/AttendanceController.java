@@ -115,7 +115,7 @@ public class AttendanceController {
         if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        studyService.updateAttendancePoint(studyId, request);
+        studyService.updateAttendancePoint(oAuth2User.getName(), studyId, request);
         MemberStudyContext response = memberService.getContext(oAuth2User.getName(), studyId);
         return ResponseEntity.ok(response);
     }

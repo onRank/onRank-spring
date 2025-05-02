@@ -12,4 +12,6 @@ public interface SubmissionJpaRepository extends JpaRepository<Submission, Long>
     List<Submission> findAllByMemberMemberId(Long memberId);
 
     Optional<Submission> findByAssignmentAndMember(Assignment assignment, Member member);
+
+    List<Submission> findAllByAssignment(Assignment assignment);
 }

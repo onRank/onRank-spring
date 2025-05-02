@@ -1,7 +1,7 @@
 package com.onrank.server.domain.member;
 
 import com.onrank.server.domain.attendance.Attendance;
-import com.onrank.server.domain.notification.Notification;
+import com.onrank.server.domain.attendance.AttendanceStatus;
 import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
@@ -52,42 +52,48 @@ public class Member {
     @Column(nullable = false)
     private Long memberSubmissionPoint = 0L;
 
+    @Column(nullable = false)
+    private Long memberPresentCount = 0L;
+
+    @Column(nullable = false)
+    private Long memberLateCount = 0L;
+
+    @Column(nullable = false)
+    private Long memberAbsentCount = 0L;
+
     // 생성자
     @Builder
     public Member(Student student, Study study, MemberRole memberRole, LocalDate memberJoiningAt) {
-        // 연관관계 설정
-        setStudent(student);
-        setStudy(study);
-
+        this.study = study;
+        this.student = student;
         this.memberRole = memberRole;
         this.memberJoiningAt = memberJoiningAt;
-    }
-
-    //==연관관계 메서드==//
-    public void setStudent(Student student) {
-        if (this.student != null) {
-            this.student.getMembers().remove(this);
-        }
-        this.student = student;
-
-        if (student != null) {
-            student.getMembers().add(this);
-        }
-    }
-
-    public void setStudy(Study study) {
-        if (this.study != null) {
-            this.study.getMembers().remove(this);
-        }
-        this.study = study;
-
-        if (study != null) {
-            study.getMembers().add(this);
-        }
     }
 
     //==비지니스 로직==//
     public void changeRole(MemberRole memberRole) {
         this.memberRole = memberRole;
+    }
+
+    public void changeSubmissionPoint(Long submissionPoint) {
+        this.memberSubmissionPoint = submissionPoint;
+    }
+
+    public void updateSubmissionPoint(Long oldPoint, Long newPoint) {
+        this.memberSubmissionPoint += newPoint - oldPoint;
+    }
+
+    public void updateAttendanceCount(AttendanceStatus oldStatus, AttendanceStatus newStatus) {
+        switch (oldStatus) {
+            case PRESENT -> this.memberPresentCount--;
+            case LATE -> this.memberLateCount--;
+            case ABSENT -> this.memberAbsentCount--;
+        }
+
+        switch (newStatus) {
+            case PRESENT -> this.memberPresentCount++;
+            case LATE -> this.memberLateCount++;
+            case ABSENT -> this.memberAbsentCount++;
+        }
     }
 }

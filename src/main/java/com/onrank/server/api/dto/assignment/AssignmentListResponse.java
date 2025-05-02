@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 @Schema(description = "과제 목록 조회용 과제 요약 응답 DTO")
-public record AssignmentSummaryResponse(
+public record AssignmentListResponse(
 
         @Schema(description = "과제 ID", example = "1")
         Long assignmentId,
@@ -25,8 +25,8 @@ public record AssignmentSummaryResponse(
         @Schema(description = "채점 점수 (미채점 시 null)", example = "95")
         Integer submissionScore
 ) {
-    public static AssignmentSummaryResponse from(Assignment assignment, Submission submission) {
-        return new AssignmentSummaryResponse(
+    public static AssignmentListResponse from(Assignment assignment, Submission submission) {
+        return new AssignmentListResponse(
                 assignment.getAssignmentId(),
                 assignment.getAssignmentTitle(),
                 assignment.getAssignmentDueDate(),

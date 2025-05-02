@@ -25,7 +25,6 @@ import java.util.List;
 public class NoticeController implements NoticeControllerDocs {
 
     private final NoticeService noticeService;
-    private final MemberService memberService;
 
     /**
      * 공지사항 목록 조회 (스터디 멤버만 가능)
@@ -34,11 +33,6 @@ public class NoticeController implements NoticeControllerDocs {
     public ResponseEntity<ContextResponse<List<NoticeListResponse>>> getNotices(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        // 스터디 멤버만 가능
-        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.ok(noticeService.getNotices(oAuth2User.getName(), studyId));
     }
 
@@ -50,11 +44,6 @@ public class NoticeController implements NoticeControllerDocs {
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        // 스터디 멤버만 가능
-        if (!memberService.isMemberInStudy(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.ok(noticeService.getNoticeDetail(oAuth2User.getName(), studyId, noticeId));
     }
 
@@ -66,11 +55,6 @@ public class NoticeController implements NoticeControllerDocs {
             @PathVariable Long studyId,
             @RequestBody AddNoticeRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.status(HttpStatus.CREATED).body(noticeService.createNotice(oAuth2User.getName(), studyId, request));
     }
 
@@ -83,11 +67,6 @@ public class NoticeController implements NoticeControllerDocs {
             @PathVariable Long noticeId,
             @RequestBody UpdateNoticeRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.ok(noticeService.updateNotice(oAuth2User.getName(), studyId, noticeId, request));
     }
 
@@ -99,11 +78,6 @@ public class NoticeController implements NoticeControllerDocs {
             @PathVariable Long studyId,
             @PathVariable Long noticeId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
         return ResponseEntity.ok(noticeService.deleteNotice(oAuth2User.getName(), studyId, noticeId));
     }
 }

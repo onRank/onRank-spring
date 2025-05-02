@@ -18,8 +18,8 @@ public record AssignmentDetailResponse(
         @Schema(description = "과제 제목", example = "퀵정렬 구현")
         String assignmentTitle,
 
-        @Schema(description = "과제 내용", example = "퀵정렬을 재귀로 구현하고 분석하세요.")
-        String assignmentContent,
+        @Schema(description = "과제 제출 상태", example = "SUBMITTED")
+        SubmissionStatus submissionStatus,
 
         @Schema(description = "과제 마감일", example = "2025-05-01T23:59:00")
         LocalDateTime assignmentDueDate,
@@ -27,8 +27,8 @@ public record AssignmentDetailResponse(
         @Schema(description = "과제 배점", example = "100")
         Long assignmentMaxPoint,
 
-        @Schema(description = "과제 제출 상태", example = "SUBMITTED")
-        SubmissionStatus submissionStatus,
+        @Schema(description = "과제 내용", example = "퀵정렬을 재귀로 구현하고 분석하세요.")
+        String assignmentContent,
 
         @Schema(description = "과제 파일 목록", implementation = FileMetadataDto.class)
         List<FileMetadataDto> assignmentFiles,

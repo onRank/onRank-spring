@@ -1,15 +1,15 @@
 package com.onrank.server.api.service.assignment;
 
-import com.onrank.server.api.dto.assignment.AddAssignmentRequest;
-import com.onrank.server.api.dto.assignment.AssignmentDetailResponse;
-import com.onrank.server.api.dto.assignment.AssignmentSummaryResponse;
+import com.onrank.server.api.dto.assignment.*;
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
+import com.onrank.server.api.dto.submission.UpdateSubmissionRequest;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.submission.SubmissionService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
@@ -26,6 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
+import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
 
 @Service
 @RequiredArgsConstructor
@@ -40,18 +44,34 @@ public class AssignmentService {
     private final MemberService memberService;
     private final SubmissionService submissionService;
 
+    public Assignment findById(Long assignmentId) {
+        return assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
+    }
+
     /**
-     * 과제 업로드 (스터디 멤버 전체에게 Submission 생성 포함)
+     * 과제 업로드 (관리자 기준 / 스터디 멤버 전체에게 Submission 생성 포함)
      */
     @Transactional
-    public ContextResponse<List<PresignedUrlResponse>> createAssignment(String username, Long studyId, AddAssignmentRequest request) {
-        Study study = studyRepository.findById(studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Study not found"));
+    public ContextResponse<List<PresignedUrlResponse>> createAssignment(String username, Long studyId, CreateAssignmentRequest request) {
 
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
+        // 컨텍스트 조회
+        MemberStudyContext context = memberService.getContext(username, studyId);
+
+        // 스터디 조회
+        Study study = studyRepository.findById(studyId)
+                .orElseThrow(() -> new NoSuchElementException("Study not found"));
+
+        // Assignment 생성 및 저장
         Assignment assignment = request.toEntity(study);
         assignmentRepository.save(assignment);
 
-        // Submission 자동 생성
+        // Submission 생성 및 저장
         List<Member> members = memberRepository.findByStudy(study);
         for (Member member : members) {
             Submission submission = Submission.builder()
@@ -70,24 +90,128 @@ public class AssignmentService {
         // S3 presigned URL 발급 및 메타데이터 저장
         List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.ASSIGNMENT, assignment.getAssignmentId(), request.getFileNames());
 
+        return new ContextResponse<>(context, responses);
+    }
+
+    /**
+     * 과제 수정 페이지 (관리자 기준)
+     */
+    public ContextResponse<AssignmentEditResponse> getAssignmentForEdit(String username, Long studyId, Long assignmentId) throws IllegalAccessException {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
+        // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
+
+        // 과제 조회
+        Assignment assignment = this.findById(assignmentId);
+
+        // 파일 조회
+        List<FileMetadataDto> assignmentFiles = fileService.getMultipleFileMetadata(FileCategory.ASSIGNMENT, assignmentId);
+
+        AssignmentEditResponse response = AssignmentEditResponse.builder()
+                .assignmentId(assignment.getAssignmentId())
+                .assignmentTitle(assignment.getAssignmentTitle())
+                .assignmentContent(assignment.getAssignmentContent())
+                .assignmentDueDate(assignment.getAssignmentDueDate())
+                .assignmentMaxPoint(assignment.getAssignmentMaxPoint())
+                .assignmentFiles(assignmentFiles)
+                .build();
+
+        return new ContextResponse<>(context, response);
+    }
+
+
+    /**
+     * 과제 수정 (관리자 기준)
+     */
+    @Transactional
+    public ContextResponse<List<PresignedUrlResponse>> updateAssignment(
+            String username, Long studyId, Long assignmentId, UpdateAssignmentRequest request) throws IllegalAccessException {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
+        // 컨텍스트
+        MemberStudyContext context = memberService.getContext(username, studyId);
+
+        // 과제 조회
+        Assignment assignment = this.findById(assignmentId);
+
+        // 과제 정보 업데이트
+        assignment.update(
+                request.getAssignmentTitle(),
+                request.getAssignmentContent(),
+                request.getAssignmentDueDate(),
+                request.getAssignmentMaxPoint()
+        );
+
+        // 파일 처리
+        List<PresignedUrlResponse> responses = fileService.replaceFiles(
+                FileCategory.ASSIGNMENT,
+                assignmentId,
+                request.getRemainingFileIds(),
+                request.getNewFileNames()
+        );
 
         return new ContextResponse<>(context, responses);
     }
 
     /**
-     * 과제 리스트 조회 (멤버 기준)
+     * 과제 삭제 (관리자 기준)
      */
-    public ContextResponse<List<AssignmentSummaryResponse>> getAssignments(String username, Long studyId) {
+    @Transactional
+    public ContextResponse<Void> deleteAssignment(String username, Long studyId, Long assignmentId) throws IllegalAccessException {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
+        // 컨텍스트 조회
+        MemberStudyContext context = memberService.getContext(username, studyId);
+
+        // 과제 조회
+        Assignment assignment = this.findById(assignmentId);
+
+        // 과제 파일 삭제
+        fileService.deleteAllFilesAndMetadata(FileCategory.ASSIGNMENT, assignmentId);
+
+        // 제출물 관련 파일 및 제출물 삭제
+        List<Submission> submissions = assignment.getSubmissions();
+        for (Submission submission : submissions) {
+            fileService.deleteAllFilesAndMetadata(FileCategory.SUBMISSION, submission.getSubmissionId());
+        }
+
+        // 과제 삭제 (Cascade로 제출물도 삭제되도록 설정되어 있다고 가정)
+        assignmentRepository.delete(assignment);
+
+        return new ContextResponse<>(context, null);
+    }
+
+    /**
+     * 과제 목록 조회 (멤버 기준)
+     */
+    public ContextResponse<List<AssignmentListResponse>> getAssignments(String username, Long studyId) {
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
         List<Assignment> assignments = assignmentRepository.findByStudyStudyId(studyId);
 
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         MemberStudyContext context = memberService.getContext(username, studyId);
 
-        List<AssignmentSummaryResponse> responses = assignments.stream()
-                .map(assignment -> AssignmentSummaryResponse.from(assignment, submissionService.findByAssignmentAndMember(assignment, member)))
+        List<AssignmentListResponse> responses = assignments.stream()
+                .map(assignment -> AssignmentListResponse.from(assignment, submissionService.findByAssignmentAndMember(assignment, member)))
                 .toList();
 
         return new ContextResponse<>(context, responses);
@@ -97,16 +221,24 @@ public class AssignmentService {
      * 과제 상세 조회 (멤버 기준)
      */
     public ContextResponse<AssignmentDetailResponse> getAssignmentDetail(String username, Long studyId, Long assignmentId) {
-        // 멤버 조회
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
+        // 컨텍스트 조회
+        MemberStudyContext context = memberService.getContext(username, studyId);
 
         // 과제 조회
-        Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Assignment not found"));
+        Assignment assignment = this.findById(assignmentId);
 
         // 과제 파일 조회
         List<FileMetadataDto> assignmentFiles = fileService.getMultipleFileMetadata(FileCategory.ASSIGNMENT, assignmentId);
+
+        // 멤버 조회
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 멤버 제출물 조회
         Submission submission = submissionService.findByAssignmentAndMember(assignment, member);
@@ -120,10 +252,10 @@ public class AssignmentService {
         AssignmentDetailResponse detailResponse = AssignmentDetailResponse.builder()
                 .assignmentId(assignment.getAssignmentId())
                 .assignmentTitle(assignment.getAssignmentTitle())
-                .assignmentContent(assignment.getAssignmentContent())
+                .submissionStatus(submission.getSubmissionStatus())
                 .assignmentDueDate(assignment.getAssignmentDueDate())
                 .assignmentMaxPoint(assignment.getAssignmentMaxPoint())
-                .submissionStatus(submission.getSubmissionStatus())
+                .assignmentContent(assignment.getAssignmentContent())
                 .assignmentFiles(assignmentFiles)
                 .submissionContent(submission.getSubmissionContent())
                 .submissionFiles(submissionFiles)
@@ -131,8 +263,93 @@ public class AssignmentService {
                 .submissionComment(submission.getSubmissionComment())
                 .build();
 
+        return new ContextResponse<>(context, detailResponse);
+    }
+
+    /**
+     * 과제 제출 (멤버 기준)
+     */
+    @Transactional
+    public ContextResponse<List<PresignedUrlResponse>> submitAssignment(
+            String username,
+            Long studyId,
+            Long assignmentId,
+            CreateSubmissionRequest request) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
+        // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
 
-        return new ContextResponse<>(context, detailResponse);
+        // 과제 & 멤버 조회
+        Assignment assignment = this.findById(assignmentId);
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new NoSuchElementException("Member not found"));
+
+        // 제출물 조회 (과제 생성 시에 멤버별 제출물 엔티티를 생성해 놓음)
+        Submission submission = submissionService.findByAssignmentAndMember(assignment, member);
+
+        // 제출 내용 업데이트
+        submission.updateSubmission(request.getSubmissionContent(), LocalDateTime.now());
+        submissionService.save(submission);
+
+        // S3 presigned URL 발급 및 메타데이터 저장
+        List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.SUBMISSION, submission.getSubmissionId(), request.getFileNames());
+
+        return new ContextResponse<>(context, responses);
+    }
+
+    /**
+     * 과제 재제출 (멤버 기준)
+     */
+    @Transactional
+    public ContextResponse<List<PresignedUrlResponse>> resubmitAssignment(
+            String username,
+            Long studyId,
+            Long assignmentId,
+            UpdateSubmissionRequest request) throws IllegalAccessException {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
+        // 컨텍스트
+        MemberStudyContext context = memberService.getContext(username, studyId);
+
+        // 과제 & 멤버 조회
+        Assignment assignment = this.findById(assignmentId);
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new NoSuchElementException("Member not found"));
+
+        // 제출물 조회
+        Submission submission = submissionService.findByAssignmentAndMember(assignment, member);
+
+        // 상태 체크: NOTSUBMITTED는 수정할 수 없음
+        if (submission.getSubmissionStatus() == SubmissionStatus.NOTSUBMITTED) {
+            throw new IllegalStateException("제출하지 않은 과제는 수정할 수 없습니다.");
+        }
+
+        // 제출물 상태가 SCORED일 경우 멤버 엔티티 과제 점수 속성 초기화
+        if (submission.getSubmissionStatus() == SubmissionStatus.SCORED) {
+            member.changeSubmissionPoint(member.getMemberSubmissionPoint() - submission.getSubmissionScore());
+        }
+
+        // 제출 내용 업데이트
+        submission.updateSubmission(request.getSubmissionContent(), LocalDateTime.now());
+        submissionService.save(submission);
+
+        // 파일 처리 (기존 파일 유지 + 새 파일 업로드)
+        List<PresignedUrlResponse> responses = fileService.replaceFiles(
+                FileCategory.SUBMISSION,
+                submission.getSubmissionId(),
+                request.getRemainingFileIds(),
+                request.getNewFileNames()
+        );
+
+        return new ContextResponse<>(context, responses);
     }
 }

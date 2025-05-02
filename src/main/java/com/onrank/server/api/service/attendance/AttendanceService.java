@@ -46,7 +46,7 @@ public class AttendanceService {
     // 출석 조회를 위한 List<AttendanceResponse> 객체 생성
     public List<AttendanceResponse> getAttendanceResponsesByStudyId(String username, Long studyId) {
 
-        Member member = memberService.findByUsernameAndStudyId(username, studyId)
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new IllegalStateException("Member not found"));
 
         return attendanceRepository.findAllByMemberMemberId(member.getMemberId())
@@ -86,6 +86,9 @@ public class AttendanceService {
         // 유효한 출석 상태 값인지 검증 후 변경
         try {
             AttendanceStatus newStatus = AttendanceStatus.valueOf(status);
+            AttendanceStatus oldStatus = attendance.getAttendanceStatus();
+            Member member = attendance.getMember();
+            member.updateAttendanceCount(oldStatus, newStatus);
             attendance.updateStatus(newStatus);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Attendance status " + status + " is not valid");
