@@ -10,6 +10,7 @@ import com.onrank.server.api.dto.post.PostListResponse;
 import com.onrank.server.api.dto.post.UpdatePostRequest;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
+import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,7 @@ public class PostService {
     private final MemberJpaRepository memberRepository;
     private final MemberService memberService;
     private final FileService fileService;
+    private final StudyService studyService;
 
     // 게시판 상세 조회
     public ContextResponse<PostDetailResponse> getPostDetail(String username, Long studyId, Long postId) {
@@ -91,22 +93,27 @@ public class PostService {
     }
 
     @Transactional
-    public List<FileMetadataDto> createPost(AddPostRequest addPostRequest, Study study, Member member) {
+    public ContextResponse<List<PresignedUrlResponse>> createPost(String username, Long studyId, AddPostRequest request) {
 
-//        // 스터디 멤버만 가능
-//        if (!memberService.isMemberInStudy(username, studyId)) {
-//            throw new CustomException(NOT_STUDY_MEMBER);
-//        }
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
 
-        Post post = addPostRequest.toEntity(study, member);
+        Study study = studyService.findByStudyId(studyId)
+                .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        // 게시판 생성 및 저장
+        Post post = request.toEntity(study, member);
         postRepository.save(post);
 
-        fileService.createMultiplePresignedUrls(FileCategory.POST, post.getPostId(), addPostRequest.getFileNames());
+        // Presigned- URL 발급 및 FileMetadata 저장
+        List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.POST, post.getPostId(), request.getFileNames());
 
-        List<FileMetadata> files = fileService.findFile(FileCategory.POST, post.getPostId());
-        return files.stream()
-                .map(f -> new FileMetadataDto(f, fileService.getBucketName()))
-                .collect(Collectors.toList());
+        MemberStudyContext context = memberService.getContext(username, studyId);
+        return new ContextResponse<>(context, responses);
     }
 
     // 게시판 수정
