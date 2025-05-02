@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/studies")
 @RequiredArgsConstructor
-public class StudyController {
+public class StudyController implements StudyControllerDocs {
 
     private final StudyService studyService;
 
@@ -33,7 +33,6 @@ public class StudyController {
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
         return ResponseEntity.ok(studyService.getStudyPage(oAuth2User.getName(), studyId));
     }
-
 
     @PostMapping("/add")
     public ResponseEntity<AddStudyResponse> createStudy(

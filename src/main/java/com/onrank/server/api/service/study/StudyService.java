@@ -6,6 +6,7 @@ import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
+import com.onrank.server.api.dto.member.MemberPointDto;
 import com.onrank.server.api.dto.study.*;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
@@ -29,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;  // 이 줄도 필요합니다
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,6 +51,7 @@ public class StudyService {
     private final NoticeJpaRepository noticeRepository;
     private final PostJpaRepository postRepository;
     private final AssignmentJpaRepository assignmentRepository;
+    private final MemberJpaRepository memberRepository;
 
     public Optional<Study> findByStudyId(Long id) {
 
@@ -211,7 +215,58 @@ public class StudyService {
         studyRepository.deleteById(studyId);
     }
 
-    public ContextResponse<StudyPageResponse> getStudyPage(String name, Long studyId) {
-        return null;
+    public ContextResponse<StudyPageResponse> getStudyPage(String username, Long studyId) {
+
+        // 스터디 멤버만 가능
+        if (!memberService.isMemberInStudy(username, studyId)) {
+            throw new CustomException(NOT_STUDY_MEMBER);
+        }
+
+        List<Member> members = memberRepository.findByStudyStudyId(studyId);
+        Member loginMember = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+        Study study = studyRepository.findByStudyId(studyId)
+                .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
+
+        // 점수 기준
+        int StudyPresentPoint = study.getPresentPoint();
+        int StudyAbsentPoint = study.getAbsentPoint();
+        int StudyLatePoint = study.getLatePoint();
+
+        // 전체 랭킹용 DTO 목록 (List<MemberPointDto> memberPointList 생성)
+        List<MemberPointDto> memberPointDtos = members.stream()
+                .map(member -> {
+                    Long totalPoint = member.getMemberPresentCount() * StudyPresentPoint
+                            + member.getMemberAbsentCount() * StudyAbsentPoint
+                            + member.getMemberLateCount() * StudyLatePoint
+                            + member.getMemberSubmissionPoint();
+
+                    return MemberPointDto.builder()
+                            .studentName(member.getStudent().getStudentName())
+                            .memberId(member.getMemberId())
+                            .totalPoint(totalPoint)
+                            .build();
+                })
+                .sorted(Comparator.comparingLong(MemberPointDto::totalPoint).reversed())
+                .toList();
+
+        // 본인 점수 계산
+        Long memberPresentPoint = loginMember.getMemberPresentCount() * StudyPresentPoint;
+        Long memberLatePoint = loginMember.getMemberLateCount() * StudyLatePoint;
+        Long memberAbsentPoint = loginMember.getMemberAbsentCount() * StudyAbsentPoint;
+        Long memberSubmissionPoint = loginMember.getMemberSubmissionPoint();
+
+        // 응답 Dto 완성
+        StudyPageResponse response = StudyPageResponse.builder()
+                .studyId(studyId)
+                .memberId(loginMember.getMemberId())
+                .memberSubmissionPoint(memberSubmissionPoint)
+                .memberPresentPoint(memberPresentPoint)
+                .memberLatePoint(memberLatePoint)
+                .memberAbsentPoint(memberAbsentPoint)
+                .memberPointList(memberPointDtos)
+                .build();
+        MemberStudyContext memberContext = memberService.getContext(username, studyId);
+        return new ContextResponse<>(memberContext, response);
     }
 }
