@@ -7,6 +7,7 @@ import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.submission.UpdateSubmissionRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -82,7 +83,7 @@ public interface AssignmentControllerDocs {
 
     @Operation(summary = "과제 목록 조회", description = "스터디에 등록된 과제 목록을 조회합니다. 스터디 멤버만 접근할 수 있습니다.", security = {@SecurityRequirement(name = "bearer-key")})
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "과제 목록 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "과제 목록 조회 성공", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AssignmentListResponse.class)))),
             @ApiResponse(responseCode = "403", description = "스터디 멤버가 아님", content = @Content(schema = @Schema(hidden = true)))
     })
     ResponseEntity<ContextResponse<List<AssignmentListResponse>>> getAssignments(
