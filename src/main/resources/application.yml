@@ -6,3 +6,6 @@ spring:
     active: aws-db
 server:
   forward-headers-strategy: framework
+springdoc:
+  cache:
+    disabled: true
