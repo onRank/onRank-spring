@@ -19,7 +19,7 @@
     @RestController
     @RequiredArgsConstructor
     @RequestMapping("/studies/{studyId}/assignments")
-    public class AssignmentController implements AssignmentControllerDocs {
+    public class AssignmentController /*implements AssignmentControllerDocs*/ {
 
         private final AssignmentService assignmentService;
 
