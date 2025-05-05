@@ -93,7 +93,7 @@ public interface AssignmentControllerDocs {
 
     @Operation(summary = "과제 상세 조회", description = "특정 과제의 상세 정보를 조회합니다. 스터디 멤버만 접근할 수 있습니다.", security = {@SecurityRequirement(name = "bearer-key")})
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "과제 상세 조회 성공"),
+            @ApiResponse(responseCode = "200", description = "과제 상세 조회 성공", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "403", description = "스터디 멤버가 아님", content = @Content(schema = @Schema(hidden = true)))
     })
     ResponseEntity<ContextResponse<AssignmentDetailResponse>> getAssignmentDetail(
