@@ -1,8 +1,8 @@
-FROM openjdk:21-jdk
+FROM openjdk:21-jdk-slim
 
-RUN yum update -y \
- && yum install -y curl \
- && yum clean all
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl \
+ && rm -rf /var/lib/apt/lists/*
 
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
