@@ -10,6 +10,7 @@ import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.notification.Notification;
 import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.notification.NotificationJpaRepository;
+import com.onrank.server.domain.schedule.ScheduleJpaRepository;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +32,11 @@ public class NotificationService {
     private final StudentService studentService;
     private final StudyService studyService;
     private final FileMetadataJpaRepository fileMetadataRepository;
+    private final ScheduleJpaRepository scheduleRepository;
 
     // 알림 생성
     @Transactional
-    public Notification createNotification(NotificationCategory category, Long studyId, String title, String message, String relatedUrl, Student student) {
+    public Notification createNotification(NotificationCategory category, Long studyId, String title, String content, String relatedUrl, Student student) {
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
@@ -51,7 +53,7 @@ public class NotificationService {
                 .studyName(study.getStudyName())
                 .fileKey(fileKey)
                 .notificationTitle(title)
-                .notificationMessage(message)
+                .notificationContent(content)
                 .relatedUrl(relatedUrl)
                 .notificationCreatedAt(LocalDateTime.now())
                 .student(student)
@@ -78,4 +80,5 @@ public class NotificationService {
                 .orElseThrow(() -> new CustomException(NOTIFICATION_NOT_FOUND));
         notification.markAsRead();
     }
+
 }

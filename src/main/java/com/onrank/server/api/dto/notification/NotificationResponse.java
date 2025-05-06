@@ -25,7 +25,7 @@ public record NotificationResponse(
         String notificationTitle,
 
         @Schema(description = "알림 메시지", example = "다음 주 스터디는 금요일입니다.")
-        String notificationMessage,
+        String notificationContent,
 
         @Schema(description = "관련 URL", example = "/studies/1/notices/5")
         String relatedUrl,
@@ -43,7 +43,7 @@ public record NotificationResponse(
                 notification.getStudyName(),
                 "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + fileKey,
                 notification.getNotificationTitle(),
-                notification.getNotificationMessage(),
+                notification.getNotificationContent(),
                 notification.getRelatedUrl(),
                 notification.isRead(),
                 notification.getNotificationCreatedAt()

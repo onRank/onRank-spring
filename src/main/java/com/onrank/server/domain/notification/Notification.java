@@ -31,7 +31,7 @@ public class Notification {
     private String notificationTitle;
 
     @Column(nullable = false)
-    private String notificationMessage;
+    private String notificationContent;
 
     @Column(nullable = false)
     private String relatedUrl;
@@ -47,12 +47,12 @@ public class Notification {
     private Student student;
 
     @Builder
-    public Notification(NotificationCategory notificationCategory, String studyName, String fileKey, String notificationTitle, String notificationMessage, String relatedUrl, LocalDateTime notificationCreatedAt, Student student) {
+    public Notification(NotificationCategory notificationCategory, String studyName, String fileKey, String notificationTitle, String notificationContent, String relatedUrl, LocalDateTime notificationCreatedAt, Student student) {
         this.notificationCategory = notificationCategory;
         this.studyName = studyName;
         this.fileKey = fileKey;
         this.notificationTitle = notificationTitle;
-        this.notificationMessage = notificationMessage;
+        this.notificationContent = notificationContent;
         this.relatedUrl = relatedUrl;
         this.notificationCreatedAt = notificationCreatedAt;
         this.student = student;
