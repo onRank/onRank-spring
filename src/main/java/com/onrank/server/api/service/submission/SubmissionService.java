@@ -124,6 +124,7 @@ public class SubmissionService {
         SubmissionDetailResponse response = SubmissionDetailResponse.builder()
                 .assignmentTitle(assignment.getAssignmentTitle())
                 .assignmentDueDate(assignment.getAssignmentDueDate())
+                .assignmentContent(assignment.getAssignmentContent())
                 .memberId(member.getMemberId())
                 .memberName(member.getStudent().getStudentName())
                 .memberEmail(member.getStudent().getStudentEmail())
