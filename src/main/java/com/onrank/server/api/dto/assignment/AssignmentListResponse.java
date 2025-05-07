@@ -19,6 +19,9 @@ public record AssignmentListResponse(
         @Schema(description = "과제 마감 기한", example = "2025-05-01T23:59:00")
         LocalDateTime assignmentDueDate,
 
+        @Schema(description = "과제 최대 점수", example = "100")
+        Long assignmentMaxPoint,
+
         @Schema(description = "제출 상태 (NOTSUBMITTED, SUBMITTED, SCORED)", example = "SUBMITTED")
         SubmissionStatus submissionStatus,
 
@@ -30,6 +33,7 @@ public record AssignmentListResponse(
                 assignment.getAssignmentId(),
                 assignment.getAssignmentTitle(),
                 assignment.getAssignmentDueDate(),
+                assignment.getAssignmentMaxPoint(),
                 submission.getSubmissionStatus(),
                 submission.getSubmissionScore() // null 가능
         );

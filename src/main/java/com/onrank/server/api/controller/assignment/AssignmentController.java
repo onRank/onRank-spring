@@ -127,7 +127,3 @@
             return ResponseEntity.ok(assignmentService.resubmitAssignment(oAuth2User.getName(), studyId, assignmentId, request));
         }
     }
-
-    // 과제 삭제 (관리자 기준)
-    // request:
-    // response:

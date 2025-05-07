@@ -17,6 +17,9 @@ public record SubmissionDetailResponse(
         @Schema(description = "과제 마감 기한", example = "2025-05-01T23:59:00")
         LocalDateTime assignmentDueDate,
 
+        @Schema(description = "과제 내용", example = "퀵정렬을 재귀로 구현하고 분석하세요.")
+        String assignmentContent,
+
         @Schema(description = "제출자 ID", example = "101")
         Long memberId,
 
@@ -35,10 +38,10 @@ public record SubmissionDetailResponse(
         @Schema(description = "제출 파일 목록", implementation = FileMetadataDto.class)
         List<FileMetadataDto> submissionFiles,
 
-        @Schema(description = "제출 점수 (채점 완료 시)", example = "92")
+        @Schema(description = "제출 점수 (채점하지 않았을 시 null)", example = "92")
         Integer submissionScore,
 
-        @Schema(description = "채점 코멘트 (채점 완료 시)", example = "작성 내용이 충실함")
+        @Schema(description = "채점 코멘트 (채점하지 않았을 시 null)", example = "작성 내용이 충실함")
         String submissionComment
 ) {
 }

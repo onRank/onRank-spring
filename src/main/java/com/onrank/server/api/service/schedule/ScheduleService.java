@@ -3,7 +3,12 @@ package com.onrank.server.api.service.schedule;
 import com.onrank.server.api.dto.schedule.AddScheduleRequest;
 import com.onrank.server.api.dto.schedule.ScheduleResponse;
 import com.onrank.server.api.service.attendance.AttendanceService;
+import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.api.service.study.StudyService;
+import com.onrank.server.common.exception.CustomException;
+import com.onrank.server.domain.member.Member;
+import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.schedule.Schedule;
 import com.onrank.server.domain.schedule.ScheduleJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -14,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.onrank.server.common.exception.CustomErrorInfo.*;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -22,6 +29,8 @@ public class ScheduleService {
     private final ScheduleJpaRepository scheduleRepository;
     private final AttendanceService attendanceService;
     private final StudyService studyService;
+    private final NotificationService notificationService;
+    private final MemberService memberService;
 
     public List<ScheduleResponse> getScheduleResponsesByStudyId(Long studyId) {
         return scheduleRepository.findAllByStudyStudyId(studyId).stream()
@@ -30,9 +39,17 @@ public class ScheduleService {
     }
 
     @Transactional
-    public void createSchedule(Long studyId, AddScheduleRequest request) {
+    public void createSchedule(String username, Long studyId, AddScheduleRequest request) {
+
+        // CREATOR, HOST 만 가능
+        if (!memberService.isMemberCreatorOrHost(username, studyId)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
         Study study = studyService.findByStudyId(studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Study not found"));
+                .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // 일정 생성
         Schedule schedule = request.toEntity(study);
@@ -40,6 +57,10 @@ public class ScheduleService {
 
         // 출석 정보 자동 생성
         attendanceService.createAttendancesForSchedule(schedule);
+
+        // 알림 생성
+        notificationService.createNotification(NotificationCategory.SCHEDULE, studyId, schedule.getScheduleTitle(), schedule.getScheduleContent(),
+                "/studies/" + studyId + "/schedules/" + schedule.getScheduleId(), member.getStudent());
     }
 
     @Transactional

@@ -49,11 +49,8 @@ public class ScheduleController {
             @RequestBody AddScheduleRequest request,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // CREATOR, HOST 만 가능
-        if (!memberService.isMemberCreatorOrHost(oAuth2User.getName(), studyId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        scheduleService.createSchedule(studyId, request);
+
+        scheduleService.createSchedule(oAuth2User.getName(), studyId, request);
         MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(context);

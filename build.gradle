@@ -59,6 +59,9 @@ dependencies {
 
 	// openapi
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6")
+
+	// Docker HEALTHCHECK
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 

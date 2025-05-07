@@ -10,12 +10,13 @@ import com.onrank.server.api.dto.post.PostListResponse;
 import com.onrank.server.api.dto.post.UpdatePostRequest;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
-import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
+import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.post.PostJpaRepository;
 import com.onrank.server.domain.student.Student;
@@ -26,7 +27,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
@@ -41,6 +41,7 @@ public class PostService {
     private final MemberService memberService;
     private final FileService fileService;
     private final StudyService studyService;
+    private final NotificationService notificationService;
 
     // 게시판 상세 조회
     public ContextResponse<PostDetailResponse> getPostDetail(String username, Long studyId, Long postId) {
@@ -110,7 +111,12 @@ public class PostService {
         postRepository.save(post);
 
         // Presigned- URL 발급 및 FileMetadata 저장
-        List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.POST, post.getPostId(), request.getFileNames());
+        List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(
+                FileCategory.POST, post.getPostId(), request.getFileNames());
+
+        // 알림 생성
+        notificationService.createNotification(NotificationCategory.POST, studyId, post.getPostTitle(), post.getPostContent(),
+                "/studies/" + studyId + "/posts/" + post.getPostId(), member.getStudent());
 
         MemberStudyContext context = memberService.getContext(username, studyId);
         return new ContextResponse<>(context, responses);
