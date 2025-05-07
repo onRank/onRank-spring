@@ -47,6 +47,7 @@ public class NotificationService {
         }
 
         Notification notification = Notification.builder()
+                .study(study)
                 .notificationCategory(category)
                 .studyName(study.getStudyName())
                 .fileKey(fileKey)
