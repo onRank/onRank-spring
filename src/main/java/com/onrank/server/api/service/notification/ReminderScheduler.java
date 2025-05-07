@@ -12,8 +12,7 @@ public class ReminderScheduler {
 
     //매일 오전 9시 실행
     @Scheduled(cron = "0 0 9 * * *")
-    public void remindTodaySchedulesAndAssingments() {
+    public void remindTodaySchedulesAndAssignments() {
         notificationService.createRemindersForToday();
     }
-
 }
