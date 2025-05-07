@@ -34,7 +34,7 @@ public class NotificationService {
 
     // 알림 생성
     @Transactional
-    public Notification createNotification(NotificationCategory category, Long studyId, String title, String message, String relatedUrl, Student student) {
+    public Notification createNotification(NotificationCategory category, Long studyId, String title, String content, String relatedUrl, Student student) {
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
@@ -51,7 +51,7 @@ public class NotificationService {
                 .studyName(study.getStudyName())
                 .fileKey(fileKey)
                 .notificationTitle(title)
-                .notificationMessage(message)
+                .notificationContent(content)
                 .relatedUrl(relatedUrl)
                 .notificationCreatedAt(LocalDateTime.now())
                 .student(student)
@@ -78,4 +78,5 @@ public class NotificationService {
                 .orElseThrow(() -> new CustomException(NOTIFICATION_NOT_FOUND));
         notification.markAsRead();
     }
+
 }
