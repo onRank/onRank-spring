@@ -1,14 +1,12 @@
 package com.onrank.server.api.service.notification;
 
 import com.onrank.server.api.dto.notification.NotificationResponse;
+import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
-import com.onrank.server.domain.file.FileCategory;
-import com.onrank.server.domain.file.FileMetadata;
-import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.notification.Notification;
 import com.onrank.server.domain.notification.NotificationCategory;
@@ -36,26 +34,20 @@ public class NotificationService {
     private final NotificationJpaRepository notificationRepository;
     private final StudentService studentService;
     private final StudyService studyService;
-    private final FileMetadataJpaRepository fileMetadataRepository;
     private final ScheduleJpaRepository scheduleJpaRepository;
     private final AssignmentJpaRepository assignmentRepository;
+    private final FileService fileService;
 
     // 알림 생성
     @Transactional
-    public Notification createNotification(NotificationCategory category, Long studyId, String title, String content, String relatedUrl, Student student) {
+    public void createNotification(NotificationCategory category, Long studyId, String title, String content, String relatedUrl, Student student) {
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
 
-        String fileKey = null;
-        List<FileMetadata> files = fileMetadataRepository.findByCategoryAndEntityId(FileCategory.STUDY, studyId);
-        if (!files.isEmpty()) {
-            FileMetadata file = files.get(0);
-            fileKey = file.getFileKey();
-        }
+        String fileKey = fileService.getStudyImageFileKeyByStudyId(studyId);
 
         Notification notification = Notification.builder()
-                .study(study)
                 .notificationCategory(category)
                 .studyName(study.getStudyName())
                 .fileKey(fileKey)
@@ -65,7 +57,7 @@ public class NotificationService {
                 .notificationCreatedAt(LocalDateTime.now())
                 .student(student)
                 .build();
-        return notificationRepository.save(notification);
+        notificationRepository.save(notification);
     }
 
     // 특정 학생의 알림 조회 (최신순)

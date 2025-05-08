@@ -13,10 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
-import java.net.URL;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
@@ -159,5 +157,15 @@ public class FileService {
 
         // 신규 파일 업로드 URL 발급 및 메타데이터 저장
         return createMultiplePresignedUrls(category, entityId, newFileNames);
+    }
+
+    public String getStudyImageFileKeyByStudyId(Long studyId) {
+        String fileKey = null;
+        List<FileMetadata> files = fileMetadataRepository.findByCategoryAndEntityId(FileCategory.STUDY, studyId);
+        if (!files.isEmpty()) {
+            FileMetadata file = files.get(0);
+            fileKey = file.getFileKey();
+        }
+        return fileKey;
     }
 }
