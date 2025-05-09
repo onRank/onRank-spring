@@ -109,13 +109,11 @@ public class FileService {
 
         List<FileMetadata> files = fileMetadataRepository.findByCategoryAndEntityId(category, entityId);
 
-        // S3에서 삭제
+        // S3 와 Metadata 삭제
         for (FileMetadata file : files) {
             deleteFile(file.getFileKey());
+            fileMetadataRepository.delete(file);
         }
-
-        // 메타데이터 삭제
-        fileMetadataRepository.deleteAll(files);
     }
 
     // 단일 파일 수정 (Study 이미지용)
