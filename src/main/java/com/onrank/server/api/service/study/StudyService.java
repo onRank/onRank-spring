@@ -100,7 +100,7 @@ public class StudyService {
                         fileDto = new FileMetadataDto(file, "onrank-bucket");
                     }
 
-                    return new StudyListResponse(study, fileDto);
+                    return StudyListResponse.from(study, fileDto);
                 })
                 .toList();
     }
