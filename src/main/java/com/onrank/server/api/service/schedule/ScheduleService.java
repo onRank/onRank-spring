@@ -78,6 +78,7 @@ public class ScheduleService {
         if (!schedule.getStudy().getStudyId().equals(studyId)) {
             throw new IllegalArgumentException("Schedule does not belong to this study");
         }
+        notificationService.deleteNotification(NotificationCategory.SCHEDULE, scheduleId);
         scheduleRepository.delete(schedule);
     }
 }
