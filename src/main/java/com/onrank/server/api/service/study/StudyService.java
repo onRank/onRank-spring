@@ -105,6 +105,25 @@ public class StudyService {
                 .toList();
     }
 
+    public List<MyPageStudyListResponse> getMyPageStudyListResponsesByUsername(String username) {
+
+        List<Study> studies = studyRepository.findAllByStudentUsername(username);
+        return studies.stream()
+                .map(study -> {
+                    List<FileMetadata> files = fileMetadataRepository
+                            .findByCategoryAndEntityId(FileCategory.STUDY, study.getStudyId());
+
+                    FileMetadataDto fileDto = null;
+                    if (!files.isEmpty()) {
+                        FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
+                        fileDto = new FileMetadataDto(file, "onrank-bucket");
+                    }
+
+                    return MyPageStudyListResponse.from(study, fileDto);
+                })
+                .toList();
+    }
+
     public ContextResponse<StudyDetailResponse> getStudyDetail(String username, Long studyId) {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스터디가 존재하지 않습니다."));

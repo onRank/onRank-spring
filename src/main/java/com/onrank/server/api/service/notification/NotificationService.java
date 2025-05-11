@@ -105,6 +105,7 @@ public class NotificationService {
             for (Member member : study.getMembers()) {
                 createNotification(
                         NotificationCategory.SCHEDULE,
+                        schedule.getScheduleId(),
                         study.getStudyId(),
                         "[오늘 일정] " + schedule.getScheduleTitle(),
                         schedule.getScheduleContent(),
@@ -125,6 +126,7 @@ public class NotificationService {
             for (Member member : study.getMembers()) {
                 createNotification(
                         NotificationCategory.ASSIGNMENT,
+                        assignment.getAssignmentId(),
                         study.getStudyId(),
                         "[오늘 마감] " + assignment.getAssignmentTitle(),
                         assignment.getAssignmentContent(),

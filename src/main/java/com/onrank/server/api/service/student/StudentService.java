@@ -2,7 +2,7 @@ package com.onrank.server.api.service.student;
 
 import com.onrank.server.api.dto.student.AddStudentRequest;
 import com.onrank.server.api.dto.student.StudentResponse;
-import com.onrank.server.api.dto.study.StudyListResponse;
+import com.onrank.server.api.dto.study.MyPageStudyListResponse;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.student.Student;
@@ -70,7 +70,7 @@ public class StudentService {
             throw new CustomException(ACCESS_DENIED);
         }
 
-        List<StudyListResponse> studyList = studyService.getStudyListResponsesByUsername(username);
+        List<MyPageStudyListResponse> studyList = studyService.getMyPageStudyListResponsesByUsername(username);
         return StudentResponse.from(student, studyList);
     }
 }
