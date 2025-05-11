@@ -1,24 +1,43 @@
 package com.onrank.server.api.dto.student;
 
+import com.onrank.server.api.dto.study.MyPageStudyListResponse;
 import com.onrank.server.domain.student.Student;
-import lombok.Getter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Getter
-public class StudentResponse {
+import java.util.List;
 
-    private Long studentId;
-    private String studentName;
-    private String studentSchool;
-    private String studentDepartment;
-    private String studentPhoneNumber;
-    private String studentEmail;
+@Schema(description = "학생 정보 응답 DTO")
+public record StudentResponse(
+        @Schema(description = "학생 ID", example = "1")
+        Long studentId,
 
-    public StudentResponse(Student student) {
-        this.studentId = student.getStudentId();
-        this.studentName = student.getStudentName();
-        this.studentSchool = student.getStudentSchool();
-        this.studentDepartment = student.getStudentDepartment();
-        this.studentPhoneNumber = student.getStudentPhoneNumber();
-        this.studentEmail = student.getStudentEmail();
+        @Schema(description = "학생 이름", example = "김휘래")
+        String studentName,
+
+        @Schema(description = "학교명", example = "아주대학교")
+        String studentSchool,
+
+        @Schema(description = "학과", example = "소프트웨어공학과")
+        String studentDepartment,
+
+        @Schema(description = "전화번호", example = "010-1234-5678")
+        String studentPhoneNumber,
+
+        @Schema(description = "이메일", example = "hwirae@example.com")
+        String studentEmail,
+
+        @Schema(description = "가입한 스터디 목록")
+        List<MyPageStudyListResponse> studyList
+) {
+    public static StudentResponse from(Student student, List<MyPageStudyListResponse> studyList) {
+        return new StudentResponse(
+                student.getStudentId(),
+                student.getStudentName(),
+                student.getStudentSchool(),
+                student.getStudentDepartment(),
+                student.getStudentPhoneNumber(),
+                student.getStudentEmail(),
+                studyList
+        );
     }
 }

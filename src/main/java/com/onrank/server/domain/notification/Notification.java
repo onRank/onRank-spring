@@ -1,7 +1,6 @@
 package com.onrank.server.domain.notification;
 
 import com.onrank.server.domain.student.Student;
-import com.onrank.server.domain.study.Study;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,12 +19,11 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notificationId;
 
-    @ManyToOne
-    @JoinColumn(name = "study_id")
-    private Study study;
-
     @Enumerated(EnumType.STRING)
     private NotificationCategory notificationCategory;
+
+    @Column(nullable = false)
+    private Long entityId;
 
     @Column(nullable = false)
     private String studyName;
@@ -41,7 +39,7 @@ public class Notification {
     @Column(nullable = false)
     private String relatedUrl;
 
-    @Column(nullable = false)
+    @Column(name = "is_read", nullable = false)
     private boolean read = false;
 
     @Column(nullable = false)
@@ -52,9 +50,9 @@ public class Notification {
     private Student student;
 
     @Builder
-    public Notification(Study study, NotificationCategory notificationCategory, String studyName, String fileKey, String notificationTitle, String notificationContent, String relatedUrl, LocalDateTime notificationCreatedAt, Student student) {
-        this.study = study;
+    public Notification(NotificationCategory notificationCategory, Long entityId, String studyName, String fileKey, String notificationTitle, String notificationContent, String relatedUrl, LocalDateTime notificationCreatedAt, Student student) {
         this.notificationCategory = notificationCategory;
+        this.entityId = entityId;
         this.studyName = studyName;
         this.fileKey = fileKey;
         this.notificationTitle = notificationTitle;

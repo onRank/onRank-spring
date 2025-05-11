@@ -115,7 +115,7 @@ public class PostService {
                 FileCategory.POST, post.getPostId(), request.getFileNames());
 
         // 알림 생성
-        notificationService.createNotification(NotificationCategory.POST, studyId, post.getPostTitle(), post.getPostContent(),
+        notificationService.createNotification(NotificationCategory.POST, post.getPostId(), studyId, post.getPostTitle(), post.getPostContent(),
                 "/studies/" + studyId + "/posts/" + post.getPostId(), member.getStudent());
 
         MemberStudyContext context = memberService.getContext(username, studyId);
@@ -157,6 +157,8 @@ public class PostService {
         Post post = postRepository.findByPostId(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
+        // 알림 삭제
+        notificationService.deleteNotification(NotificationCategory.POST, postId);
         // 파일 삭제 (S3 + 메타데이터)
         fileService.deleteAllFilesAndMetadata(FileCategory.POST, postId);
         // 게시판 삭제

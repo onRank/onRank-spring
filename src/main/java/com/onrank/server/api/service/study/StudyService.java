@@ -3,8 +3,8 @@ package com.onrank.server.api.service.study;
 import com.onrank.server.api.dto.attendance.AttendancePointRequest;
 import com.onrank.server.api.dto.attendance.AttendancePointResponse;
 import com.onrank.server.api.dto.common.ContextResponse;
-import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.common.MemberStudyContext;
+import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.member.MemberPointDto;
 import com.onrank.server.api.dto.study.*;
@@ -17,7 +17,7 @@ import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
-import com.onrank.server.domain.member.MemberRole;  // 이 줄 추가
+import com.onrank.server.domain.member.MemberRole;
 import com.onrank.server.domain.notice.NoticeJpaRepository;
 import com.onrank.server.domain.post.PostJpaRepository;
 import com.onrank.server.domain.student.Student;
@@ -29,8 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;  // 이 줄도 필요합니다
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -101,7 +100,26 @@ public class StudyService {
                         fileDto = new FileMetadataDto(file, "onrank-bucket");
                     }
 
-                    return new StudyListResponse(study, fileDto);
+                    return StudyListResponse.from(study, fileDto);
+                })
+                .toList();
+    }
+
+    public List<MyPageStudyListResponse> getMyPageStudyListResponsesByUsername(String username) {
+
+        List<Study> studies = studyRepository.findAllByStudentUsername(username);
+        return studies.stream()
+                .map(study -> {
+                    List<FileMetadata> files = fileMetadataRepository
+                            .findByCategoryAndEntityId(FileCategory.STUDY, study.getStudyId());
+
+                    FileMetadataDto fileDto = null;
+                    if (!files.isEmpty()) {
+                        FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
+                        fileDto = new FileMetadataDto(file, "onrank-bucket");
+                    }
+
+                    return MyPageStudyListResponse.from(study, fileDto);
                 })
                 .toList();
     }
@@ -211,8 +229,14 @@ public class StudyService {
         // 4. 스터디 파일 S3 및 FileMetadata 삭제
         fileService.deleteAllFilesAndMetadata(FileCategory.STUDY, studyId);
 
-        // 5. 스터디 삭제(cascade 또는 OrphanRemoval 로 연결된 엔티티 자동 삭제)
-        studyRepository.deleteById(studyId);
+        Study study = studyRepository.findByStudyId(studyId)
+                .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
+
+        // 5. 연관관계 끊기
+        study.clearAllRelations();
+
+        // 6. 스터디 삭제
+        studyRepository.delete(study);
     }
 
     public ContextResponse<StudyPageResponse> getStudyPage(String username, Long studyId) {

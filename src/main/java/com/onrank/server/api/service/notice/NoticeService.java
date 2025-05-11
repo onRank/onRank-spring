@@ -95,8 +95,8 @@ public class NoticeService {
                 FileCategory.NOTICE, notice.getNoticeId(), request.getFileNames());
 
         // 알림 생성
-        notificationService.createNotification(NotificationCategory.NOTICE, studyId, notice.getNoticeTitle(), notice.getNoticeContent(),
-                "/studies/" + studyId + "/notices/" + notice.getNoticeTitle(), member.getStudent());
+        notificationService.createNotification(NotificationCategory.NOTICE, notice.getNoticeId(), studyId, notice.getNoticeTitle(), notice.getNoticeContent(),
+                "/studies/" + studyId + "/notices/" + notice.getNoticeId(), member.getStudent());
 
         MemberStudyContext context = memberService.getContext(username, studyId);
 
@@ -137,6 +137,8 @@ public class NoticeService {
         Notice notice = noticeRepository.findByNoticeId(noticeId)
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
+        // 알림 삭제
+        notificationService.deleteNotification(NotificationCategory.NOTICE, noticeId);
         // 파일 삭제 (S3 + 메타데이터)
         fileService.deleteAllFilesAndMetadata(FileCategory.NOTICE, noticeId);
         // 공지사항 삭제

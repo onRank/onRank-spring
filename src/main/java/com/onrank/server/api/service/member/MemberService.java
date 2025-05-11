@@ -1,11 +1,10 @@
 package com.onrank.server.api.service.member;
 
+import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.member.AddMemberRequest;
 import com.onrank.server.api.dto.member.MemberListResponse;
 import com.onrank.server.api.dto.member.MemberResponse;
-import com.onrank.server.api.dto.common.MemberStudyContext;
-import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -14,6 +13,7 @@ import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;
 import com.onrank.server.domain.student.Student;
+import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,7 @@ public class MemberService {
 
     private final MemberJpaRepository memberRepository;
     private final StudyJpaRepository studyRepository;
-    private final StudentService studentService;
+    private final StudentJpaRepository studentRepository;
     private final FileMetadataJpaRepository fileMetadataRepository;
 
     public MemberStudyContext getContext(String username, Long studyId) {
@@ -57,7 +57,7 @@ public class MemberService {
      * username과 StudyId에 해당하는 Member 조회
      */
     public Optional<Member> findMemberByUsernameAndStudyId(String username, Long studyId) {
-        Student student = studentService.findByUsername(username)
+        Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
         Long studentId = student.getStudentId();
 
@@ -68,7 +68,7 @@ public class MemberService {
      * 사용자가 특정 스터디에 속해 있는지 확인
      */
     public boolean isMemberInStudy(String username, Long studyId) {
-        Student student = studentService.findByUsername(username)
+        Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
 
         Long studentId = student.getStudentId();
@@ -79,7 +79,7 @@ public class MemberService {
      * 사용자가 특정 스터디에서 HOST 또는 CREATOR 역할을 가지고 있는지 확인
      */
     public boolean isMemberCreatorOrHost(String username, Long studyId) {
-        Student student = studentService.findByUsername(username)
+        Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
 
         Long studentId = student.getStudentId();
@@ -125,7 +125,7 @@ public class MemberService {
         Study study = studyRepository.findById(studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Study not found with id: " + studyId));
 
-        Student student = studentService.findByStudentEmail(request.getStudentEmail())
+        Student student = studentRepository.findByStudentEmail(request.getStudentEmail())
                 .orElseThrow(() -> new IllegalArgumentException("Student not found with email: " + request.getStudentEmail()));
 
         Member newMember = new Member(student, study, MemberRole.PARTICIPANT, LocalDate.now());

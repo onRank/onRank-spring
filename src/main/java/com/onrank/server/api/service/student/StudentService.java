@@ -1,13 +1,21 @@
 package com.onrank.server.api.service.student;
 
 import com.onrank.server.api.dto.student.AddStudentRequest;
+import com.onrank.server.api.dto.student.StudentResponse;
+import com.onrank.server.api.dto.study.MyPageStudyListResponse;
+import com.onrank.server.api.service.study.StudyService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+
+import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
+import static com.onrank.server.common.exception.CustomErrorInfo.STUDENT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -15,28 +23,14 @@ import java.util.Optional;
 public class StudentService {
 
     private final StudentJpaRepository studentRepository;
+    private final StudyService studyService;
 
-    public String findStudentNameByUsername (String username) {
-        Student student = studentRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Username " + username + " not found"));
-
-        return student.getStudentName();
-    }
-
-    public Optional<Student> findByStudentId(Long studentId) {
-        return studentRepository.findByStudentId(studentId);
-    }
-
-    public Optional<Student> findByStudentEmail(String studentEmail) {
-        return studentRepository.findByStudentEmail(studentEmail);
+    public boolean checkIfNewUser(String username) {
+        return !studentRepository.existsByUsername(username);
     }
 
     public Optional<Student> findByUsername(String username) {
         return studentRepository.findByUsername(username);
-    }
-
-    public boolean checkIfNewUser(String username) {
-        return !studentRepository.existsByUsername(username);
     }
 
     public boolean checkIfExist(String studentEmil) {
@@ -49,9 +43,14 @@ public class StudentService {
     }
 
     @Transactional
-    public void updateStudent(Long studentId, AddStudentRequest addStudentRequest) {
+    public void updateStudent(String username, Long studentId, AddStudentRequest addStudentRequest) {
+
+        // Student 본인만 가능
         Student student = studentRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+                .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
+        if (!student.getUsername().equals(username)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
 
         student.update(
                 addStudentRequest.getStudentName(),
@@ -59,5 +58,19 @@ public class StudentService {
                 addStudentRequest.getStudentDepartment(),
                 addStudentRequest.getStudentPhoneNumber()
         );
+    }
+
+    // 마이페이지 조회
+    public StudentResponse getMyPage(String username, Long studentId) {
+
+        // Student 본인만 가능
+        Student student = studentRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
+        if (!student.getUsername().equals(username)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
+
+        List<MyPageStudyListResponse> studyList = studyService.getMyPageStudyListResponsesByUsername(username);
+        return StudentResponse.from(student, studyList);
     }
 }
