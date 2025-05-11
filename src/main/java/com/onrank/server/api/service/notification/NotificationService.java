@@ -40,7 +40,7 @@ public class NotificationService {
 
     // 알림 생성
     @Transactional
-    public void createNotification(NotificationCategory category, Long studyId, String title, String content, String relatedUrl, Student student) {
+    public void createNotification(NotificationCategory category, Long entityId, Long studyId, String title, String content, String relatedUrl, Student student) {
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
@@ -49,6 +49,7 @@ public class NotificationService {
 
         Notification notification = Notification.builder()
                 .notificationCategory(category)
+                .entityId(entityId)
                 .studyName(study.getStudyName())
                 .fileKey(fileKey)
                 .notificationTitle(title)
@@ -78,6 +79,14 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new CustomException(NOTIFICATION_NOT_FOUND));
         notification.markAsRead();
+    }
+
+    @Transactional
+    public void deleteNotification(NotificationCategory category, Long entityId) {
+
+        Notification notification = notificationRepository.findByNotificationCategoryAndEntityId(category, entityId)
+                .orElseThrow(() -> new CustomException(NOTIFICATION_NOT_FOUND));
+        notificationRepository.delete(notification);
     }
 
     @Transactional

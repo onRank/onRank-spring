@@ -1,6 +1,6 @@
 package com.onrank.server.api.dto.student;
 
-import com.onrank.server.api.dto.study.StudyListResponse;
+import com.onrank.server.api.dto.study.MyPageStudyListResponse;
 import com.onrank.server.domain.student.Student;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -27,9 +27,9 @@ public record StudentResponse(
         String studentEmail,
 
         @Schema(description = "가입한 스터디 목록")
-        List<StudyListResponse> studyList
+        List<MyPageStudyListResponse> studyList
 ) {
-    public static StudentResponse from(Student student, List<StudyListResponse> studyList) {
+    public static StudentResponse from(Student student, List<MyPageStudyListResponse> studyList) {
         return new StudentResponse(
                 student.getStudentId(),
                 student.getStudentName(),
