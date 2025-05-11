@@ -23,6 +23,9 @@ public class Notification {
     private NotificationCategory notificationCategory;
 
     @Column(nullable = false)
+    private Long entityId;
+
+    @Column(nullable = false)
     private String studyName;
 
     private String fileKey;
@@ -47,8 +50,9 @@ public class Notification {
     private Student student;
 
     @Builder
-    public Notification(NotificationCategory notificationCategory, String studyName, String fileKey, String notificationTitle, String notificationContent, String relatedUrl, LocalDateTime notificationCreatedAt, Student student) {
+    public Notification(NotificationCategory notificationCategory, Long entityId, String studyName, String fileKey, String notificationTitle, String notificationContent, String relatedUrl, LocalDateTime notificationCreatedAt, Student student) {
         this.notificationCategory = notificationCategory;
+        this.entityId = entityId;
         this.studyName = studyName;
         this.fileKey = fileKey;
         this.notificationTitle = notificationTitle;

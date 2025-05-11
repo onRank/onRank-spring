@@ -59,7 +59,7 @@ public class ScheduleService {
         attendanceService.createAttendancesForSchedule(schedule);
 
         // 알림 생성
-        notificationService.createNotification(NotificationCategory.SCHEDULE, studyId, schedule.getScheduleTitle(), schedule.getScheduleContent(),
+        notificationService.createNotification(NotificationCategory.SCHEDULE, schedule.getScheduleId(), studyId, schedule.getScheduleTitle(), schedule.getScheduleContent(),
                 "/studies/" + studyId + "/schedules/" + schedule.getScheduleId(), member.getStudent());
     }
 

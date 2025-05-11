@@ -115,7 +115,7 @@ public class PostService {
                 FileCategory.POST, post.getPostId(), request.getFileNames());
 
         // 알림 생성
-        notificationService.createNotification(NotificationCategory.POST, studyId, post.getPostTitle(), post.getPostContent(),
+        notificationService.createNotification(NotificationCategory.POST, post.getPostId(), studyId, post.getPostTitle(), post.getPostContent(),
                 "/studies/" + studyId + "/posts/" + post.getPostId(), member.getStudent());
 
         MemberStudyContext context = memberService.getContext(username, studyId);

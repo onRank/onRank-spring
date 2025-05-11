@@ -95,8 +95,8 @@ public class NoticeService {
                 FileCategory.NOTICE, notice.getNoticeId(), request.getFileNames());
 
         // 알림 생성
-        notificationService.createNotification(NotificationCategory.NOTICE, studyId, notice.getNoticeTitle(), notice.getNoticeContent(),
-                "/studies/" + studyId + "/notices/" + notice.getNoticeTitle(), member.getStudent());
+        notificationService.createNotification(NotificationCategory.NOTICE, notice.getNoticeId(), studyId, notice.getNoticeTitle(), notice.getNoticeContent(),
+                "/studies/" + studyId + "/notices/" + notice.getNoticeId(), member.getStudent());
 
         MemberStudyContext context = memberService.getContext(username, studyId);
 
