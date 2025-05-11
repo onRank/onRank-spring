@@ -25,27 +25,12 @@ public class StudentService {
     private final StudentJpaRepository studentRepository;
     private final StudyService studyService;
 
-    public String findStudentNameByUsername (String username) {
-        Student student = studentRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Username " + username + " not found"));
-
-        return student.getStudentName();
-    }
-
-    public Optional<Student> findByStudentId(Long studentId) {
-        return studentRepository.findByStudentId(studentId);
-    }
-
-    public Optional<Student> findByStudentEmail(String studentEmail) {
-        return studentRepository.findByStudentEmail(studentEmail);
+    public boolean checkIfNewUser(String username) {
+        return !studentRepository.existsByUsername(username);
     }
 
     public Optional<Student> findByUsername(String username) {
         return studentRepository.findByUsername(username);
-    }
-
-    public boolean checkIfNewUser(String username) {
-        return !studentRepository.existsByUsername(username);
     }
 
     public boolean checkIfExist(String studentEmil) {
@@ -60,10 +45,9 @@ public class StudentService {
     @Transactional
     public void updateStudent(String username, Long studentId, AddStudentRequest addStudentRequest) {
 
-        Student student = findByStudentId(studentId)
+        // Student 본인만 가능
+        Student student = studentRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
-
-        // 본인만 조회 가능
         if (!student.getUsername().equals(username)) {
             throw new CustomException(ACCESS_DENIED);
         }
@@ -79,10 +63,9 @@ public class StudentService {
     // 마이페이지 조회
     public StudentResponse getMyPage(String username, Long studentId) {
 
-        Student student = findByStudentId(studentId)
+        // Student 본인만 가능
+        Student student = studentRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
-
-        // 본인만 조회 가능
         if (!student.getUsername().equals(username)) {
             throw new CustomException(ACCESS_DENIED);
         }
