@@ -27,8 +27,6 @@ public interface StudentControllerDocs {
     )
     @GetMapping
     ResponseEntity<StudentResponse> getStudent(
-            @Parameter(description = "학생 ID", example = "1")
-            @PathVariable Long studentId,
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomOAuth2User oAuth2User
     );

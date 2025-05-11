@@ -61,14 +61,10 @@ public class StudentService {
     }
 
     // 마이페이지 조회
-    public StudentResponse getMyPage(String username, Long studentId) {
+    public StudentResponse getMyPage(String username) {
 
-        // Student 본인만 가능
-        Student student = studentRepository.findByStudentId(studentId)
+        Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
-        if (!student.getUsername().equals(username)) {
-            throw new CustomException(ACCESS_DENIED);
-        }
 
         List<MyPageStudyListResponse> studyList = studyService.getMyPageStudyListResponsesByUsername(username);
         return StudentResponse.from(student, studyList);

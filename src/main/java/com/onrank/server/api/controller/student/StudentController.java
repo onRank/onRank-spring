@@ -12,21 +12,20 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth/{studentId}")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class StudentController implements StudentControllerDocs {
 
     private final StudentService studentService;
 
     // 마이페이지
-    @GetMapping
+    @GetMapping("mypage")
     public ResponseEntity<StudentResponse> getStudent(
-            @PathVariable Long studentId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-        return ResponseEntity.ok(studentService.getMyPage(oAuth2User.getName(), studentId));
+        return ResponseEntity.ok(studentService.getMyPage(oAuth2User.getName()));
     }
 
-    @PutMapping
+    @PutMapping("/{studentId}")
     public ResponseEntity<Void> updateStudent(
             @PathVariable Long studentId,
             @RequestBody AddStudentRequest addStudentRequest,
