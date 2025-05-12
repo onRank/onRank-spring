@@ -80,12 +80,4 @@ public class Study {
         this.latePoint = latePoint;
         this.studyStatus = studyStatus;
     }
-
-    public void clearAllRelations() {
-        this.notices.clear();
-        this.posts.clear();
-        this.assignments.clear();
-        this.schedules.clear();
-        this.members.clear();
-    }
 }
