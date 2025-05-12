@@ -233,7 +233,7 @@ public class StudyService {
                 .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
 
         // 5. 연관관계 끊기
-        study.clearAllRelations();
+//        study.clearAllRelations();
 
         // 6. 스터디 삭제
         studyRepository.delete(study);
