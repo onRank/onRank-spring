@@ -55,7 +55,7 @@ public class AttendanceService {
                 .collect(Collectors.toList());
     }
 
-    // 특정 일정(scheduleId)에 속한 모든 출석 정보 조회
+    // 특정 일정(scheduleId)에 속한 모든 출석 정보 List<AttendanceMemberResponse> 조회
     public List<AttendanceMemberResponse> getAttendanceMembersByScheduleId(Long scheduleId) {
         return attendanceRepository.findAllByScheduleScheduleId(scheduleId)
                 .stream()

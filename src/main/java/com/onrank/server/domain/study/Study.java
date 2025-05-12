@@ -3,9 +3,13 @@ package com.onrank.server.domain.study;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.notice.Notice;
+import com.onrank.server.domain.post.Post;
 import com.onrank.server.domain.schedule.Schedule;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,18 +35,23 @@ public class Study {
     private int absentPoint;
     private int latePoint;
 
-    // Study와 Member의 1:N 관계 설정
+    // Study 와 Member 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members = new ArrayList<>();
 
-    // Study와 Notice의 1:N 관계 설정
+    // Study 와 Notice 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notice> notices = new ArrayList<>();
 
-    // Study와 Schedule 1:N 관계 설정
+    // Study 와 POST 1:N 관계 설정
+    @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts = new ArrayList<>();
+
+    // Study 와 Schedule 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Schedule> schedules = new ArrayList<>();
 
+    // Study 와 Assignment 1:N 관계 설정
     @OneToMany(mappedBy = "study", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Assignment> assignments = new ArrayList<>();
 
@@ -74,6 +83,7 @@ public class Study {
 
     public void clearAllRelations() {
         this.notices.clear();
+        this.posts.clear();
         this.assignments.clear();
         this.schedules.clear();
         this.members.clear();
