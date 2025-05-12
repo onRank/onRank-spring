@@ -35,14 +35,20 @@ jobs:
             docker stop onrank-api || true
             docker rm onrank-api || true
 
-            echo "[4] Gradle 빌드 (기존 파일 정리 후 재빌드)"
-            ./gradlew clean build -x test
+            echo "[4] Gradle 빌드 (기존 파일 정리 후 재빌드 + 로그 출력 포함)"
+            ./gradlew clean build -x test || { cat build/libs/*.log; exit 1; }
 
             echo "[5] Docker 이미지 빌드 (태그: ${{ env.TAG }})"
             docker build -t onrank-api:${{ env.TAG }} .
 
             echo "[6] Docker 컨테이너 실행"
-            docker run -d --name onrank-api -p 8080:8080 onrank-api:${{ env.TAG }}
+            docker run -d \
+            --name onrank-api \
+            --restart unless-stopped \
+            -e SPRING_PROFILES_ACTIVE="oauth,cloud,aws-db" \
+            -p 8080:8080 \
+            -p 8081:8081 \
+            onrank-api:${{ env.TAG }}
 
             echo "[7] Waiting for container to report healthy status..."
             for i in {1..20}; do
