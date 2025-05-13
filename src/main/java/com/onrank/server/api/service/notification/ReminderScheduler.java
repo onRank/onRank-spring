@@ -16,12 +16,6 @@ public class ReminderScheduler {
         notificationService.createRemindersForToday();
     }
 
-    // 오후 5시
-    @Scheduled(cron = "0 0 17 * * *", zone = "Asia/Seoul")
-    public void remindAt17() {
-        notificationService.createRemindersForToday();
-    }
-
     // 오후 6시
     @Scheduled(cron = "0 0 18 * * *", zone = "Asia/Seoul")
     public void remindAt18() {
@@ -37,6 +31,12 @@ public class ReminderScheduler {
     // 오후 8시
     @Scheduled(cron = "0 0 20 * * *", zone = "Asia/Seoul")
     public void remindAt16() {
+        notificationService.createRemindersForToday();
+    }
+
+    // 오후 9시
+    @Scheduled(cron = "0 0 21 * * *", zone = "Asia/Seoul")
+    public void remindAt17() {
         notificationService.createRemindersForToday();
     }
 }
