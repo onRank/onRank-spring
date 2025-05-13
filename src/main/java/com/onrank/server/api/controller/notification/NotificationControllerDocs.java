@@ -18,6 +18,7 @@ public interface NotificationControllerDocs {
 
     @Operation(summary = "알림 읽음 처리", description = "지정된 알림 ID의 알림을 읽음 처리합니다.")
     ResponseEntity<Void> markAsRead(
-            @Parameter(description = "읽음 처리할 알림 ID", example = "1") @PathVariable Long notificationId
+            @Parameter(description = "읽음 처리할 알림 ID", example = "1") @PathVariable Long notificationId,
+            @Parameter(description = "로그인한 사용자 정보", hidden = true) CustomOAuth2User oAuth2User
     );
 }

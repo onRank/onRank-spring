@@ -25,8 +25,11 @@ public class NotificationController implements NotificationControllerDocs {
 
     // 알림 읽음 처리
     @PatchMapping("/{notificationId}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId){
-        notificationService.markAsRead(notificationId);
+    public ResponseEntity<Void> markAsRead(
+            @PathVariable Long notificationId,
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User){
+
+        notificationService.markAsRead(oAuth2User.getName(), notificationId);
         return ResponseEntity.ok().build();
     }
 }
