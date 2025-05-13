@@ -10,9 +10,33 @@ public class ReminderScheduler {
 
     private final NotificationService notificationService;
 
-    //매일 오전 9시 실행
-    @Scheduled(cron = "0 0 9 * * *")
-    public void remindTodaySchedulesAndAssignments() {
+    // 오전 9시
+    @Scheduled(cron = "0 0 9 * * *", zone = "Asia/Seoul")
+    public void remindAt09() {
+        notificationService.createRemindersForToday();
+    }
+
+    // 오후 5시
+    @Scheduled(cron = "0 0 17 * * *", zone = "Asia/Seoul")
+    public void remindAt17() {
+        notificationService.createRemindersForToday();
+    }
+
+    // 오후 6시
+    @Scheduled(cron = "0 0 18 * * *", zone = "Asia/Seoul")
+    public void remindAt18() {
+        notificationService.createRemindersForToday();
+    }
+
+    // 오후 7시
+    @Scheduled(cron = "0 0 19 * * *", zone = "Asia/Seoul")
+    public void remindAt19() {
+        notificationService.createRemindersForToday();
+    }
+
+    // 오후 8시
+    @Scheduled(cron = "0 0 20 * * *", zone = "Asia/Seoul")
+    public void remindAt16() {
         notificationService.createRemindersForToday();
     }
 }
