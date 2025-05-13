@@ -75,9 +75,14 @@ public class NotificationService {
 
     // 알림 읽음 처리
     @Transactional
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(String username, Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new CustomException(NOTIFICATION_NOT_FOUND));
+
+        // 본인만 가능
+        if(!notification.getStudent().getUsername().equals(username)) {
+            throw new CustomException(ACCESS_DENIED);
+        }
         notification.markAsRead();
     }
 
