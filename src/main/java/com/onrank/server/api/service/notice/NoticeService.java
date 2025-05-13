@@ -96,7 +96,7 @@ public class NoticeService {
 
         // 알림 생성
         notificationService.createNotification(NotificationCategory.NOTICE, notice.getNoticeId(), studyId, notice.getNoticeTitle(), notice.getNoticeContent(),
-                "/studies/" + studyId + "/notices/" + notice.getNoticeId(), member.getStudent());
+                "/studies/" + studyId + "/notices/" + notice.getNoticeId());
 
         MemberStudyContext context = memberService.getContext(username, studyId);
 
