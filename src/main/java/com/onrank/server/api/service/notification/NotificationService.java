@@ -57,7 +57,7 @@ public class NotificationService {
                     .notificationContent(content)
                     .relatedUrl(relatedUrl)
                     .notificationCreatedAt(now)
-                    .student(member.getStudent())
+                    .student(member.getStudent())  // members.getStudent
                     .build();
             notificationRepository.save(notification);
         }
