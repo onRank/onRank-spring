@@ -8,6 +8,7 @@ import com.onrank.server.api.dto.file.PresignedUrlResponse;
 import com.onrank.server.api.dto.submission.UpdateSubmissionRequest;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.api.service.submission.SubmissionService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
@@ -15,6 +16,7 @@ import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
+import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
 import com.onrank.server.domain.submission.Submission;
@@ -43,6 +45,7 @@ public class AssignmentService {
     private final FileService fileService;
     private final MemberService memberService;
     private final SubmissionService submissionService;
+    private final NotificationService notificationService;
 
     public Assignment findById(Long assignmentId) {
         return assignmentRepository.findById(assignmentId)
@@ -70,6 +73,10 @@ public class AssignmentService {
         // Assignment 생성 및 저장
         Assignment assignment = request.toEntity(study);
         assignmentRepository.save(assignment);
+
+        // 알림 생성
+        notificationService.createNotification(NotificationCategory.ASSIGNMENT, assignment.getAssignmentId(), studyId, assignment.getAssignmentTitle(), assignment.getAssignmentContent(),
+                "/studies/" + studyId + "/assignments/" + assignment.getAssignmentId());
 
         // Submission 생성 및 저장
         List<Member> members = memberRepository.findByStudy(study);
