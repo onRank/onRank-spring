@@ -71,6 +71,7 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "https://d37q7cndbbsph5.cloudfront.net",
                 "https://onrank.kr",
+                "https://dev.onrank.kr",
                 "https://www.onrank.kr"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
