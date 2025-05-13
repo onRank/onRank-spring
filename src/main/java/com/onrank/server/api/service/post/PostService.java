@@ -116,7 +116,7 @@ public class PostService {
 
         // 알림 생성
         notificationService.createNotification(NotificationCategory.POST, post.getPostId(), studyId, post.getPostTitle(), post.getPostContent(),
-                "/studies/" + studyId + "/posts/" + post.getPostId(), member.getStudent());
+                "/studies/" + studyId + "/posts/" + post.getPostId());
 
         MemberStudyContext context = memberService.getContext(username, studyId);
         return new ContextResponse<>(context, responses);

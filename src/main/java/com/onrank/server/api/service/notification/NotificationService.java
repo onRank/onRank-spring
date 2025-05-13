@@ -40,25 +40,27 @@ public class NotificationService {
 
     // 알림 생성
     @Transactional
-    public void createNotification(NotificationCategory category, Long entityId, Long studyId, String title, String content, String relatedUrl, Student student) {
+    public void createNotification(NotificationCategory category, Long entityId, Long studyId, String title, String content, String relatedUrl) {
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
 
         String fileKey = fileService.getStudyImageFileKeyByStudyId(studyId);
-
-        Notification notification = Notification.builder()
-                .notificationCategory(category)
-                .entityId(entityId)
-                .studyName(study.getStudyName())
-                .fileKey(fileKey)
-                .notificationTitle(title)
-                .notificationContent(content)
-                .relatedUrl(relatedUrl)
-                .notificationCreatedAt(LocalDateTime.now())
-                .student(student)
-                .build();
-        notificationRepository.save(notification);
+        LocalDateTime now = LocalDateTime.now();
+        for (Member member : study.getMembers()) {
+            Notification notification = Notification.builder()
+                    .notificationCategory(category)
+                    .entityId(entityId)
+                    .studyName(study.getStudyName())
+                    .fileKey(fileKey)
+                    .notificationTitle(title)
+                    .notificationContent(content)
+                    .relatedUrl(relatedUrl)
+                    .notificationCreatedAt(now)
+                    .student(member.getStudent())
+                    .build();
+            notificationRepository.save(notification);
+        }
     }
 
     // 특정 학생의 알림 조회 (최신순)
@@ -107,17 +109,14 @@ public class NotificationService {
 
         for (Schedule schedule : schedules) {
             Study study = schedule.getStudy();
-            for (Member member : study.getMembers()) {
-                createNotification(
-                        NotificationCategory.SCHEDULE,
-                        schedule.getScheduleId(),
-                        study.getStudyId(),
-                        "[오늘 일정] " + schedule.getScheduleTitle(),
-                        schedule.getScheduleContent(),
-                        "/studies/" + study.getStudyId() + "/schedules/" + schedule.getScheduleId(),
-                        member.getStudent()
-                );
-            }
+            createNotification(
+                    NotificationCategory.SCHEDULE,
+                    schedule.getScheduleId(),
+                    study.getStudyId(),
+                    "[오늘 일정] " + schedule.getScheduleTitle(),
+                    schedule.getScheduleContent(),
+                    "/studies/" + study.getStudyId() + "/schedules"
+            );
         }
 
         // 2. 오늘 마감 과제
@@ -128,17 +127,14 @@ public class NotificationService {
 
         for(Assignment assignment : assignments) {
             Study study = assignment.getStudy();
-            for (Member member : study.getMembers()) {
-                createNotification(
-                        NotificationCategory.ASSIGNMENT,
-                        assignment.getAssignmentId(),
-                        study.getStudyId(),
-                        "[오늘 마감] " + assignment.getAssignmentTitle(),
-                        assignment.getAssignmentContent(),
-                        "/studies/" + study.getStudyId() + "/assignments/" + assignment.getAssignmentId(),
-                        member.getStudent()
-                );
-            }
+            createNotification(
+                    NotificationCategory.ASSIGNMENT,
+                    assignment.getAssignmentId(),
+                    study.getStudyId(),
+                    "[오늘 마감] " + assignment.getAssignmentTitle(),
+                    assignment.getAssignmentContent(),
+                    "/studies/" + study.getStudyId() + "/assignments/" + assignment.getAssignmentId()
+            );
         }
     }
 }
