@@ -69,9 +69,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "https://d37q7cndbbsph5.cloudfront.net",
-                "https://onrank.kr",
-                "https://www.onrank.kr"));
+                "https://d37q7cndbbsph5.cloudfront.net"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization")); // Authorization 헤더 노출
