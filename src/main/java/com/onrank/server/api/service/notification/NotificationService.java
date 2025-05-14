@@ -71,7 +71,7 @@ public class NotificationService {
 
         return notificationRepository.findByStudentOrderByNotificationCreatedAtDesc(student).stream()
                 .map(notification ->
-                        NotificationResponse.from(notification, "onrank-bucket", notification.getFileKey()))
+                        NotificationResponse.from(notification, "onrank-file-bucket", notification.getFileKey()))
                 .collect(Collectors.toList());
     }
 

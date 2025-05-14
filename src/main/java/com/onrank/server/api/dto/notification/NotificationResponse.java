@@ -18,7 +18,7 @@ public record NotificationResponse(
         @Schema(description = "스터디 이름", example = "운영체제 스터디")
         String studyName,
 
-        @Schema(description = "스터디 이미지 URL", example = "https://onrank-bucket.s3.ap-northeast-2.amazonaws.com/studies/1/main.jpg")
+        @Schema(description = "스터디 이미지 URL", example = "https://onrank-file-bucket.s3.ap-northeast-2.amazonaws.com/studies/1/main.jpg")
         String studyImageUrl,
 
         @Schema(description = "알림 제목", example = "4월 1주차 공지사항")

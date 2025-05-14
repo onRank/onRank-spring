@@ -48,7 +48,7 @@ public class MemberService {
         FileMetadataDto fileDto = null;
         if (!files.isEmpty()) {
             FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-            fileDto = new FileMetadataDto(file, "onrank-bucket");
+            fileDto = new FileMetadataDto(file, "onrank-file-bucket");
         }
         return new MemberStudyContext(member, fileDto);
     }
