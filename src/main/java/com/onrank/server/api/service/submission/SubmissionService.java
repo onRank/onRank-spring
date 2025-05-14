@@ -147,7 +147,7 @@ public class SubmissionService {
             Long studyId,
             Long assignmentId,
             Long submissionId,
-            ScoreSubmissionRequest request) throws IllegalAccessException {
+            ScoreSubmissionRequest request) {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
