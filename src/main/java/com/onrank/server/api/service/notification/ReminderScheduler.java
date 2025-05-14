@@ -23,19 +23,19 @@ public class ReminderScheduler {
     }
 
     // 오후 7시
-    @Scheduled(cron = "0 0 24 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void remindAt19() {
         notificationService.createRemindersForToday();
     }
 
     // 오후 8시
-    @Scheduled(cron = "0 0 25 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 1 * * *", zone = "Asia/Seoul")
     public void remindAt16() {
         notificationService.createRemindersForToday();
     }
 
     // 오후 9시
-    @Scheduled(cron = "0 0 26 * * *", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 2 * * *", zone = "Asia/Seoul")
     public void remindAt17() {
         notificationService.createRemindersForToday();
     }
