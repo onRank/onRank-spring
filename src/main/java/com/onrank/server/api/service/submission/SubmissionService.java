@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
+import static com.onrank.server.common.exception.CustomErrorInfo.ASSIGNMENT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class SubmissionService {
     public ContextResponse<List<SubmissionListResponse>> getSubmissions(
             String username,
             Long studyId,
-            Long assignmentId) throws IllegalAccessException {
+            Long assignmentId) {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
@@ -69,7 +70,7 @@ public class SubmissionService {
 
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
+                .orElseThrow(() -> new CustomException(ASSIGNMENT_NOT_FOUND));
 
         // 제출물 조회
         List<Submission> submissions = submissionRepository.findAllByAssignment(assignment);
@@ -89,7 +90,7 @@ public class SubmissionService {
             String username,
             Long studyId,
             Long assignmentId,
-            Long submissionId) throws IllegalAccessException {
+            Long submissionId) {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
@@ -147,7 +148,7 @@ public class SubmissionService {
             Long studyId,
             Long assignmentId,
             Long submissionId,
-            ScoreSubmissionRequest request) throws IllegalAccessException {
+            ScoreSubmissionRequest request) {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
