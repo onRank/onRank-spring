@@ -1,10 +1,11 @@
 package com.onrank.server.api.service.member;
 
+import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.member.AddMemberRequest;
 import com.onrank.server.api.dto.member.MemberListResponse;
-import com.onrank.server.api.dto.member.MemberResponse;
+import com.onrank.server.api.dto.member.MemberManagementResponse;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -48,7 +49,7 @@ public class MemberService {
         FileMetadataDto fileDto = null;
         if (!files.isEmpty()) {
             FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-            fileDto = new FileMetadataDto(file, "onrank-bucket");
+            fileDto = new FileMetadataDto(file, "onrank-file-bucket");
         }
         return new MemberStudyContext(member, fileDto);
     }
@@ -93,7 +94,7 @@ public class MemberService {
     /**
      *  스터디에 속한 멤버 목록 조회
      */
-    public MemberListResponse getMembersForStudy(String username, Long studyId) {
+    public ContextResponse<MemberManagementResponse> getMembersForStudy(String username, Long studyId) {
 
         // CREATOR, HOST 만 가능
         if (!isMemberCreatorOrHost(username, studyId)) {
@@ -101,17 +102,21 @@ public class MemberService {
         }
 
         List<Member> members = memberRepository.findByStudyStudyId(studyId);
-        List<MemberResponse> memberResponses = members.stream()
-                .map(MemberResponse::new)
+        List<MemberListResponse> memberListResponse = members.stream()
+                .map(MemberListResponse::from)
                 .toList();
 
-        // studyName은 member 중 하나에서 꺼냄 (어차피 같은 스터디이므로)
+        // studyName 은 member 중 하나에서 꺼냄 (어차피 같은 스터디이므로)
         String studyName = members.isEmpty() ? null : members.get(0).getStudy().getStudyName();
 
-        return MemberListResponse.builder()
-                .StudyName(studyName)
-                .members(memberResponses)
+        // 실제 응답 객체 생성
+        MemberManagementResponse response = MemberManagementResponse.builder()
+                .studyName(studyName)
+                .members(memberListResponse)
                 .build();
+
+        MemberStudyContext context = getContext(username, studyId);
+        return new ContextResponse<>(context, response);
     }
 
     @Transactional

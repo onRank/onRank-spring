@@ -18,19 +18,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/studies/{studyId}/management/members")
 @RequiredArgsConstructor
-public class MemberController {
+public class MemberController implements MemberControllerDocs {
 
     private final MemberService memberService;
     private final StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<ContextResponse<MemberListResponse>> getMembers(
+    public ResponseEntity<ContextResponse<MemberManagementResponse>> getMembers(
             @PathVariable Long studyId,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-
-        MemberStudyContext context = memberService.getContext(oAuth2User.getName(), studyId);
-        MemberListResponse response = memberService.getMembersForStudy(oAuth2User.getName(), studyId);
-        return ResponseEntity.ok(new ContextResponse<>(context, response));
+        return ResponseEntity.ok(memberService.getMembersForStudy(oAuth2User.getName(), studyId));
     }
 
     @PostMapping("/add")
