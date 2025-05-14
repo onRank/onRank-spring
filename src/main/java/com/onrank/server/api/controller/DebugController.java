@@ -1,4 +1,4 @@
-package com.onrank.server.api;
+package com.onrank.server.api.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
