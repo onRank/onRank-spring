@@ -19,6 +19,10 @@ public class FileMetadataDto {
     public FileMetadataDto(FileMetadata fileMetadata, String bucketName) {
         this.fileId = fileMetadata.getFileId();
         this.fileName = fileMetadata.getFileName();
-        this.fileUrl = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + fileMetadata.getFileKey();
+        if(this.fileName != null) {
+            this.fileUrl = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + fileMetadata.getFileKey();
+        } else {
+            this.fileUrl = null;
+        }
     }
 }
