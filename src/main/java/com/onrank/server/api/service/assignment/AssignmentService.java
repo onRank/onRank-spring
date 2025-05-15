@@ -23,6 +23,7 @@ import com.onrank.server.domain.submission.Submission;
 import com.onrank.server.domain.submission.SubmissionJpaRepository;
 import com.onrank.server.domain.submission.SubmissionStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ import java.util.NoSuchElementException;
 import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
 import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -221,6 +223,8 @@ public class AssignmentService {
 
         MemberStudyContext context = memberService.getContext(username, studyId);
 
+        log.info("assignments");
+
         List<AssignmentListResponse> responses = assignments.stream()
                 .map(assignment -> AssignmentListResponse.from(assignment, submissionService.findByAssignmentAndMember(assignment, member)))
                 .toList();
@@ -362,5 +366,25 @@ public class AssignmentService {
         );
 
         return new ContextResponse<>(context, responses);
+    }
+
+    @Transactional
+    public void createSubmissionsToNewMember(Member member) {
+
+        // 기존 Assignment에 대해 Submission 생성
+        List<Assignment> assignments = assignmentRepository.findByStudyStudyId(member.getStudy().getStudyId());
+        for (Assignment assignment : assignments) {
+            Submission submission = Submission.builder()
+                    .assignment(assignment)
+                    .member(member)
+                    .submissionContent("")
+                    .submissionStatus(SubmissionStatus.NOTSUBMITTED)
+                    .submissionCreatedAt(LocalDateTime.now())
+                    .submissionComment(null)
+                    .submissionScore(null)
+                    .build();
+
+            submissionRepository.save(submission);
+        }
     }
 }

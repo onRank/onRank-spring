@@ -36,7 +36,7 @@ public class MemberController implements MemberControllerDocs {
             @RequestBody AddMemberRequest addMemberRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
 
-        // 서비스에 존재 여부
+        // 서비스의 존재 여부
         if (!studentService.checkIfExist(addMemberRequest.getStudentEmail())) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

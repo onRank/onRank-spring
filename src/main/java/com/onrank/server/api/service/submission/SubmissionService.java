@@ -107,12 +107,12 @@ public class SubmissionService {
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
 
-        // 멤버 조회
-        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new NoSuchElementException("Member not found"));
+        // 제출물 조회
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new NoSuchElementException("Submission not found"));
 
-        // 제출물 조회 (과제 생성 시에 멤버별 제출물 엔티티를 생성해 놓음)
-        Submission submission = this.findByAssignmentAndMember(assignment, member);
+        // 멤버 조회
+        Member member = submission.getMember();
 
         // Url validation check
         if (!submission.getSubmissionId().equals(submissionId)) {
