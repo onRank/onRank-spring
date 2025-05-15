@@ -2,13 +2,15 @@ package com.onrank.server.api.service.attendance;
 
 import com.onrank.server.api.dto.attendance.AttendanceMemberResponse;
 import com.onrank.server.api.dto.attendance.AttendanceResponse;
-import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.attendance.Attendance;
 import com.onrank.server.domain.attendance.AttendanceJpaRepository;
 import com.onrank.server.domain.attendance.AttendanceStatus;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.schedule.Schedule;
+import com.onrank.server.domain.student.Student;
+import com.onrank.server.domain.student.StudentJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.onrank.server.common.exception.CustomErrorInfo.MEMBER_NOT_FOUND;
+import static com.onrank.server.common.exception.CustomErrorInfo.STUDENT_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,7 +29,7 @@ public class AttendanceService {
 
     private final AttendanceJpaRepository attendanceRepository;
     private final MemberJpaRepository memberRepository;
-    private final MemberService memberService;
+    private final StudentJpaRepository studentRepository;
 
     // 새로운 일정(schedule) 등록 시 자동으로 Attendance 생성
     @Transactional
@@ -63,8 +68,11 @@ public class AttendanceService {
     // 출석 조회를 위한 List<AttendanceResponse> 객체 생성
     public List<AttendanceResponse> getAttendanceResponsesByStudyId(String username, Long studyId) {
 
-        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new IllegalStateException("Member not found"));
+        Student student = studentRepository.findByUsername(username)
+                .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
+
+        Member member = memberRepository.findByStudentStudentIdAndStudyStudyId(student.getStudentId(), studyId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         return attendanceRepository.findAllByMemberMemberId(member.getMemberId())
                 .stream()
