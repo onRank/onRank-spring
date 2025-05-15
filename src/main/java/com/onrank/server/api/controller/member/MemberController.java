@@ -41,6 +41,7 @@ public class MemberController implements MemberControllerDocs {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         memberService.addMemberToStudy(oAuth2User.getName(), studyId, addMemberRequest);
+
         MemberStudyContext response = memberService.getContext(oAuth2User.getName(), studyId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

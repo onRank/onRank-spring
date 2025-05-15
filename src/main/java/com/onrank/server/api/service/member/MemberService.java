@@ -9,6 +9,8 @@ import com.onrank.server.api.dto.member.MemberManagementResponse;
 import com.onrank.server.api.service.assignment.AssignmentService;
 import com.onrank.server.api.service.attendance.AttendanceService;
 import com.onrank.server.common.exception.CustomException;
+import com.onrank.server.domain.assignment.Assignment;
+import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
 import com.onrank.server.domain.file.FileMetadataJpaRepository;
@@ -19,11 +21,15 @@ import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
+import com.onrank.server.domain.submission.Submission;
+import com.onrank.server.domain.submission.SubmissionJpaRepository;
+import com.onrank.server.domain.submission.SubmissionStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,7 +47,8 @@ public class MemberService {
     private final StudentJpaRepository studentRepository;
     private final FileMetadataJpaRepository fileMetadataRepository;
     private final AttendanceService attendanceService;
-    private final AssignmentService assignmentService;
+    private final AssignmentJpaRepository assignmentRepository;
+    private final SubmissionJpaRepository submissionRepository;
 
     public MemberStudyContext getContext(String username, Long studyId) {
         Member member = findMemberByUsernameAndStudyId(username, studyId)
@@ -142,8 +149,21 @@ public class MemberService {
 
         attendanceService.createAttendancesForMember(newMember);
 
-        assignmentService.createSubmissionsToNewMember(newMember);
-    }
+        // 기존 Assignment에 대해 Submission 생성
+        List<Assignment> assignments = assignmentRepository.findByStudyStudyId(newMember.getStudy().getStudyId());
+        for (Assignment assignment : assignments) {
+            Submission submission = Submission.builder()
+                    .assignment(assignment)
+                    .member(newMember)
+                    .submissionContent("")
+                    .submissionStatus(SubmissionStatus.NOTSUBMITTED)
+                    .submissionCreatedAt(LocalDateTime.now())
+                    .submissionComment(null)
+                    .submissionScore(null)
+                    .build();
+
+            submissionRepository.save(submission);
+        }    }
 
     @Transactional
     public void updateMemberRole(String username, Long studyId, Long memberId, String newRole) {

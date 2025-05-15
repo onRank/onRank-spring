@@ -371,20 +371,6 @@ public class AssignmentService {
     @Transactional
     public void createSubmissionsToNewMember(Member member) {
 
-        // 기존 Assignment에 대해 Submission 생성
-        List<Assignment> assignments = assignmentRepository.findByStudyStudyId(member.getStudy().getStudyId());
-        for (Assignment assignment : assignments) {
-            Submission submission = Submission.builder()
-                    .assignment(assignment)
-                    .member(member)
-                    .submissionContent("")
-                    .submissionStatus(SubmissionStatus.NOTSUBMITTED)
-                    .submissionCreatedAt(LocalDateTime.now())
-                    .submissionComment(null)
-                    .submissionScore(null)
-                    .build();
 
-            submissionRepository.save(submission);
-        }
     }
 }
