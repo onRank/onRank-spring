@@ -19,6 +19,7 @@ import com.onrank.server.domain.submission.Submission;
 import com.onrank.server.domain.submission.SubmissionJpaRepository;
 import com.onrank.server.domain.submission.SubmissionStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ import java.util.NoSuchElementException;
 import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
 import static com.onrank.server.common.exception.CustomErrorInfo.ASSIGNMENT_NOT_FOUND;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SubmissionService {
@@ -116,6 +118,7 @@ public class SubmissionService {
 
         // Url validation check
         if (!submission.getSubmissionId().equals(submissionId)) {
+            log.info("submission.getSubmissionId(): {}, submission: {}", submission.getSubmissionId(), submission);
             throw new IllegalArgumentException("잘못된 URL 접근");
         }
 
