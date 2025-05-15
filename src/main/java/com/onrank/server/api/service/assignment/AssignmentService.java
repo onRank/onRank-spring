@@ -74,10 +74,6 @@ public class AssignmentService {
         Assignment assignment = request.toEntity(study);
         assignmentRepository.save(assignment);
 
-        // 알림 생성
-        notificationService.createNotification(NotificationCategory.ASSIGNMENT, assignment.getAssignmentId(), studyId, assignment.getAssignmentTitle(), assignment.getAssignmentContent(),
-                "/studies/" + studyId + "/assignments/" + assignment.getAssignmentId());
-
         // Submission 생성 및 저장
         List<Member> members = memberRepository.findByStudy(study);
         for (Member member : members) {
@@ -96,6 +92,10 @@ public class AssignmentService {
 
         // S3 presigned URL 발급 및 메타데이터 저장
         List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.ASSIGNMENT, assignment.getAssignmentId(), request.getFileNames());
+
+        // 알림 생성
+        notificationService.createNotification(NotificationCategory.ASSIGNMENT, assignment.getAssignmentId(), studyId, assignment.getAssignmentTitle(), assignment.getAssignmentContent(),
+                "/studies/" + studyId + "/assignments/" + assignment.getAssignmentId());
 
         return new ContextResponse<>(context, responses);
     }
@@ -165,6 +165,10 @@ public class AssignmentService {
                 request.getRemainingFileIds(),
                 request.getNewFileNames()
         );
+
+        // 알림 생성
+        notificationService.createNotification(NotificationCategory.ASSIGNMENT, assignment.getAssignmentId(), studyId, assignment.getAssignmentTitle(), assignment.getAssignmentContent(),
+                "/studies/" + studyId + "/assignments/" + assignment.getAssignmentId());
 
         return new ContextResponse<>(context, responses);
     }

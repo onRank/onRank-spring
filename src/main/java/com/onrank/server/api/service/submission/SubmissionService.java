@@ -8,11 +8,13 @@ import com.onrank.server.api.dto.submission.SubmissionDetailResponse;
 import com.onrank.server.api.dto.submission.SubmissionListResponse;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.member.Member;
+import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.submission.Submission;
 import com.onrank.server.domain.submission.SubmissionJpaRepository;
 import com.onrank.server.domain.submission.SubmissionStatus;
@@ -34,6 +36,7 @@ public class SubmissionService {
     private final AssignmentJpaRepository assignmentRepository;
     private final MemberService memberService;
     private final FileService fileService;
+    private final NotificationService notificationService;
 
     /**
      * Assignment, Member로 Submission 조회
@@ -184,6 +187,10 @@ public class SubmissionService {
         member.changeSubmissionPoint(member.getMemberSubmissionPoint() + request.getSubmissionScore());
 
         MemberStudyContext context = memberService.getContext(username, studyId);
+
+        // 알림 생성
+        notificationService.createNotification(NotificationCategory.ASSIGNMENT, assignment.getAssignmentId(), studyId, assignment.getAssignmentTitle(), assignment.getAssignmentContent(),
+                "/studies/" + studyId + "/assignments/" + assignment.getAssignmentId());
 
         return new ContextResponse<>(context, null);
     }
