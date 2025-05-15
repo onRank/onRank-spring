@@ -79,10 +79,6 @@ public class Member {
         this.memberSubmissionPoint = submissionPoint;
     }
 
-    public void updateSubmissionPoint(Long oldPoint, Long newPoint) {
-        this.memberSubmissionPoint += newPoint - oldPoint;
-    }
-
     public void updateAttendanceCount(AttendanceStatus oldStatus, AttendanceStatus newStatus) {
         switch (oldStatus) {
             case PRESENT -> this.memberPresentCount--;

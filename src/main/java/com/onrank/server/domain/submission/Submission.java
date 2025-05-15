@@ -64,5 +64,6 @@ public class Submission {
     public void updateScore(int score, String comment) {
         this.submissionScore = score;
         this.submissionComment = comment;
+        this.submissionStatus = SubmissionStatus.SCORED;
     }
 }
