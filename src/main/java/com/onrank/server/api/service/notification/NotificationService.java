@@ -40,7 +40,7 @@ public class NotificationService {
 
     // 알림 생성
     @Transactional
-    public void     createNotification(NotificationCategory category, Long entityId, Long studyId, String title, String content, String relatedUrl) {
+    public void createNotification(NotificationCategory category, Long entityId, Long studyId, String title, String content, String relatedUrl) {
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
