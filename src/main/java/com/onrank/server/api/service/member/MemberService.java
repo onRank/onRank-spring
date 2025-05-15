@@ -6,6 +6,7 @@ import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.member.AddMemberRequest;
 import com.onrank.server.api.dto.member.MemberListResponse;
 import com.onrank.server.api.dto.member.MemberManagementResponse;
+import com.onrank.server.api.service.attendance.AttendanceService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
 import com.onrank.server.domain.file.FileMetadata;
@@ -38,6 +39,7 @@ public class MemberService {
     private final StudyJpaRepository studyRepository;
     private final StudentJpaRepository studentRepository;
     private final FileMetadataJpaRepository fileMetadataRepository;
+    private final AttendanceService attendanceService;
 
     public MemberStudyContext getContext(String username, Long studyId) {
         Member member = findMemberByUsernameAndStudyId(username, studyId)
@@ -135,6 +137,8 @@ public class MemberService {
 
         Member newMember = new Member(student, study, MemberRole.PARTICIPANT, LocalDate.now());
         memberRepository.save(newMember);
+
+        attendanceService.createAttendancesForMember(newMember);
     }
 
     @Transactional

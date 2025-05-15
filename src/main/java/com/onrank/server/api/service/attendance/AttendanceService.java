@@ -43,6 +43,23 @@ public class AttendanceService {
         attendanceRepository.saveAll(attendances);
     }
 
+    @Transactional
+    public void createAttendancesForMember(Member member) {
+        // 해당 멤버가 속한 스터디의 모든 스케줄 조회
+        List<Schedule> schedules = member.getStudy().getSchedules();
+
+        // 출석 정보 생성
+        List<Attendance> attendances = schedules.stream()
+                .map(schedule -> Attendance.builder()
+                        .schedule(schedule)
+                        .member(member)
+                        .build())
+                .collect(Collectors.toList());
+
+        attendanceRepository.saveAll(attendances);
+    }
+
+
     // 출석 조회를 위한 List<AttendanceResponse> 객체 생성
     public List<AttendanceResponse> getAttendanceResponsesByStudyId(String username, Long studyId) {
 
