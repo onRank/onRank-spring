@@ -26,8 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
-import static com.onrank.server.common.exception.CustomErrorInfo.ASSIGNMENT_NOT_FOUND;
+import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
 @Slf4j
 @Service
@@ -43,9 +42,9 @@ public class SubmissionService {
     /**
      * Assignment, Member로 Submission 조회
      */
-    public Submission findByAssignmentAndMember(Assignment assignment, Member member) {
-        return submissionRepository.findByAssignmentAndMember(assignment, member)
-                .orElseThrow(() -> new NoSuchElementException("Submission not found"));
+    public Submission findByAssignmentIdAndMemberId(Long assignmentId, Long memberId) {
+        return submissionRepository.findByAssignmentAssignmentIdAndMemberMemberId(assignmentId, memberId)
+                .orElseThrow(() -> new CustomException(SUBMISSION_NOT_FOUND));
     }
 
     /**
@@ -55,7 +54,6 @@ public class SubmissionService {
     public void save(Submission submission) {
         submissionRepository.save(submission);
     }
-
 
     /**
      * 제출물 목록 조회 (관리자 기준)
@@ -149,32 +147,27 @@ public class SubmissionService {
      * 제출물 채점 (관리자 기준 / 채점 페이지 / SUBMITTED, SCORED)
      */
     @Transactional
-    public ContextResponse<Void> scoreSubmission(
-            String username,
-            Long studyId,
-            Long assignmentId,
-            Long submissionId,
-            ScoreSubmissionRequest request) {
+    public ContextResponse<Void> scoreSubmission(String username, Long studyId
+            , Long assignmentId, Long submissionId, ScoreSubmissionRequest request) {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
             throw new CustomException(ACCESS_DENIED);
         }
 
-        // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
+                .orElseThrow(() -> new CustomException(ASSIGNMENT_NOT_FOUND));
 
-        // 멤버 조회
-        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
-        // 제출물 조회 (과제 생성 시에 멤버별 제출물 엔티티를 생성해 놓음)
-        Submission submission = this.findByAssignmentAndMember(assignment, member);
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new CustomException(SUBMISSION_NOT_FOUND));
+
+        Member member = submission.getMember();
 
         // Url validation check
-        if (!submission.getSubmissionId().equals(submissionId)) {
-            throw new IllegalArgumentException("잘못된 URL 접근");
+        Submission checkSubmission = findByAssignmentIdAndMemberId(assignmentId, member.getMemberId());
+        if (!checkSubmission.getSubmissionId().equals(submissionId)) {
+            throw new CustomException(INVALID_REQUEST);
         }
 
         // 제출물 상태가 SCORED일 경우 멤버 엔티티 과제 점수 속성 초기화

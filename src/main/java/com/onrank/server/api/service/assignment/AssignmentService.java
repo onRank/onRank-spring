@@ -226,7 +226,7 @@ public class AssignmentService {
         log.info("assignments");
 
         List<AssignmentListResponse> responses = assignments.stream()
-                .map(assignment -> AssignmentListResponse.from(assignment, submissionService.findByAssignmentAndMember(assignment, member)))
+                .map(assignment -> AssignmentListResponse.from(assignment, submissionService.findByAssignmentIdAndMemberId(assignment.getAssignmentId(), member.getMemberId())))
                 .toList();
 
         return new ContextResponse<>(context, responses);
@@ -256,7 +256,7 @@ public class AssignmentService {
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 멤버 제출물 조회
-        Submission submission = submissionService.findByAssignmentAndMember(assignment, member);
+        Submission submission = submissionService.findByAssignmentIdAndMemberId(assignment.getAssignmentId(), member.getMemberId());
 
         // 제출물 파일 조회 (있으면)
         List<FileMetadataDto> submissionFiles = List.of();
@@ -305,7 +305,7 @@ public class AssignmentService {
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 제출물 조회 (과제 생성 시에 멤버별 제출물 엔티티를 생성해 놓음)
-        Submission submission = submissionService.findByAssignmentAndMember(assignment, member);
+        Submission submission = submissionService.findByAssignmentIdAndMemberId(assignmentId, member.getMemberId());
 
         // 제출 내용 업데이트
         submission.updateSubmission(request.getSubmissionContent(), LocalDateTime.now());
@@ -341,7 +341,7 @@ public class AssignmentService {
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
         // 제출물 조회
-        Submission submission = submissionService.findByAssignmentAndMember(assignment, member);
+        Submission submission = submissionService.findByAssignmentIdAndMemberId(assignmentId, member.getMemberId());
 
         // 상태 체크: NOTSUBMITTED는 수정할 수 없음
         if (submission.getSubmissionStatus() == SubmissionStatus.NOTSUBMITTED) {

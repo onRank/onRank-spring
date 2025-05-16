@@ -1,7 +1,6 @@
 package com.onrank.server.domain.submission;
 
 import com.onrank.server.domain.assignment.Assignment;
-import com.onrank.server.domain.member.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -11,7 +10,7 @@ public interface SubmissionJpaRepository extends JpaRepository<Submission, Long>
 
     List<Submission> findAllByMemberMemberId(Long memberId);
 
-    Optional<Submission> findByAssignmentAndMember(Assignment assignment, Member member);
+    Optional<Submission> findByAssignmentAssignmentIdAndMemberMemberId(Long assignmentId, Long memberId);
 
     List<Submission> findAllByAssignment(Assignment assignment);
 }
