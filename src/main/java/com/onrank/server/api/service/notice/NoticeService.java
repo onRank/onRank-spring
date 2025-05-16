@@ -138,7 +138,7 @@ public class NoticeService {
                 .orElseThrow(() -> new IllegalArgumentException("Notice not found"));
 
         // 알림 삭제
-        notificationService.deleteNotification(NotificationCategory.NOTICE, noticeId);
+        notificationService.deleteNotificationByEntity(NotificationCategory.NOTICE, noticeId);
         // 파일 삭제 (S3 + 메타데이터)
         fileService.deleteAllFilesAndMetadata(FileCategory.NOTICE, noticeId);
         // 공지사항 삭제

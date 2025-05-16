@@ -158,7 +158,7 @@ public class PostService {
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         // 알림 삭제
-        notificationService.deleteNotification(NotificationCategory.POST, postId);
+        notificationService.deleteNotificationByEntity(NotificationCategory.POST, postId);
         // 파일 삭제 (S3 + 메타데이터)
         fileService.deleteAllFilesAndMetadata(FileCategory.POST, postId);
         // 게시판 삭제

@@ -10,6 +10,7 @@ import com.onrank.server.api.dto.member.MemberPointDto;
 import com.onrank.server.api.dto.study.*;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
+import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
@@ -51,6 +52,7 @@ public class StudyService {
     private final PostJpaRepository postRepository;
     private final AssignmentJpaRepository assignmentRepository;
     private final MemberJpaRepository memberRepository;
+    private final NotificationService notificationService;
 
     public Optional<Study> findByStudyId(Long id) {
 
@@ -126,16 +128,7 @@ public class StudyService {
 
     public ContextResponse<StudyDetailResponse> getStudyDetail(String username, Long studyId) {
         Study study = studyRepository.findById(studyId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스터디가 존재하지 않습니다."));
-
-        List<FileMetadata> files = fileMetadataRepository
-                .findByCategoryAndEntityId(FileCategory.STUDY, study.getStudyId());
-
-        FileMetadataDto fileDto = null;
-        if (!files.isEmpty()) {
-            FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-            fileDto = new FileMetadataDto(file, "onrank-file-bucket");
-        }
+                .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
 
         MemberStudyContext memberContext = memberService.getContext(username, studyId);
         StudyDetailResponse detail = new StudyDetailResponse(study);

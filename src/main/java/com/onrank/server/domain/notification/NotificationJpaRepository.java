@@ -10,4 +10,6 @@ public interface NotificationJpaRepository extends JpaRepository<Notification, L
     List<Notification> findByStudentOrderByNotificationCreatedAtDesc(Student student);
 
     List<Notification> findByNotificationCategoryAndEntityId(NotificationCategory category, Long entityId);
+
+    List<Notification> findByStudyStudyId(Long studyId);
 }

@@ -89,9 +89,16 @@ public class NotificationService {
     }
 
     @Transactional
-    public void deleteNotification(NotificationCategory category, Long entityId) {
+    public void deleteNotificationByEntity(NotificationCategory category, Long entityId) {
 
-        List<Notification> notifications= notificationRepository.findByNotificationCategoryAndEntityId(category, entityId);
+        List<Notification> notifications = notificationRepository.findByNotificationCategoryAndEntityId(category, entityId);
+        notificationRepository.deleteAll(notifications);
+    }
+
+    @Transactional
+    public void deleteNotificationByStudy(Long studyId) {
+
+        List<Notification> notifications = notificationRepository.findByStudyStudyId(studyId);
         notificationRepository.deleteAll(notifications);
     }
 
