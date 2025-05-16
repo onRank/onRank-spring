@@ -91,9 +91,8 @@ public class NotificationService {
     @Transactional
     public void deleteNotification(NotificationCategory category, Long entityId) {
 
-        Notification notification = notificationRepository.findByNotificationCategoryAndEntityId(category, entityId)
-                .orElseThrow(() -> new CustomException(NOTIFICATION_NOT_FOUND));
-        notificationRepository.delete(notification);
+        List<Notification> notifications= notificationRepository.findByNotificationCategoryAndEntityId(category, entityId);
+        notificationRepository.deleteAll(notifications);
     }
 
     @Transactional
