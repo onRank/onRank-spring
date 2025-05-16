@@ -31,8 +31,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
-import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
+import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
 @Slf4j
 @Service
@@ -296,11 +295,15 @@ public class AssignmentService {
             throw new CustomException(NOT_STUDY_MEMBER);
         }
 
-        // 컨텍스트 조회
-        MemberStudyContext context = memberService.getContext(username, studyId);
-
-        // 과제 & 멤버 조회
+        // 과제 조회
         Assignment assignment = this.findById(assignmentId);
+
+        // 마감된 과제는 제출 불가
+        if (assignment.getAssignmentDueDate().isBefore(LocalDateTime.now())) {
+            throw new CustomException(LATE_SUBMISSION);
+        }
+
+        // 멤버 조회
         Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
@@ -313,6 +316,9 @@ public class AssignmentService {
 
         // S3 presigned URL 발급 및 메타데이터 저장
         List<PresignedUrlResponse> responses = fileService.createMultiplePresignedUrls(FileCategory.SUBMISSION, submission.getSubmissionId(), request.getFileNames());
+
+        // 컨텍스트 조회
+        MemberStudyContext context = memberService.getContext(username, studyId);
 
         return new ContextResponse<>(context, responses);
     }

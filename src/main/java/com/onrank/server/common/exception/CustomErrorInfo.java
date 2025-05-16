@@ -42,6 +42,7 @@ public enum CustomErrorInfo {
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "Access denied"),
     NOT_STUDY_MEMBER(HttpStatus.FORBIDDEN, "User is not a member of this study"),
     NOT_POST_WRITER(HttpStatus.FORBIDDEN, "User is not a post writer"),
+    LATE_SUBMISSION(HttpStatus.FORBIDDEN, "Submission deadline has passed"),
 
     // 404 NOT_FOUND - 리소스를 찾을 수 없음 (현재 미사용 중)
 
