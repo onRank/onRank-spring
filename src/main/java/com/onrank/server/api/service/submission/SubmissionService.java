@@ -186,8 +186,9 @@ public class SubmissionService {
         MemberStudyContext context = memberService.getContext(username, studyId);
 
         // 알림 생성
-        notificationService.createNotification(NotificationCategory.ASSIGNMENT, assignment.getAssignmentId(), studyId, assignment.getAssignmentTitle(), assignment.getAssignmentContent(),
-                "/studies/" + studyId + "/assignments/" + assignment.getAssignmentId());
+        notificationService.createNotification(NotificationCategory.SUBMISSION, submissionId, studyId, assignment.getAssignmentTitle() + " 과제가 채점 되었습니다!"
+                ,submission.getSubmissionScore() +  submission.getSubmissionComment(),
+                "/studies/" + studyId + "/assignments/" + assignmentId);
 
         return new ContextResponse<>(context, null);
     }

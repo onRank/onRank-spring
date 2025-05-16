@@ -197,10 +197,11 @@ public class AssignmentService {
         // 과제 파일 삭제
         fileService.deleteAllFilesAndMetadata(FileCategory.ASSIGNMENT, assignmentId);
 
-        // 제출물 관련 파일 및 제출물 삭제
+        // 제출물 관련 파일 및 제출물 및 알림 삭제
         List<Submission> submissions = assignment.getSubmissions();
         for (Submission submission : submissions) {
             fileService.deleteAllFilesAndMetadata(FileCategory.SUBMISSION, submission.getSubmissionId());
+            notificationService.deleteNotificationByEntity(NotificationCategory.SUBMISSION, submission.getSubmissionId());
         }
 
         // 과제 삭제 (Cascade로 제출물도 삭제되도록 설정되어 있다고 가정)
@@ -221,7 +222,7 @@ public class AssignmentService {
         List<Assignment> assignments = assignmentRepository.findByStudyStudyId(studyId);
 
         Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new NoSuchElementException("Member not found"));
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         MemberStudyContext context = memberService.getContext(username, studyId);
 
@@ -255,7 +256,7 @@ public class AssignmentService {
 
         // 멤버 조회
         Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new NoSuchElementException("Member not found"));
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // 멤버 제출물 조회
         Submission submission = submissionService.findByAssignmentIdAndMemberId(assignment.getAssignmentId(), member.getMemberId());
@@ -287,11 +288,7 @@ public class AssignmentService {
      * 과제 제출 (멤버 기준)
      */
     @Transactional
-    public ContextResponse<List<PresignedUrlResponse>> submitAssignment(
-            String username,
-            Long studyId,
-            Long assignmentId,
-            CreateSubmissionRequest request) {
+    public ContextResponse<List<PresignedUrlResponse>> submitAssignment(String username, Long studyId, Long assignmentId, CreateSubmissionRequest request) {
 
         // 스터디 멤버만 가능
         if (!memberService.isMemberInStudy(username, studyId)) {
@@ -330,11 +327,7 @@ public class AssignmentService {
      * 과제 재제출 (멤버 기준)
      */
     @Transactional
-    public ContextResponse<List<PresignedUrlResponse>> resubmitAssignment(
-            String username,
-            Long studyId,
-            Long assignmentId,
-            UpdateSubmissionRequest request) throws IllegalAccessException {
+    public ContextResponse<List<PresignedUrlResponse>> resubmitAssignment(String username, Long studyId, Long assignmentId, UpdateSubmissionRequest request) {
 
         // 스터디 멤버만 가능
         if (!memberService.isMemberInStudy(username, studyId)) {
