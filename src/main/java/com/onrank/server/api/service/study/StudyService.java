@@ -10,7 +10,6 @@ import com.onrank.server.api.dto.member.MemberPointDto;
 import com.onrank.server.api.dto.study.*;
 import com.onrank.server.api.service.file.FileService;
 import com.onrank.server.api.service.member.MemberService;
-import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.file.FileCategory;
@@ -44,7 +43,6 @@ public class StudyService {
 
     private final StudentJpaRepository studentRepository;
     private final StudyJpaRepository studyRepository;
-    private final MemberJpaRepository memberJpaRepository;
     private final MemberService memberService;
     private final FileService fileService;
     private final FileMetadataJpaRepository fileMetadataRepository;
@@ -52,7 +50,6 @@ public class StudyService {
     private final PostJpaRepository postRepository;
     private final AssignmentJpaRepository assignmentRepository;
     private final MemberJpaRepository memberRepository;
-    private final NotificationService notificationService;
 
     public Optional<Study> findByStudyId(Long id) {
 
@@ -79,7 +76,7 @@ public class StudyService {
                 .memberRole(MemberRole.CREATOR)
                 .memberJoiningAt(LocalDate.now())
                 .build();
-        memberJpaRepository.save(member);
+        memberRepository.save(member);
 
         return AddStudyResponse.builder()
                 .studyId(study.getStudyId())

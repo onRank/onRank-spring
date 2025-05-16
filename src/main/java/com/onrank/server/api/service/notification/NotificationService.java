@@ -2,7 +2,6 @@ package com.onrank.server.api.service.notification;
 
 import com.onrank.server.api.dto.notification.NotificationResponse;
 import com.onrank.server.api.service.file.FileService;
-import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
@@ -14,6 +13,7 @@ import com.onrank.server.domain.notification.NotificationJpaRepository;
 import com.onrank.server.domain.schedule.Schedule;
 import com.onrank.server.domain.schedule.ScheduleJpaRepository;
 import com.onrank.server.domain.student.Student;
+import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ import static com.onrank.server.common.exception.CustomErrorInfo.*;
 public class NotificationService {
 
     private final NotificationJpaRepository notificationRepository;
-    private final StudentService studentService;
+    private final StudentJpaRepository studentRepository;
     private final StudyService studyService;
     private final ScheduleJpaRepository scheduleJpaRepository;
     private final AssignmentJpaRepository assignmentRepository;
@@ -66,7 +66,7 @@ public class NotificationService {
     // 특정 학생의 알림 조회 (최신순)
     public List<NotificationResponse> getNotifications(String username) {
 
-        Student student = studentService.findByUsername(username)
+        Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
 
         return notificationRepository.findByStudentOrderByNotificationCreatedAtDesc(student).stream()
@@ -143,6 +143,4 @@ public class NotificationService {
             );
         }
     }
-
-    // 전체 알림 삭제
 }
