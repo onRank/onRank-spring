@@ -2,7 +2,6 @@ package com.onrank.server.api.service.notification;
 
 import com.onrank.server.api.dto.notification.NotificationResponse;
 import com.onrank.server.api.service.file.FileService;
-import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
@@ -15,6 +14,7 @@ import com.onrank.server.domain.schedule.ScheduleJpaRepository;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
+import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +33,7 @@ public class NotificationService {
 
     private final NotificationJpaRepository notificationRepository;
     private final StudentJpaRepository studentRepository;
-    private final StudyService studyService;
+    private final StudyJpaRepository studyRepository;
     private final ScheduleJpaRepository scheduleJpaRepository;
     private final AssignmentJpaRepository assignmentRepository;
     private final FileService fileService;
@@ -42,7 +42,7 @@ public class NotificationService {
     @Transactional
     public void createNotification(NotificationCategory category, Long entityId, Long studyId, String title, String content, String relatedUrl) {
 
-        Study study = studyService.findByStudyId(studyId)
+        Study study = studyRepository.findByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
 
         String fileKey = fileService.getStudyImageFileKeyByStudyId(studyId);
