@@ -28,6 +28,7 @@ public enum CustomErrorInfo {
     INVALID_ASSIGNMENT_DUE_DATE(HttpStatus.BAD_REQUEST, "Assignment due date is invalid"),
     INVALID_SCHEDULE_TIME(HttpStatus.BAD_REQUEST, "Invalid schedule time"),
     INVALID_ROLE_CHANGE(HttpStatus.BAD_REQUEST, "Invalid role change"),
+    SUBMISSION_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "Submission not submitted yet"),
 
 
     // 401 UNAUTHORIZED - 인증 실패

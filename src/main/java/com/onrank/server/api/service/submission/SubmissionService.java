@@ -59,10 +59,7 @@ public class SubmissionService {
      * 제출물 목록 조회 (관리자 기준)
      */
     @Transactional
-    public ContextResponse<List<SubmissionListResponse>> getSubmissions(
-            String username,
-            Long studyId,
-            Long assignmentId) {
+    public ContextResponse<List<SubmissionListResponse>> getSubmissions(String username, Long studyId, Long assignmentId) {
 
         // CREATOR, HOST 만 가능
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
@@ -161,6 +158,11 @@ public class SubmissionService {
 
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new CustomException(SUBMISSION_NOT_FOUND));
+
+        // SubmissionStatus.NOTSUBMITTED 에 대해서는 채점 불가
+        if(submission.getSubmissionStatus() == SubmissionStatus.NOTSUBMITTED) {
+            throw new CustomException(SUBMISSION_NOT_SUBMITTED);
+        }
 
         Member member = submission.getMember();
 
