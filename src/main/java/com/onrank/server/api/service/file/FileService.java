@@ -37,6 +37,9 @@ public class FileService {
      */
     @Transactional
     public String createPresignedUrlAndSaveMetadata(FileCategory category, Long entityId, String fileName) {
+        if(fileName == null) {
+            return null;
+        }
         String fileKey = category.name().toLowerCase() + "/" + entityId + "/" +  UUID.randomUUID() + "_" + fileName;
 
         PutObjectPresignRequest request = PutObjectPresignRequest.builder()
@@ -162,7 +165,7 @@ public class FileService {
         List<FileMetadata> files = fileMetadataRepository.findByCategoryAndEntityId(FileCategory.STUDY, studyId);
         if (!files.isEmpty()) {
             FileMetadata file = files.get(0);
-            if(!file.getFileName().isEmpty()) {
+            if(file.getFileName() != null) {
                 fileKey = file.getFileKey();
             }
         }
