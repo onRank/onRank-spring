@@ -6,8 +6,8 @@ import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.api.dto.member.AddMemberRequest;
 import com.onrank.server.api.dto.member.MemberListResponse;
 import com.onrank.server.api.dto.member.MemberManagementResponse;
-import com.onrank.server.api.service.assignment.AssignmentService;
 import com.onrank.server.api.service.attendance.AttendanceService;
+import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.assignment.Assignment;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
@@ -17,6 +17,7 @@ import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;
+import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -33,8 +34,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static com.onrank.server.common.exception.CustomErrorInfo.ACCESS_DENIED;
-import static com.onrank.server.common.exception.CustomErrorInfo.STUDENT_NOT_FOUND;
+import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
 
 @Service
@@ -49,6 +49,7 @@ public class MemberService {
     private final AttendanceService attendanceService;
     private final AssignmentJpaRepository assignmentRepository;
     private final SubmissionJpaRepository submissionRepository;
+    private final NotificationService notificationService;
 
     public MemberStudyContext getContext(String username, Long studyId) {
         Member member = findMemberByUsernameAndStudyId(username, studyId)
@@ -147,9 +148,16 @@ public class MemberService {
         Member newMember = new Member(student, study, MemberRole.PARTICIPANT, LocalDate.now());
         memberRepository.save(newMember);
 
+        // 1. 알림 생성
+        notificationService.createNotification(
+                NotificationCategory.STUDY, studyId, studyId,
+                study.getStudyName() + " 스터디 가입!", study.getStudyName() + " 스터디에 멤버로 추가되었습니다!",
+                "/studies/" + studyId);
+
+        // 2. 기존 Schedule 에 대해 Attendance 생성
         attendanceService.createAttendancesForMember(newMember);
 
-        // 기존 Assignment에 대해 Submission 생성
+        // 3. 기존 Assignment 에 대해 Submission 생성
         List<Assignment> assignments = assignmentRepository.findByStudyStudyId(newMember.getStudy().getStudyId());
         for (Assignment assignment : assignments) {
             Submission submission = Submission.builder()
@@ -163,7 +171,8 @@ public class MemberService {
                     .build();
 
             submissionRepository.save(submission);
-        }    }
+        }
+    }
 
     @Transactional
     public void updateMemberRole(String username, Long studyId, Long memberId, String newRole) {
@@ -194,15 +203,19 @@ public class MemberService {
 
         // 삭제할 멤버 조회
         Member targetMember = memberRepository.findByMemberIdAndStudyStudyId(memberIdToDelete, studyId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스터디에 멤버가 없습니다."));
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // 요청자 본인의 멤버 객체 조회
-        Member requester = findMemberByUsernameAndStudyId(usernameOfRequester, studyId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 스터디에 소속되지 않은 사용자입니다."));
+        Member loginedMember = findMemberByUsernameAndStudyId(usernameOfRequester, studyId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
+
+        // 해당 스터디에 존재하던 알림 삭제
+        notificationService.deleteNotificationByMember(
+                targetMember.getStudent().getStudentId(), targetMember.getStudy().getStudyId());
 
         // 자기 자신 삭제 방지
-        if (targetMember.getMemberId().equals(requester.getMemberId())) {
-            throw new IllegalArgumentException("자기 자신은 삭제할 수 없습니다.");
+        if (targetMember.getMemberId().equals(loginedMember.getMemberId())) {
+            throw new CustomException(INVALID_REQUEST);
         }
 
         // HOST는 삭제 불가

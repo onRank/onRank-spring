@@ -11,5 +11,5 @@ public interface NotificationJpaRepository extends JpaRepository<Notification, L
 
     List<Notification> findByNotificationCategoryAndEntityId(NotificationCategory category, Long entityId);
 
-    List<Notification> findByStudyStudyId(Long studyId);
+    List<Notification> findByStudentStudentIdAndStudyStudyId(Long studentId, Long studyId);
 }

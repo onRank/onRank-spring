@@ -96,9 +96,9 @@ public class NotificationService {
     }
 
     @Transactional
-    public void deleteNotificationByStudy(Long studyId) {
+    public void deleteNotificationByMember(Long studentId, Long studyId) {
 
-        List<Notification> notifications = notificationRepository.findByStudyStudyId(studyId);
+        List<Notification> notifications = notificationRepository.findByStudentStudentIdAndStudyStudyId(studentId, studyId);
         notificationRepository.deleteAll(notifications);
     }
 
