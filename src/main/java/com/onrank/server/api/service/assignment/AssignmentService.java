@@ -341,8 +341,15 @@ public class AssignmentService {
         // 컨텍스트
         MemberStudyContext context = memberService.getContext(username, studyId);
 
-        // 과제 & 멤버 조회
+        // 과제 조회
         Assignment assignment = this.findById(assignmentId);
+
+        // 마감된 과제는 제출 불가
+        if (assignment.getAssignmentDueDate().isBefore(LocalDateTime.now())) {
+            throw new CustomException(LATE_SUBMISSION);
+        }
+
+        // 멤버 조회
         Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new NoSuchElementException("Member not found"));
 
@@ -372,11 +379,5 @@ public class AssignmentService {
         );
 
         return new ContextResponse<>(context, responses);
-    }
-
-    @Transactional
-    public void createSubmissionsToNewMember(Member member) {
-
-
     }
 }
