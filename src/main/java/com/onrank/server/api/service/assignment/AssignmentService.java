@@ -192,6 +192,9 @@ public class AssignmentService {
         // 과제 조회
         Assignment assignment = this.findById(assignmentId);
 
+        // 알림 삭제
+        notificationService.deleteNotificationByEntity(NotificationCategory.ASSIGNMENT, assignmentId);
+
         // 과제 파일 삭제
         fileService.deleteAllFilesAndMetadata(FileCategory.ASSIGNMENT, assignmentId);
 
