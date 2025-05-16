@@ -46,7 +46,7 @@ public record NotificationResponse(
         return new NotificationResponse(
                 notification.getNotificationId(),
                 notification.getNotificationCategory(),
-                notification.getStudyName(),
+                notification.getStudy().getStudyName(),
                 imageUrl,
                 notification.getNotificationTitle(),
                 notification.getNotificationContent(),

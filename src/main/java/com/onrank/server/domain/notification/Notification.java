@@ -1,6 +1,7 @@
 package com.onrank.server.domain.notification;
 
 import com.onrank.server.domain.student.Student;
+import com.onrank.server.domain.study.Study;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,9 +26,6 @@ public class Notification {
     @Column(nullable = false)
     private Long entityId;
 
-    @Column(nullable = false)
-    private String studyName;
-
     private String fileKey;
 
     @Column(nullable = false)
@@ -49,17 +47,21 @@ public class Notification {
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_id", nullable = false)
+    private Study study;
+
     @Builder
-    public Notification(NotificationCategory notificationCategory, Long entityId, String studyName, String fileKey, String notificationTitle, String notificationContent, String relatedUrl, LocalDateTime notificationCreatedAt, Student student) {
+    public Notification(NotificationCategory notificationCategory, Long entityId, String fileKey, String notificationTitle, String notificationContent, String relatedUrl, LocalDateTime notificationCreatedAt, Student student, Study study) {
         this.notificationCategory = notificationCategory;
         this.entityId = entityId;
-        this.studyName = studyName;
         this.fileKey = fileKey;
         this.notificationTitle = notificationTitle;
         this.notificationContent = notificationContent;
         this.relatedUrl = relatedUrl;
         this.notificationCreatedAt = notificationCreatedAt;
         this.student = student;
+        this.study = study;
     }
 
     public void markAsRead() {

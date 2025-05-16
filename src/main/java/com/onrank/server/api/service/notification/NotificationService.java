@@ -51,13 +51,13 @@ public class NotificationService {
             Notification notification = Notification.builder()
                     .notificationCategory(category)
                     .entityId(entityId)
-                    .studyName(study.getStudyName())
                     .fileKey(fileKey)
                     .notificationTitle(title)
                     .notificationContent(content)
                     .relatedUrl(relatedUrl)
                     .notificationCreatedAt(now)
                     .student(member.getStudent())
+                    .study(study)
                     .build();
             notificationRepository.save(notification);
         }
