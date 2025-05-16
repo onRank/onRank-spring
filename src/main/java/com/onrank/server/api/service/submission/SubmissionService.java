@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import static com.onrank.server.common.exception.CustomErrorInfo.*;
 
@@ -65,8 +64,6 @@ public class SubmissionService {
         if (!memberService.isMemberCreatorOrHost(username, studyId)) {
             throw new CustomException(ACCESS_DENIED);
         }
-        // 컨텍스트 조회
-        MemberStudyContext context = memberService.getContext(username, studyId);
 
         // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
@@ -79,6 +76,9 @@ public class SubmissionService {
         List<SubmissionListResponse> responses = submissions.stream()
                 .map(SubmissionListResponse::from)
                 .toList();
+
+        // 컨텍스트 조회
+        MemberStudyContext context = memberService.getContext(username, studyId);
 
         return new ContextResponse<>(context, responses);
     }
@@ -100,13 +100,12 @@ public class SubmissionService {
         // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
 
-        // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new NoSuchElementException("Assignment not found"));
+                .orElseThrow(() -> new CustomException(ASSIGNMENT_NOT_FOUND));
 
-        // 제출물 조회
+
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new NoSuchElementException("Submission not found"));
+                .orElseThrow(() -> new CustomException(SUBMISSION_NOT_FOUND));
 
         // 멤버 조회
         Member member = submission.getMember();
@@ -155,7 +154,6 @@ public class SubmissionService {
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ASSIGNMENT_NOT_FOUND));
 
-
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new CustomException(SUBMISSION_NOT_FOUND));
 
@@ -184,6 +182,7 @@ public class SubmissionService {
         // 멤버 엔티티 과제 점수 속성 업데이트
         member.changeSubmissionPoint(member.getMemberSubmissionPoint() + request.getSubmissionScore());
 
+        // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
 
         // 알림 생성
