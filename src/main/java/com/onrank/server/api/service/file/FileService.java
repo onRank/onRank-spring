@@ -162,7 +162,9 @@ public class FileService {
         List<FileMetadata> files = fileMetadataRepository.findByCategoryAndEntityId(FileCategory.STUDY, studyId);
         if (!files.isEmpty()) {
             FileMetadata file = files.get(0);
-            fileKey = file.getFileKey();
+            if(!file.getFileName().isEmpty()) {
+                fileKey = file.getFileKey();
+            }
         }
         return fileKey;
     }
