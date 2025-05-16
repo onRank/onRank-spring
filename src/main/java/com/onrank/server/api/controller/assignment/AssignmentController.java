@@ -14,8 +14,6 @@
 
     import java.util.List;
 
-    import static com.onrank.server.common.exception.CustomErrorInfo.NOT_STUDY_MEMBER;
-
     @RestController
     @RequiredArgsConstructor
     @RequestMapping("/studies/{studyId}/assignments")

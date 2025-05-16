@@ -37,11 +37,17 @@ public record NotificationResponse(
         LocalDateTime notificationCreatedAt
 ) {
     public static NotificationResponse from(Notification notification, String bucketName, String fileKey) {
+
+        String imageUrl = null;
+        if(fileKey != null) {
+            imageUrl = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + fileKey;
+        }
+
         return new NotificationResponse(
                 notification.getNotificationId(),
                 notification.getNotificationCategory(),
                 notification.getStudyName(),
-                "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + fileKey,
+                imageUrl,
                 notification.getNotificationTitle(),
                 notification.getNotificationContent(),
                 notification.getRelatedUrl(),
