@@ -1,10 +1,9 @@
 package com.onrank.server.common.util;
 
+import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.refreshtoken.RefreshToken;
 import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,25 +84,38 @@ public class JWTUtil {
                 .get("category", String.class);
     }
 
-    public Boolean isExpired(String token) {
-
-        Claims claims = Jwts
+    public boolean isTokenExpired(String token) {
+        try {
+            Jwts
                 .parser()
                 .verifyWith(secretKey)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        if (claims.getExpiration().before(new Date())) {
-            // 토큰이 만료된 경우 명시적으로 예외 발생
-            throw new ExpiredJwtException(null, claims, "Token has expired");
+                .parseSignedClaims(token);
+            // 예외 없이 완전히 파싱되었으면 만료되지 않음
+            return false;
+        } catch (ExpiredJwtException e) {
+            // 토큰의 exp 클레임이 현재 시각보다 이전인 경우
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            // 서명 불일치, 형식 오류 등 다른 검증 실패는
+            // '만료' 여부와 별개이므로 false로 처리
+            return false;
         }
-        return false;
     }
 
-    public Boolean validateRefreshToken(String token) {
-        log.info("refresh token: {}", token);
-        return refreshTokenJpaRepository.existsByRefreshToken(token);
+    public boolean isTokenValid(String token) {
+        try {
+            Jwts
+                .parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token);
+            // 파싱에 예외가 없었다면 서명, 만료, 형식 모두 통과
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            // 만료, 서명불일치, 잘못된 형식 등 모두 여기서 잡힘
+            return false;
+        }
     }
 
     public void deleteRefreshToken(String token) {

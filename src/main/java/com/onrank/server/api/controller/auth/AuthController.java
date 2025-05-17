@@ -44,13 +44,12 @@ public class AuthController {
     }
 
     @GetMapping("/reissue")
-    public ResponseEntity<?> refreshToken(
+    public ResponseEntity<?> reissueAccessToken(
             RequestEntity<Void> requestEntity,
+            @RequestHeader("Authorization") String authorizationHeader,
             @CookieValue(name = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response) {
         log.info("/reissue 진입");
-
-        String authorizationHeader = requestEntity.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         // 두 토큰 모두 전달되지 않은 경우
         if (authorizationHeader == null && refreshToken == null) {
@@ -69,13 +68,24 @@ public class AuthController {
         // refresh token만 전달된 경우
         if (authorizationHeader == null) {
 
+            // refresh token이 만료된 경우
+            if (JWTUtil.isTokenExpired(refreshToken)) {
+                log.info("refresh만 전달, refreshToken 만료");
+
+                JWTUtil.deleteRefreshToken(refreshToken);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("만료된 refresh token입니다. 다시 로그인해주세요.");
+            }
+
             // refresh token이 유효하지 않은 경우
-            if (!JWTUtil.validateRefreshToken(refreshToken)) {
+            if (!JWTUtil.isTokenValid(refreshToken)) {
+                log.info("refresh만 전달, refreshToken 유효하지 않음");
 
                 JWTUtil.deleteRefreshToken(refreshToken);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("유효하지 않은 refresh token입니다. 다시 로그인해주세요.");
             }
+
             // refresh token이 유효한 경우 -> 새로운 토큰 발급
             return getResponseEntity(refreshToken, response);
         }
@@ -93,19 +103,30 @@ public class AuthController {
 
 
         // access token이 만료되지 않은 경우 -> 보안상의 이유로 재인증 처리
-        if (!JWTUtil.isExpired(accessToken)) {
+        if (!JWTUtil.isTokenExpired(accessToken)) {
 
             JWTUtil.deleteRefreshToken(refreshToken);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("만료되지 않은 access token과 함께 refresh token이 전달되었습니다. 보안상의 이유로 재인증이 필요합니다.");
         }
 
-        // refresh token이 만료되었거나 유효하지 않을 경우
-        if (JWTUtil.isExpired(refreshToken)) {
+        // refresh token이 만료된 경우
+        if (JWTUtil.isTokenExpired(refreshToken)) {
+            log.info("access 만료, refreshToken 유효하지 않음");
+
 
             JWTUtil.deleteRefreshToken(refreshToken);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("만료되지 않은 refresh token입니다. 다시 로그인해주세요.");
+                    .body("만료된 refresh token입니다. 다시 로그인해주세요.");
+        }
+
+        // refresh token이 유효하지 않은 경우
+        if (!JWTUtil.isTokenValid(refreshToken)) {
+            log.info("access 만료, refreshToken 유효하지 않음");
+
+            JWTUtil.deleteRefreshToken(refreshToken);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("유효하지 않은 refresh token입니다. 다시 로그인해주세요.");
         }
 
         // refresh token이 유효한 경우 -> 새로운 토큰 발급
