@@ -62,7 +62,7 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
         // 토큰 만료 여부 및 유효성 확인
         try {
-            JWTUtil.isExpired(accessToken);
+            JWTUtil.isTokenExpired(accessToken);
 
         } catch (ExpiredJwtException ex) {
 
