@@ -46,10 +46,11 @@ public class AuthController {
     @GetMapping("/reissue")
     public ResponseEntity<?> reissueAccessToken(
             RequestEntity<Void> requestEntity,
-            @RequestHeader("Authorization") String authorizationHeader,
             @CookieValue(name = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response) {
         log.info("/reissue 진입");
+
+        String authorizationHeader = requestEntity.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         // 두 토큰 모두 전달되지 않은 경우
         if (authorizationHeader == null && refreshToken == null) {
