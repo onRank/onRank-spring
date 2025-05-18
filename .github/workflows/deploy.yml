@@ -65,7 +65,8 @@ jobs:
               onrank-api:${{ env.TAG }}
 
             echo "[7] Waiting for container to report healthy status..."
-            for i in {1..20}; do
+            sleep 30
+            for i in {1..10}; do
               HEALTH=$(docker inspect --format='{{.State.Health.Status}}' onrank-api)
               echo "  → Attempt $i: status=$HEALTH"
               if [ "$HEALTH" = "healthy" ]; then
@@ -79,7 +80,7 @@ jobs:
               sleep 5
             done
 
-            # 20회 시도 후에도 healthy 상태가 아니면 에러로 처리
+            # 10회 시도 후에도 healthy 상태가 아니면 에러로 처리
             if [ "$HEALTH" != "healthy" ]; then
               echo "❌ Container did not become healthy after 20 attempts; last status=$HEALTH"
               docker logs onrank-api
