@@ -42,7 +42,7 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
         // access token이 없으면 필터 건너뛰기
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.info("Access token not found (reissue 필요)");
+            log.info("Access token not found");
             filterChain.doFilter(request, response);
             return;
         }
