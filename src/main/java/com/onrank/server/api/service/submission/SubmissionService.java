@@ -103,7 +103,7 @@ public class SubmissionService {
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ASSIGNMENT_NOT_FOUND));
 
-
+        // 제출물 조회
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new CustomException(SUBMISSION_NOT_FOUND));
 

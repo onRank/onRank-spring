@@ -36,8 +36,10 @@ out/
 ### VS Code ###
 .vscode/
 
+### deploy.yml ###
+.github/workflows/deploy.yml
+
 # 설정
-src/main/resources/application-db.yml
-src/main/resources/application-aws-db.yml
-src/main/resources/application-oauth.yml
+src/main/resources/application-dev.yml
+src/main/resources/application-prod.yml
 src/main/resources/application-cloud.yml

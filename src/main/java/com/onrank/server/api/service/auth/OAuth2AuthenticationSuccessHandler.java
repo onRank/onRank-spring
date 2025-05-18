@@ -7,6 +7,7 @@ import com.onrank.server.common.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final JWTUtil JWTUtil;
     private final StudentService studentService;
     private final CookieUtil cookieUtil;
+    @Value("${app.oauth.redirect-base-url}")
+    private String redirectBaseUrl;
 
     public OAuth2AuthenticationSuccessHandler(JWTUtil JWTUtil,
                                                 StudentService studentService,
@@ -55,7 +58,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         boolean isNewUser = studentService.checkIfNewUser(authentication.getName());
 
         // 리다이렉트 URL 구성 후 sendRedirect 호출
-        String redirectUrl = "https://dev.onrank.kr/auth/callback?isNewUser=" + isNewUser;
+        String redirectUrl = redirectBaseUrl + "?isNewUser=" + isNewUser;
 
         response.sendRedirect(redirectUrl);
     }

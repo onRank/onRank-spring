@@ -71,7 +71,6 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:3000",
-                "https://d37q7cndbbsph5.cloudfront.net",
                 "https://onrank.kr",
                 "https://www.onrank.kr",
                 "https://dev.onrank.kr"));

@@ -3,7 +3,6 @@ spring:
     name: server
   profiles:
     include: oauth, cloud
-    active: aws-db
 
 server:
   forward-headers-strategy: framework
