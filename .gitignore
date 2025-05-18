@@ -36,9 +36,6 @@ out/
 ### VS Code ###
 .vscode/
 
-### deploy.yml ###
-.github/workflows/deploy.yml
-
 # 설정
 src/main/resources/application-dev.yml
 src/main/resources/application-prod.yml

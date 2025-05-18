@@ -2,7 +2,21 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ "develop" ]  # develop 브랜치에 push될 때 자동 배포
+    branches:
+      - develop
+      - main
+
+env:
+  # 현재 푸시된 브랜치를 가져옵니다 (develop 또는 main)
+  GIT_BRANCH: ${{ github.ref_name }}
+  # 브랜치별로 다른 EC2 접속 정보를 주입합니다.
+  # → secrets.EC2_HOST_DEV, EC2_USER_DEV, EC2_KEY_DEV 는 develop용
+  # → secrets.EC2_HOST_PROD, EC2_USER_PROD, EC2_KEY_PROD 는 main용
+  EC2_HOST: ${{ github.ref == 'refs/heads/develop' && secrets.DEV_EC2_HOST || secrets.PROD_EC2_HOST }}
+  EC2_USER: ${{ github.ref == 'refs/heads/develop' && secrets.DEV_EC2_USER || secrets.PROD_EC2_USER }}
+  EC2_KEY:  ${{ github.ref == 'refs/heads/develop' && secrets.DEV_EC2_KEY  || secrets.PROD_EC2_KEY }}
+  # 브랜치별 Spring 프로파일 설정
+  SPRING_PROFILES: ${{ github.ref == 'refs/heads/develop' && 'dev,cloud' || 'prod,cloud' }}
 
 jobs:
   deploy:
@@ -19,23 +33,23 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
+          host:     ${{ env.EC2_HOST }}
+          username: ${{ env.EC2_USER }}
+          key:      ${{ env.EC2_KEY }}
           script: |
             set -e
-            
+
             echo "[1] 이동: 프로젝트 디렉토리로"
             cd /home/ec2-user/onRank/onRank-spring
 
             echo "[2] Git 최신화"
-            git pull origin develop
+            git pull origin ${{ env.GIT_BRANCH }}
 
-            echo "[3] 기존 Docker 컨테이너 정리 (없으면 해당 명령을 무시)"
+            echo "[3] 기존 Docker 컨테이너 정리"
             docker stop onrank-api || true
-            docker rm onrank-api || true
+            docker rm   onrank-api || true
 
-            echo "[4] Gradle 빌드 (기존 파일 정리 후 재빌드 + 로그 출력 포함)"
+            echo "[4] Gradle 빌드"
             ./gradlew clean build -x test || { cat build/libs/*.log; exit 1; }
 
             echo "[5] Docker 이미지 빌드 (태그: ${{ env.TAG }})"
@@ -43,12 +57,12 @@ jobs:
 
             echo "[6] Docker 컨테이너 실행"
             docker run -d \
-            --name onrank-api \
-            --restart unless-stopped \
-            -e SPRING_PROFILES_ACTIVE="oauth,cloud,aws-db" \
-            -p 8080:8080 \
-            -p 8081:8081 \
-            onrank-api:${{ env.TAG }}
+              --name onrank-api \
+              --restart unless-stopped \
+              -e SPRING_PROFILES_ACTIVE="${{ env.SPRING_PROFILES }}" \
+              -p 8080:8080 \
+              -p 8081:8081 \
+              onrank-api:${{ env.TAG }}
 
             echo "[7] Waiting for container to report healthy status..."
             for i in {1..20}; do
@@ -57,12 +71,17 @@ jobs:
               if [ "$HEALTH" = "healthy" ]; then
                 echo "✅ Container is healthy!"
                 break
-              fi
-              if [ "$HEALTH" = "unhealthy" ]; then
+              elif [ "$HEALTH" = "unhealthy" ]; then
                 echo "❌ Container is unhealthy! Dumping logs:"
                 docker logs onrank-api
                 exit 1
               fi
               sleep 5
-            
             done
+
+            # 20회 시도 후에도 healthy 상태가 아니면 에러로 처리
+            if [ "$HEALTH" != "healthy" ]; then
+              echo "❌ Container did not become healthy after 20 attempts; last status=$HEALTH"
+              docker logs onrank-api
+              exit 1
+            fi
