@@ -94,9 +94,11 @@ public class JWTUtil {
             // 예외 없이 완전히 파싱되었으면 만료되지 않음
             return false;
         } catch (ExpiredJwtException e) {
+            log.info("token expired, token: {}", token);
             // 토큰의 exp 클레임이 현재 시각보다 이전인 경우
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            log.info("token is invalid, token: {}", token);
             // 서명 불일치, 형식 오류 등 다른 검증 실패는
             // '만료' 여부와 별개이므로 false로 처리
             return false;

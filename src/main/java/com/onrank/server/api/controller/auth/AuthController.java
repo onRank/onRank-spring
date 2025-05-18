@@ -54,6 +54,7 @@ public class AuthController {
 
         // 두 토큰 모두 전달되지 않은 경우
         if (authorizationHeader == null && refreshToken == null) {
+            log.info("token 두 개 모두 전달 X");
 
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("인증 정보가 제공되지 않았습니다. 로그인이 필요합니다.");
@@ -61,6 +62,7 @@ public class AuthController {
 
         // access token만 전달된 경우
         if (authorizationHeader != null && refreshToken == null) {
+            log.info("access token만 전달");
 
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("토큰 갱신 요청에 refresh token이 누락되었습니다.");
@@ -105,6 +107,7 @@ public class AuthController {
 
         // access token이 만료되지 않은 경우 -> 보안상의 이유로 재인증 처리
         if (!JWTUtil.isTokenExpired(accessToken)) {
+            log.info("access token expired");
 
             JWTUtil.deleteRefreshToken(refreshToken);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -114,7 +117,6 @@ public class AuthController {
         // refresh token이 만료된 경우
         if (JWTUtil.isTokenExpired(refreshToken)) {
             log.info("access 만료, refreshToken 유효하지 않음");
-
 
             JWTUtil.deleteRefreshToken(refreshToken);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
