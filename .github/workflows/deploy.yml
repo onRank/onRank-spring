@@ -77,7 +77,7 @@ jobs:
                 docker logs onrank-api
                 exit 1
               fi
-              sleep 5
+              sleep 10
             done
 
             # 10회 시도 후에도 healthy 상태가 아니면 에러로 처리
