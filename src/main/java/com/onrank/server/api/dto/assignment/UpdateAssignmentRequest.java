@@ -20,7 +20,7 @@ public class UpdateAssignmentRequest {
     private LocalDateTime assignmentDueDate;
 
     @Schema(description = "과제 배점", example = "120")
-    private Long assignmentMaxPoint;
+    private Integer assignmentMaxPoint;
 
     @Schema(description = "유지할 기존 파일 ID 목록", example = "[101, 102]")
     private List<Long> remainingFileIds;

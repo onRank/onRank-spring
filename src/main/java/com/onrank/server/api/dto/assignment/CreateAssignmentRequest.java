@@ -23,7 +23,7 @@ public class CreateAssignmentRequest {
     private LocalDateTime assignmentDueDate;
 
     @Schema(description = "과제 배점", example = "100")
-    private Long assignmentMaxPoint;
+    private Integer assignmentMaxPoint;
 
     @Schema(description = "업로드할 파일 이름 목록", example = "[\"QuickSort.java\", \"README.md\"]")
     private List<String> fileNames;

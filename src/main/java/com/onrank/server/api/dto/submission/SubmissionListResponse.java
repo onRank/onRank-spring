@@ -29,7 +29,10 @@ public record SubmissionListResponse(
         LocalDateTime submissionCreatedAt,
 
         @Schema(description = "점수 (SCORED 상태만)", example = "95")
-        Integer submissionScore
+        Integer submissionScore,
+
+        @Schema(description = "과제 배점", example = "100")
+        Integer assignmentMaxPoint
 ) {
     public static SubmissionListResponse from(Submission submission) {
         Member member = submission.getMember();
@@ -40,7 +43,8 @@ public record SubmissionListResponse(
                 member.getStudent().getStudentEmail(),
                 submission.getSubmissionStatus(),
                 submission.getSubmissionCreatedAt(),
-                submission.getSubmissionScore()
+                submission.getSubmissionScore(),
+                submission.getAssignment().getAssignmentMaxPoint()
         );
     }
 }

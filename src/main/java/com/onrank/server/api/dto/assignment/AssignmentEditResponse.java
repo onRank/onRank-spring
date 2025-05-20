@@ -26,7 +26,7 @@ public class AssignmentEditResponse {
     private LocalDateTime assignmentDueDate;
 
     @Schema(description = "과제 최대 점수", example = "120")
-    private Long assignmentMaxPoint;
+    private Integer assignmentMaxPoint;
 
     @Schema(description = "과제 파일 목록", implementation = FileMetadataDto.class)
     private List<FileMetadataDto> assignmentFiles;

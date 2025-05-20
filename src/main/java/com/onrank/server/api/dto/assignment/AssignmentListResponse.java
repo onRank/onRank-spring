@@ -20,7 +20,7 @@ public record AssignmentListResponse(
         LocalDateTime assignmentDueDate,
 
         @Schema(description = "과제 최대 점수", example = "100")
-        Long assignmentMaxPoint,
+        Integer assignmentMaxPoint,
 
         @Schema(description = "제출 상태 (NOTSUBMITTED, SUBMITTED, SCORED)", example = "SUBMITTED")
         SubmissionStatus submissionStatus,

@@ -277,6 +277,7 @@ public class AssignmentService {
                 .assignmentFiles(assignmentFiles)
                 .submissionContent(submission.getSubmissionContent())
                 .submissionFiles(submissionFiles)
+                .submissionCreatedAt(submission.getSubmissionCreatedAt())
                 .submissionScore(submission.getSubmissionScore())
                 .submissionComment(submission.getSubmissionComment())
                 .build();
