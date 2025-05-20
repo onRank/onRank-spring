@@ -16,6 +16,7 @@ import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,9 @@ public class NotificationService {
     private final ScheduleJpaRepository scheduleJpaRepository;
     private final AssignmentJpaRepository assignmentRepository;
     private final FileService fileService;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
 
     // 알림 생성
     @Transactional
@@ -71,7 +75,7 @@ public class NotificationService {
 
         return notificationRepository.findByStudentOrderByNotificationCreatedAtDesc(student).stream()
                 .map(notification ->
-                        NotificationResponse.from(notification, "onrank-file-bucket", notification.getFileKey()))
+                        NotificationResponse.from(notification, bucketName, notification.getFileKey()))
                 .collect(Collectors.toList());
     }
 
