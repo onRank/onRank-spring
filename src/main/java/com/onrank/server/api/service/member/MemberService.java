@@ -26,6 +26,7 @@ import com.onrank.server.domain.submission.Submission;
 import com.onrank.server.domain.submission.SubmissionJpaRepository;
 import com.onrank.server.domain.submission.SubmissionStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +52,9 @@ public class MemberService {
     private final SubmissionJpaRepository submissionRepository;
     private final NotificationService notificationService;
 
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
+
     public MemberStudyContext getContext(String username, Long studyId) {
         Member member = findMemberByUsernameAndStudyId(username, studyId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
@@ -61,7 +65,7 @@ public class MemberService {
         FileMetadataDto fileDto = null;
         if (!files.isEmpty()) {
             FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-            fileDto = new FileMetadataDto(file, "onrank-file-bucket");
+            fileDto = new FileMetadataDto(file, bucketName);
         }
         return new MemberStudyContext(member, fileDto);
     }

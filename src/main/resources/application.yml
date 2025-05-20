@@ -1,8 +1,8 @@
 spring:
   application:
     name: server
-  profiles:
-    include: cloud
+#  profiles:
+#    include: cloud
 
 server:
   forward-headers-strategy: framework

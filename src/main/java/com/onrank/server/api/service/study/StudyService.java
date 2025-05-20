@@ -25,6 +25,7 @@ import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -50,6 +51,9 @@ public class StudyService {
     private final PostJpaRepository postRepository;
     private final AssignmentJpaRepository assignmentRepository;
     private final MemberJpaRepository memberRepository;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
 
     public Optional<Study> findByStudyId(Long id) {
 
@@ -96,7 +100,7 @@ public class StudyService {
                     FileMetadataDto fileDto = null;
                     if (!files.isEmpty()) {
                         FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-                        fileDto = new FileMetadataDto(file, "onrank-file-bucket");
+                        fileDto = new FileMetadataDto(file, bucketName);
                     }
 
                     return StudyListResponse.from(study, fileDto);
@@ -115,7 +119,7 @@ public class StudyService {
                     FileMetadataDto fileDto = null;
                     if (!files.isEmpty()) {
                         FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-                        fileDto = new FileMetadataDto(file, "onrank-file-bucket");
+                        fileDto = new FileMetadataDto(file, bucketName);
                     }
 
                     return MyPageStudyListResponse.from(study, fileDto);
