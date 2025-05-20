@@ -100,21 +100,25 @@ public class SubmissionService {
         // 컨텍스트 조회
         MemberStudyContext context = memberService.getContext(username, studyId);
 
+        // 과제 조회
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new CustomException(ASSIGNMENT_NOT_FOUND));
+
+        // 과제 파일 조회
+        List<FileMetadataDto> assignmentFiles = fileService.getMultipleFileMetadata(FileCategory.ASSIGNMENT, assignmentId);
 
         // 제출물 조회
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new CustomException(SUBMISSION_NOT_FOUND));
 
-        // 멤버 조회
+        // 제출물 멤버 조회
         Member member = submission.getMember();
 
-        // Url validation check
-        if (!submission.getSubmissionId().equals(submissionId)) {
-            log.info("submission.getSubmissionId(): {}, submission: {}", submission.getSubmissionId(), submission);
-            throw new IllegalArgumentException("잘못된 URL 접근");
-        }
+//        // Url validation check
+//        if (!submission.getSubmissionId().equals(submissionId)) {
+//            log.info("submission.getSubmissionId(): {}, submission: {}", submission.getSubmissionId(), submission);
+//            throw new IllegalArgumentException("잘못된 URL 접근");
+//        }
 
         // 제출물 파일 조회 (있으면)
         List<FileMetadataDto> submissionFiles = List.of();
@@ -126,12 +130,14 @@ public class SubmissionService {
                 .assignmentTitle(assignment.getAssignmentTitle())
                 .assignmentDueDate(assignment.getAssignmentDueDate())
                 .assignmentContent(assignment.getAssignmentContent())
+                .assignmentFiles(assignmentFiles)
                 .memberId(member.getMemberId())
                 .memberName(member.getStudent().getStudentName())
                 .memberEmail(member.getStudent().getStudentEmail())
                 .submissionCreatedAt(submission.getSubmissionCreatedAt())
                 .submissionContent(submission.getSubmissionContent())
                 .submissionFiles(submissionFiles)
+                .assignmentMaxPoint(assignment.getAssignmentMaxPoint())
                 .submissionScore(submission.getSubmissionScore())  // null if not SCORED
                 .submissionComment(submission.getSubmissionComment())  // null if not SCORED
                 .build();

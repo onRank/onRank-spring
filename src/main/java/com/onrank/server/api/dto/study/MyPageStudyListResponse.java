@@ -1,6 +1,5 @@
 package com.onrank.server.api.dto.study;
 
-import com.onrank.server.api.dto.file.FileMetadataDto;
 import com.onrank.server.domain.study.Study;
 import com.onrank.server.domain.study.StudyStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,17 +13,13 @@ public record MyPageStudyListResponse(
         String studyName,
 
         @Schema(description = "스터디 상태", example = "ACTIVE")
-        StudyStatus studyStatus,
-
-        @Schema(description = "스터디 대표 이미지 정보")
-        FileMetadataDto file
+        StudyStatus studyStatus
 ) {
-    public static MyPageStudyListResponse from(Study study, FileMetadataDto fileDto) {
+    public static MyPageStudyListResponse from(Study study) {
         return new MyPageStudyListResponse(
                 study.getStudyId(),
                 study.getStudyName(),
-                study.getStudyStatus(),
-                fileDto
+                study.getStudyStatus()
         );
     }
 }

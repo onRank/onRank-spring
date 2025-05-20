@@ -62,7 +62,6 @@ public class StudentService {
 
     // 마이페이지 조회
     public StudentResponse getMyPage(String username) {
-
         Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
 

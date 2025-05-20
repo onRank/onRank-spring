@@ -49,7 +49,7 @@ public class SubmissionController {
      * 제출물 채점 (관리자 기준)
      */
     @PostMapping("/{submissionId}")
-    public ResponseEntity<ContextResponse<Void>> scoreSubmission(
+        public ResponseEntity<ContextResponse<Void>> scoreSubmission(
             @PathVariable("studyId") Long studyId,
             @PathVariable("assignmentId") Long assignmentId,
             @PathVariable("submissionId") Long submissionId,

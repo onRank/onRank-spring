@@ -17,8 +17,16 @@ public record SubmissionDetailResponse(
         @Schema(description = "과제 마감 기한", example = "2025-05-01T23:59:00")
         LocalDateTime assignmentDueDate,
 
+        @Schema(description = "과제 배점", example = "100")
+        Integer assignmentMaxPoint,
+
         @Schema(description = "과제 내용", example = "퀵정렬을 재귀로 구현하고 분석하세요.")
         String assignmentContent,
+
+        @Schema(description = "과제 파일 목록", implementation = FileMetadataDto.class)
+        List<FileMetadataDto> assignmentFiles,
+
+        /*----------------------------------------------*/
 
         @Schema(description = "제출자 ID", example = "101")
         Long memberId,
