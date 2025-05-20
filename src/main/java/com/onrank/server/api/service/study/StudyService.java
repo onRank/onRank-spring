@@ -109,21 +109,8 @@ public class StudyService {
     }
 
     public List<MyPageStudyListResponse> getMyPageStudyListResponsesByUsername(String username) {
-
-        List<Study> studies = studyRepository.findAllByStudentUsername(username);
-        return studies.stream()
-                .map(study -> {
-                    List<FileMetadata> files = fileMetadataRepository
-                            .findByCategoryAndEntityId(FileCategory.STUDY, study.getStudyId());
-
-                    FileMetadataDto fileDto = null;
-                    if (!files.isEmpty()) {
-                        FileMetadata file = files.get(0); // 첫 번째 파일만 대표로 사용
-                        fileDto = new FileMetadataDto(file, bucketName);
-                    }
-
-                    return MyPageStudyListResponse.from(study, fileDto);
-                })
+        return studyRepository.findAllByStudentUsername(username).stream()
+                .map(MyPageStudyListResponse::from)
                 .toList();
     }
 
