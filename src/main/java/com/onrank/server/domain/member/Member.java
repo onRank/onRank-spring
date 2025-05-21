@@ -61,6 +61,10 @@ public class Member {
     @Column(nullable = false)
     private Long memberAbsentCount = 0L;
 
+    @Column(length = 7, nullable = false)
+    private String memberColorCode = generateRandomColorCode();
+
+
     // 생성자
     @Builder
     public Member(Student student, Study study, MemberRole memberRole, LocalDate memberJoiningAt) {
@@ -91,5 +95,15 @@ public class Member {
             case LATE -> this.memberLateCount++;
             case ABSENT -> this.memberAbsentCount++;
         }
+    }
+
+    private String generateRandomColorCode() {
+        String[] colorPool = {
+                "#9876A8", "#F288A4", "#F20F0F",
+                "#CBDBA7", "#03A65A", "#00BDAD",
+                "#F2E2CE", "#F2CB05", "#F26938",
+                "#049DBF", "#599BBB", "#2D55A6"
+        };
+        return colorPool[(int) (Math.random() * colorPool.length)];
     }
 }

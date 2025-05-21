@@ -1,6 +1,7 @@
 package com.onrank.server.api.service.student;
 
 import com.onrank.server.api.dto.student.AddStudentRequest;
+import com.onrank.server.api.dto.student.CalendarResponse;
 import com.onrank.server.api.dto.student.StudentResponse;
 import com.onrank.server.api.dto.study.MyPageStudyListResponse;
 import com.onrank.server.api.service.study.StudyService;
@@ -67,5 +68,11 @@ public class StudentService {
 
         List<MyPageStudyListResponse> studyList = studyService.getMyPageStudyListResponsesByUsername(username);
         return StudentResponse.from(student, studyList);
+    }
+
+    public List<CalendarResponse> getCalendar(String username) {
+        Student student = studentRepository.findByUsername(username)
+                .orElseThrow(() ->  new CustomException(STUDENT_NOT_FOUND));
+        return null;
     }
 }

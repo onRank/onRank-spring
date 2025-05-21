@@ -2,6 +2,7 @@ package com.onrank.server.api.controller.student;
 
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.student.AddStudentRequest;
+import com.onrank.server.api.dto.student.CalendarResponse;
 import com.onrank.server.api.dto.student.StudentResponse;
 import com.onrank.server.api.service.student.StudentService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -34,4 +37,9 @@ public class StudentController implements StudentControllerDocs {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("calendar")
+    public ResponseEntity<List<CalendarResponse>> getCalendar (
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+        return ResponseEntity.ok(studentService.getCalendar(oAuth2User.getName()));
+    }
 }
