@@ -19,7 +19,7 @@ public class StudentController implements StudentControllerDocs {
     private final StudentService studentService;
 
     // 마이페이지
-    @GetMapping("mypage")
+    @GetMapping("/mypage")
     public ResponseEntity<StudentResponse> getStudent(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
         return ResponseEntity.ok(studentService.getMyPage(oAuth2User.getName()));
@@ -33,4 +33,5 @@ public class StudentController implements StudentControllerDocs {
         studentService.updateStudent(oAuth2User.getName(), studentId, addStudentRequest);
         return ResponseEntity.ok().build();
     }
+
 }
