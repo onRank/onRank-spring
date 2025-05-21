@@ -120,10 +120,10 @@ public class NotificationService {
         for (Schedule schedule : schedules) {
             Study study = schedule.getStudy();
             createNotification(
-                    NotificationCategory.SCHEDULE,
+                    NotificationCategory.REMINDER_SCHEDULE,
                     schedule.getScheduleId(),
                     study.getStudyId(),
-                    "[오늘 일정] " + schedule.getScheduleTitle(),
+                    schedule.getScheduleTitle(),
                     schedule.getScheduleContent(),
                     "/studies/" + study.getStudyId() + "/schedules"
             );
@@ -138,10 +138,9 @@ public class NotificationService {
         for(Assignment assignment : assignments) {
             Study study = assignment.getStudy();
             createNotification(
-                    NotificationCategory.ASSIGNMENT,
+                    NotificationCategory.REMINDER_ASSIGNMENT,
                     assignment.getAssignmentId(),
-                    study.getStudyId(),
-                    "[오늘 마감] " + assignment.getAssignmentTitle(),
+                    study.getStudyId(), assignment.getAssignmentTitle(),
                     assignment.getAssignmentContent(),
                     "/studies/" + study.getStudyId() + "/assignments/" + assignment.getAssignmentId()
             );

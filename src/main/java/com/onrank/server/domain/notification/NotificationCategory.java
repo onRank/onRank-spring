@@ -6,5 +6,7 @@ public enum NotificationCategory {
     POST,
     SCHEDULE,
     ASSIGNMENT,
-    SUBMISSION
+    SUBMISSION,
+    REMINDER_SCHEDULE,
+    REMINDER_ASSIGNMENT
 }
