@@ -37,7 +37,7 @@ public class StudentController implements StudentControllerDocs {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("calendar")
+    @GetMapping("/calendar")
     public ResponseEntity<List<CalendarResponse>> getCalendar (
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
         return ResponseEntity.ok(studentService.getCalendar(oAuth2User.getName()));
