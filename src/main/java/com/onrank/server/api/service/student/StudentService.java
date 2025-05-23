@@ -59,20 +59,17 @@ public class StudentService {
     }
 
     @Transactional
-    public void updateStudent(String username, Long studentId, AddStudentRequest addStudentRequest) {
+    public void updateStudent(String username, AddStudentRequest request) {
 
         // Student 본인만 가능
-        Student student = studentRepository.findByStudentId(studentId)
+        Student student = studentRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
-        if (!student.getUsername().equals(username)) {
-            throw new CustomException(ACCESS_DENIED);
-        }
 
         student.update(
-                addStudentRequest.getStudentName(),
-                addStudentRequest.getStudentSchool(),
-                addStudentRequest.getStudentDepartment(),
-                addStudentRequest.getStudentPhoneNumber()
+                request.getStudentName(),
+                request.getStudentSchool(),
+                request.getStudentDepartment(),
+                request.getStudentPhoneNumber()
         );
     }
 

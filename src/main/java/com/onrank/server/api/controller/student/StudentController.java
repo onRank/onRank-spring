@@ -28,12 +28,11 @@ public class StudentController implements StudentControllerDocs {
         return ResponseEntity.ok(studentService.getMyPage(oAuth2User.getName()));
     }
 
-    @PutMapping("/{studentId}")
+    @PutMapping("/mypage")
     public ResponseEntity<Void> updateStudent(
-            @PathVariable Long studentId,
             @RequestBody AddStudentRequest addStudentRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-        studentService.updateStudent(oAuth2User.getName(), studentId, addStudentRequest);
+        studentService.updateStudent(oAuth2User.getName(), addStudentRequest);
         return ResponseEntity.ok().build();
     }
 

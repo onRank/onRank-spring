@@ -11,7 +11,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -28,7 +27,7 @@ public interface StudentControllerDocs {
                     @ApiResponse(responseCode = "404", description = "학생 정보 없음")
             }
     )
-    @GetMapping
+    @GetMapping("/mypage")
     ResponseEntity<StudentResponse> getStudent(
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomOAuth2User oAuth2User
@@ -44,10 +43,8 @@ public interface StudentControllerDocs {
                     @ApiResponse(responseCode = "403", description = "권한 없음")
             }
     )
-    @PutMapping
+    @PutMapping("/mypage")
     ResponseEntity<Void> updateStudent(
-            @Parameter(description = "학생 ID", example = "1")
-            @PathVariable Long studentId,
             @Valid @RequestBody AddStudentRequest addStudentRequest,
             @Parameter(hidden = true)
             @AuthenticationPrincipal CustomOAuth2User oAuth2User
