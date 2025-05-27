@@ -172,4 +172,12 @@ public class NotificationService {
             );
         }
     }
+
+    // JPQL 사용
+    public List<Notification> getScheduleAndAssignmentNotifications(Student student) {
+        return notificationRepository.findByStudentAndCategories(
+                student.getStudentId(),
+                List.of(NotificationCategory.SCHEDULE, NotificationCategory.ASSIGNMENT)
+        );
+    }
 }

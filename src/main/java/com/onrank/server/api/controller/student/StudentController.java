@@ -1,5 +1,6 @@
 package com.onrank.server.api.controller.student;
 
+import com.onrank.server.api.calendar.CalendarService;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.student.AddStudentRequest;
 import com.onrank.server.api.dto.student.CalendarResponse;
@@ -20,6 +21,7 @@ import java.util.List;
 public class StudentController implements StudentControllerDocs {
 
     private final StudentService studentService;
+    private final CalendarService calendarService;
 
     // 마이페이지
     @GetMapping("/mypage")
@@ -39,6 +41,6 @@ public class StudentController implements StudentControllerDocs {
     @GetMapping("/calendar")
     public ResponseEntity<List<CalendarResponse>> getCalendar (
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-        return ResponseEntity.ok(studentService.getCalendar(oAuth2User.getName()));
+        return ResponseEntity.ok(calendarService.getCalendar(oAuth2User.getName()));
     }
 }
