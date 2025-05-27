@@ -17,7 +17,6 @@ import com.onrank.server.domain.file.FileMetadataJpaRepository;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
 import com.onrank.server.domain.member.MemberRole;
-import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -153,10 +152,7 @@ public class MemberService {
         memberRepository.save(newMember);
 
         // 1. 알림 생성
-        notificationService.createNotification(
-                NotificationCategory.STUDY, studyId, studyId,
-                study.getStudyName() + " 스터디 가입!", study.getStudyName() + " 스터디에 멤버로 추가되었습니다!",
-                "/studies/" + studyId);
+        notificationService.createNotificationForNewMember(studyId, student.getStudentId());
 
         // 2. 기존 Schedule 에 대해 Attendance 생성
         attendanceService.createAttendancesForMember(newMember);

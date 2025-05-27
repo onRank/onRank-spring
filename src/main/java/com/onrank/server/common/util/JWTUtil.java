@@ -1,6 +1,5 @@
 package com.onrank.server.common.util;
 
-import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.refreshtoken.RefreshToken;
 import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
 import io.jsonwebtoken.*;

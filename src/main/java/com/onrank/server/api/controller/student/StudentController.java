@@ -1,7 +1,9 @@
 package com.onrank.server.api.controller.student;
 
+import com.onrank.server.api.calendar.CalendarService;
 import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.student.AddStudentRequest;
+import com.onrank.server.api.dto.student.CalendarResponse;
 import com.onrank.server.api.dto.student.StudentResponse;
 import com.onrank.server.api.service.student.StudentService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/auth")
@@ -17,20 +21,26 @@ import org.springframework.web.bind.annotation.*;
 public class StudentController implements StudentControllerDocs {
 
     private final StudentService studentService;
+    private final CalendarService calendarService;
 
     // 마이페이지
-    @GetMapping("mypage")
+    @GetMapping("/mypage")
     public ResponseEntity<StudentResponse> getStudent(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
         return ResponseEntity.ok(studentService.getMyPage(oAuth2User.getName()));
     }
 
-    @PutMapping("/{studentId}")
+    @PutMapping("/mypage")
     public ResponseEntity<Void> updateStudent(
-            @PathVariable Long studentId,
             @RequestBody AddStudentRequest addStudentRequest,
             @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
-        studentService.updateStudent(oAuth2User.getName(), studentId, addStudentRequest);
+        studentService.updateStudent(oAuth2User.getName(), addStudentRequest);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/calendar")
+    public ResponseEntity<List<CalendarResponse>> getCalendar (
+            @AuthenticationPrincipal CustomOAuth2User oAuth2User) {
+        return ResponseEntity.ok(calendarService.getCalendar(oAuth2User.getName()));
     }
 }

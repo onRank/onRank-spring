@@ -35,7 +35,7 @@ public class NotificationService {
     private final NotificationJpaRepository notificationRepository;
     private final StudentJpaRepository studentRepository;
     private final StudyJpaRepository studyRepository;
-    private final ScheduleJpaRepository scheduleJpaRepository;
+    private final ScheduleJpaRepository scheduleRepository;
     private final AssignmentJpaRepository assignmentRepository;
     private final FileService fileService;
 
@@ -66,6 +66,32 @@ public class NotificationService {
             notificationRepository.save(notification);
         }
     }
+
+    @Transactional
+    public void createNotificationForNewMember(Long studyId, Long studentId){
+        Study study = studyRepository.findByStudyId(studyId)
+                .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
+        Student student = studentRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
+
+        String fileKey = fileService.getStudyImageFileKeyByStudyId(studyId);
+        LocalDateTime now = LocalDateTime.now();
+
+        Notification notification = Notification.builder()
+                .notificationCategory(NotificationCategory.STUDY)
+                .entityId(studyId)
+                .fileKey(fileKey)
+                .notificationTitle(study.getStudyName() + " 스터디 가입!")
+                .notificationContent(study.getStudyName() + " 스터디에 멤버로 추가되었습니다!")
+                .relatedUrl("/studies/" + studyId)
+                .notificationCreatedAt(now)
+                .student(student)
+                .study(study)
+                .build();
+
+            notificationRepository.save(notification);
+    }
+
 
     // 특정 학생의 알림 조회 (최신순)
     public List<NotificationResponse> getNotifications(String username) {
@@ -112,7 +138,7 @@ public class NotificationService {
         LocalDate today = LocalDate.now();
 
         // 1. 오늘 일정
-        List<Schedule> schedules = scheduleJpaRepository.findByScheduleStartingAtBetween(
+        List<Schedule> schedules = scheduleRepository.findByScheduleStartingAtBetween(
                 today.atStartOfDay(),
                 today.atTime(23, 59, 59)
         );
@@ -120,10 +146,10 @@ public class NotificationService {
         for (Schedule schedule : schedules) {
             Study study = schedule.getStudy();
             createNotification(
-                    NotificationCategory.SCHEDULE,
+                    NotificationCategory.REMINDER_SCHEDULE,
                     schedule.getScheduleId(),
                     study.getStudyId(),
-                    "[오늘 일정] " + schedule.getScheduleTitle(),
+                    schedule.getScheduleTitle(),
                     schedule.getScheduleContent(),
                     "/studies/" + study.getStudyId() + "/schedules"
             );
@@ -138,13 +164,20 @@ public class NotificationService {
         for(Assignment assignment : assignments) {
             Study study = assignment.getStudy();
             createNotification(
-                    NotificationCategory.ASSIGNMENT,
+                    NotificationCategory.REMINDER_ASSIGNMENT,
                     assignment.getAssignmentId(),
-                    study.getStudyId(),
-                    "[오늘 마감] " + assignment.getAssignmentTitle(),
+                    study.getStudyId(), assignment.getAssignmentTitle(),
                     assignment.getAssignmentContent(),
                     "/studies/" + study.getStudyId() + "/assignments/" + assignment.getAssignmentId()
             );
         }
+    }
+
+    // JPQL 사용
+    public List<Notification> getScheduleAndAssignmentNotifications(Student student) {
+        return notificationRepository.findByStudentAndCategories(
+                student.getStudentId(),
+                List.of(NotificationCategory.SCHEDULE, NotificationCategory.ASSIGNMENT)
+        );
     }
 }
