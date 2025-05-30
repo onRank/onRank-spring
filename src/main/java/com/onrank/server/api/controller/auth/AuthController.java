@@ -2,18 +2,16 @@ package com.onrank.server.api.controller.auth;
 
 import com.onrank.server.api.dto.student.AddStudentRequest;
 import com.onrank.server.api.service.student.StudentService;
-import com.onrank.server.common.util.JWTUtil;
 import com.onrank.server.common.util.CookieUtil;
-import com.onrank.server.domain.student.Role;
-import com.onrank.server.domain.student.Student;
+import com.onrank.server.common.util.JWTUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Slf4j
 @RestController
@@ -28,18 +26,9 @@ public class AuthController {
     @PostMapping("/add")
     public ResponseEntity<Void> registerStudent(
             @RequestBody AddStudentRequest addStudentRequest,
-            @RequestHeader("Authorization") String authHeader) {
+            @RequestHeader("Authorization") String authorizationHeader) {
 
-        String accessToken = authHeader.substring(7);
-        String username = JWTUtil.getUsername(accessToken);
-        String email = JWTUtil.getEmail(accessToken);
-
-        Set<Role> roles = new HashSet<>();
-        roles.add(Role.ROLE_USER);
-
-        // Student 엔티티 생성 및 저장
-        Student student = addStudentRequest.toEntity(username, email, roles);
-        studentService.createStudent(student);
+        studentService.createStudent(authorizationHeader, addStudentRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
