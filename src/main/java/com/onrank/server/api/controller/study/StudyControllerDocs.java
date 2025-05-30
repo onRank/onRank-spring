@@ -1,7 +1,7 @@
 package com.onrank.server.api.controller.study;
 
 import com.onrank.server.api.dto.common.ContextResponse;
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.auth.CustomOAuth2User;
 import com.onrank.server.api.dto.study.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

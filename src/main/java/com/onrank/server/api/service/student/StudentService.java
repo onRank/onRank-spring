@@ -50,8 +50,8 @@ public class StudentService {
         return studentRepository.findByUsername(username);
     }
 
-    public boolean checkIfExist(String studentEmil) {
-        return studentRepository.existsByStudentEmail(studentEmil);
+    public boolean checkIfExist(String studentEmail) {
+        return studentRepository.existsByStudentEmail(studentEmail);
     }
 
     @Transactional

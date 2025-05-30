@@ -3,7 +3,7 @@ package com.onrank.server.api.controller.member;
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.member.*;
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.auth.CustomOAuth2User;
 import com.onrank.server.api.service.member.MemberService;
 import com.onrank.server.api.service.student.StudentService;
 import lombok.RequiredArgsConstructor;

@@ -32,11 +32,10 @@ public enum CustomErrorInfo {
     INVALID_MEMBER_DELETION(HttpStatus.BAD_REQUEST, "HOST 와 CREATOR 는 삭제 불가"),
 
     // 401 UNAUTHORIZED - 인증 실패
+    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "Login Required"),
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid access token"),
     ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access token expired"),
-    INVALID_LOGIN_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Invalid login credentials"),
-    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "Login required"),
-    OAUTH2_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "OAuth2 authorization failed"),
+    RE_AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "Re-Authentication required"),
 
     // 403 FORBIDDEN - 권한 없음
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "Access denied"),

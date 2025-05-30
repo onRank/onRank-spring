@@ -1,7 +1,7 @@
 package com.onrank.server.api.controller.student;
 
 import com.onrank.server.api.service.calendar.CalendarService;
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.auth.CustomOAuth2User;
 import com.onrank.server.api.dto.student.AddStudentRequest;
 import com.onrank.server.api.dto.student.CalendarResponse;
 import com.onrank.server.api.dto.student.StudentResponse;

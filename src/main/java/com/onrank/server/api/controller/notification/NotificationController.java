@@ -1,7 +1,7 @@
 package com.onrank.server.api.controller.notification;
 
 import com.onrank.server.api.dto.notification.NotificationResponse;
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.auth.CustomOAuth2User;
 import com.onrank.server.api.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

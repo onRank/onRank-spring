@@ -1,6 +1,6 @@
 package com.onrank.server.common.security.jwt;
 
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.auth.CustomOAuth2User;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.util.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
