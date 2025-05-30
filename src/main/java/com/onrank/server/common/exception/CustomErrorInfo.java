@@ -29,7 +29,7 @@ public enum CustomErrorInfo {
     INVALID_SCHEDULE_TIME(HttpStatus.BAD_REQUEST, "Invalid schedule time"),
     INVALID_ROLE_CHANGE(HttpStatus.BAD_REQUEST, "Invalid role change"),
     SUBMISSION_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "Submission not submitted yet"),
-
+    INVALID_MEMBER_DELETION(HttpStatus.BAD_REQUEST, "HOST 와 CREATOR 는 삭제 불가"),
 
     // 401 UNAUTHORIZED - 인증 실패
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid access token"),
@@ -50,7 +50,7 @@ public enum CustomErrorInfo {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error"),
     MAIL_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Mail send error"),
     FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "File upload error"),
-    S3_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 service error")
+    S3_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 service error"),
     ;
 
     private final HttpStatus httpStatus;

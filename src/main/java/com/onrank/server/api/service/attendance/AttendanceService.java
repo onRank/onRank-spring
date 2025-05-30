@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static com.onrank.server.common.exception.CustomErrorInfo.MEMBER_NOT_FOUND;
 import static com.onrank.server.common.exception.CustomErrorInfo.STUDENT_NOT_FOUND;
+import static com.onrank.server.common.exception.CustomErrorInfo.INVALID_REQUEST;
 
 @Service
 @RequiredArgsConstructor
@@ -106,7 +107,7 @@ public class AttendanceService {
 
         // 출석 정보 조회
         Attendance attendance = attendanceRepository.findByAttendanceId(attendanceId)
-                .orElseThrow(() -> new IllegalArgumentException("AttendanceId " + attendanceId + " not found"));
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // 유효한 출석 상태 값인지 검증 후 변경
         try {
@@ -116,7 +117,7 @@ public class AttendanceService {
             member.updateAttendanceCount(oldStatus, newStatus);
             attendance.updateStatus(newStatus);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Attendance status " + status + " is not valid");
+            throw new CustomException(INVALID_REQUEST);
         }
     }
 }
