@@ -65,6 +65,7 @@ jobs:
               onrank-api:${{ env.TAG }}
 
             echo "[7] Waiting for container to report healthy status..."
+            sleep 30
             for i in {1..20}; do
               HEALTH=$(docker inspect --format='{{.State.Health.Status}}' onrank-api)
               echo "  → Attempt $i: status=$HEALTH"
