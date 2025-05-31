@@ -2,7 +2,7 @@ package com.onrank.server.api.controller.schedule;
 
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.auth.CustomOAuth2User;
 import com.onrank.server.api.dto.schedule.AddScheduleRequest;
 import com.onrank.server.api.dto.schedule.ScheduleResponse;
 import com.onrank.server.api.service.member.MemberService;

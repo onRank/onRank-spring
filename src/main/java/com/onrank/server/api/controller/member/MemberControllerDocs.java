@@ -5,7 +5,7 @@ import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.member.AddMemberRequest;
 import com.onrank.server.api.dto.member.MemberManagementResponse;
 import com.onrank.server.api.dto.member.MemberRoleRequest;
-import com.onrank.server.api.dto.oauth.CustomOAuth2User;
+import com.onrank.server.api.dto.auth.CustomOAuth2User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.ResponseEntity;

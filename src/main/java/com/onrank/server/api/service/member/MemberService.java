@@ -56,7 +56,7 @@ public class MemberService {
 
     public MemberStudyContext getContext(String username, Long studyId) {
         Member member = findMemberByUsernameAndStudyId(username, studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         List<FileMetadata> files = fileMetadataRepository
                 .findByCategoryAndEntityId(FileCategory.STUDY, member.getStudy().getStudyId());
@@ -125,10 +125,7 @@ public class MemberService {
         String studyName = members.isEmpty() ? null : members.get(0).getStudy().getStudyName();
 
         // 실제 응답 객체 생성
-        MemberManagementResponse response = MemberManagementResponse.builder()
-                .studyName(studyName)
-                .members(memberListResponse)
-                .build();
+        MemberManagementResponse response = new MemberManagementResponse(studyName, memberListResponse);
 
         MemberStudyContext context = getContext(username, studyId);
         return new ContextResponse<>(context, response);
@@ -143,10 +140,10 @@ public class MemberService {
         }
 
         Study study = studyRepository.findById(studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Study not found with id: " + studyId));
+                .orElseThrow(() -> new CustomException(STUDY_NOT_FOUND));
 
         Student student = studentRepository.findByStudentEmail(request.getStudentEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Student not found with email: " + request.getStudentEmail()));
+                .orElseThrow(() -> new CustomException(STUDENT_NOT_FOUND));
 
         Member newMember = new Member(student, study, MemberRole.PARTICIPANT, LocalDate.now());
         memberRepository.save(newMember);
@@ -183,11 +180,11 @@ public class MemberService {
         }
 
         Member member = memberRepository.findByMemberIdAndStudyStudyId(memberId, studyId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not in Study"));
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // CREATOR 는 권한 변경 불가
         if (member.getMemberRole() == MemberRole.CREATOR) {
-            throw new IllegalStateException("CREATOR 는 권한을 수정할 수 없습니다.");
+            throw new CustomException(INVALID_ROLE_CHANGE);
         }
         member.changeRole(MemberRole.valueOf(newRole));
     }
@@ -221,7 +218,7 @@ public class MemberService {
         // HOST는 삭제 불가
         if (targetMember.getMemberRole().equals(MemberRole.HOST)||
                 targetMember.getMemberRole().equals(MemberRole.CREATOR)) {
-            throw new IllegalArgumentException("HOST 와 CREATOR 는 삭제 불가");
+            throw new CustomException(INVALID_MEMBER_DELETION);
         }
         memberRepository.delete(targetMember);
     }
