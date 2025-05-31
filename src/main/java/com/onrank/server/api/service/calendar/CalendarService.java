@@ -1,4 +1,4 @@
-package com.onrank.server.api.calendar;
+package com.onrank.server.api.service.calendar;
 
 import com.onrank.server.api.dto.student.CalendarResponse;
 import com.onrank.server.api.service.notification.NotificationService;

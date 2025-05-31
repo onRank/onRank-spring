@@ -19,6 +19,7 @@ public class NotificationTimeResolver {
     private final ScheduleJpaRepository scheduleRepository;
     private final AssignmentJpaRepository assignmentRepository;
 
+    // 캘린더를 위한 시간 추출
     public LocalDateTime resolveTime(Notification notification) {
         return switch (notification.getNotificationCategory()) {
             case SCHEDULE -> scheduleRepository.findByScheduleId(notification.getEntityId())
