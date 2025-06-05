@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 
 
-@Getter // (?) record class로 바꿀 수 있음
+@Getter
 public class CustomOAuth2User implements OAuth2User {
 
     private final Collection<? extends GrantedAuthority> authorities;
