@@ -27,7 +27,7 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler successHandler;
-    private final JWTUtil JWTUtil;
+    private final JWTUtil jwtUtil;
     private final StudentService studentService;
 
     @Bean
@@ -53,7 +53,7 @@ public class SecurityConfig {
                 )
 
                 // jwt 필터 등록
-                .addFilterAfter(new JWTOAuth2AuthenticationFilter(JWTUtil, studentService), OAuth2LoginAuthenticationFilter.class)
+                .addFilterAfter(new JWTOAuth2AuthenticationFilter(jwtUtil, studentService), OAuth2LoginAuthenticationFilter.class)
 
                 // oauth2 설정
                 .oauth2Login(oauth2 -> oauth2
