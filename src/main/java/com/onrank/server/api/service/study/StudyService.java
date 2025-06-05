@@ -56,7 +56,6 @@ public class StudyService {
     private String bucketName;
 
     public Optional<Study> findByStudyId(Long id) {
-
         return studyRepository.findByStudyId(id);
     }
 
