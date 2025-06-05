@@ -28,7 +28,7 @@ import java.util.*;
 @NonNullApi // (?) 이게 왜 있어야 되지?
 public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
-    private final JWTUtil JWTUtil;
+    private final JWTUtil jwtUtil;
     private final StudentService studentService;
 
     @Override
@@ -37,21 +37,19 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // "Authorization" 헤더에서 access token 추출
         String authHeader = request.getHeader("Authorization");
 
-        // access token이 없으면 필터 건너뛰기
+        // access token 이 없으면 필터 건너뛰기
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             log.info("Access token not found");
             filterChain.doFilter(request, response);
             return;
         }
 
-        // access token이 "Bearer AsDfQwEr..."과 같이 되어 있음
         String accessToken = authHeader.substring(7);
 
         // username은 "google aSdFqWeR..."과 같이 되어 있음
-        String username = JWTUtil.getUsername(accessToken);
+        String username = jwtUtil.getUsername(accessToken);
 
         // 등록된 회원이 아니면 필터 건너뛰기
         if (studentService.checkIfNewUser(username)) {
@@ -62,7 +60,7 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
         // 토큰 만료 여부 및 유효성 확인
         try {
-            JWTUtil.isTokenExpired(accessToken);
+            jwtUtil.isTokenExpired(accessToken);
 
         } catch (ExpiredJwtException ex) {
 
@@ -78,7 +76,7 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 토큰이 access인지 확인 (발급시 페이로드에 명시)
-        String category = JWTUtil.getCategory(accessToken);
+        String category = jwtUtil.getCategory(accessToken);
 
         if (!category.equals("access")) {
 
@@ -102,7 +100,7 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("username", username);
 
-        String email = JWTUtil.getEmail(accessToken);
+        String email = jwtUtil.getEmail(accessToken);
         attributes.put("email", email);
 
         CustomOAuth2User customOAuth2User = new CustomOAuth2User(authorities, attributes, username, email);
