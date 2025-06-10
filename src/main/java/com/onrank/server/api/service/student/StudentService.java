@@ -7,7 +7,6 @@ import com.onrank.server.api.dto.student.StudentResponse;
 import com.onrank.server.api.dto.study.MyPageStudyListResponse;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
-import com.onrank.server.common.util.JWTUtil;
 import com.onrank.server.domain.assignment.AssignmentJpaRepository;
 import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.member.MemberJpaRepository;
@@ -15,7 +14,6 @@ import com.onrank.server.domain.notification.Notification;
 import com.onrank.server.domain.notification.NotificationCategory;
 import com.onrank.server.domain.notification.NotificationJpaRepository;
 import com.onrank.server.domain.schedule.ScheduleJpaRepository;
-import com.onrank.server.domain.student.Role;
 import com.onrank.server.domain.student.Student;
 import com.onrank.server.domain.student.StudentJpaRepository;
 import com.onrank.server.domain.study.Study;
@@ -24,7 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.onrank.server.common.exception.CustomErrorInfo.*;
@@ -40,7 +40,6 @@ public class StudentService {
     private final AssignmentJpaRepository assignmentRepository;
     private final StudyService studyService;
     private final MemberJpaRepository memberRepository;
-    private final JWTUtil JWTUtil;
 
     public boolean checkIfNewUser(String username) {
         return !studentRepository.existsByUsername(username);
@@ -50,23 +49,12 @@ public class StudentService {
         return studentRepository.findByUsername(username);
     }
 
-    public boolean checkIfExist(String studentEmail) {
-        return studentRepository.existsByStudentEmail(studentEmail);
+    public boolean checkIfExist(String studentEmil) {
+        return studentRepository.existsByStudentEmail(studentEmil);
     }
 
     @Transactional
-    public void createStudent(String authorizationHeader, AddStudentRequest request) {
-
-        //토큰 분해
-        String accessToken = authorizationHeader.substring(7);
-        String username = JWTUtil.getUsername(accessToken);
-        String email = JWTUtil.getEmail(accessToken);
-
-        Set<Role> roles = new HashSet<>();
-        roles.add(Role.ROLE_USER);
-
-        // Student 엔티티 생성 및 저장
-        Student student = request.toEntity(username, email, roles);
+    public void createStudent(Student student) {
         studentRepository.save(student);
     }
 

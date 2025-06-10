@@ -1,11 +1,8 @@
 package com.onrank.server.common.util;
 
-import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.refreshtoken.RefreshToken;
 import com.onrank.server.domain.refreshtoken.RefreshTokenJpaRepository;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,9 +10,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-
-import static com.onrank.server.common.exception.CustomErrorInfo.*;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -109,37 +104,18 @@ public class JWTUtil {
         }
     }
 
-    public void validateAccessToken(String token) {
+    public boolean isTokenValid(String token) {
         try {
             Jwts
                 .parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token);
-        } catch (ExpiredJwtException e) {
-            throw new CustomException(ACCESS_TOKEN_EXPIRED);
+            // 파싱에 예외가 없었다면 서명, 만료, 형식 모두 통과
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
-            throw new CustomException(INVALID_ACCESS_TOKEN);
-        }
-    }
-
-    public void validateRefreshToken(String token) {
-        if (token == null) {
-            throw new CustomException(REFRESH_TOKEN_IS_NULL);
-        }
-        try {
-            Jwts.parser()
-                    .verifyWith(secretKey)
-                    .build()
-                    .parseSignedClaims(token);
-        } catch (ExpiredJwtException e) {
-            // DB 에서도 삭제
-            deleteRefreshToken(token);
-            throw new CustomException(REFRESH_TOKEN_EXPIRED);
-        } catch (JwtException | IllegalArgumentException e) {
-            // DB 에서도 삭제
-            deleteRefreshToken(token);
-            throw new CustomException(INVALID_REFRESH_TOKEN);
+            // 만료, 서명불일치, 잘못된 형식 등 모두 여기서 잡힘
+            return false;
         }
     }
 

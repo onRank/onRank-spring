@@ -1,6 +1,6 @@
 package com.onrank.server.api.service.auth;
 
-import com.onrank.server.api.dto.auth.CustomOAuth2User;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.student.StudentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

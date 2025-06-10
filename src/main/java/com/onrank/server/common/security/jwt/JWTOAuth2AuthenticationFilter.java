@@ -1,6 +1,6 @@
 package com.onrank.server.common.security.jwt;
 
-import com.onrank.server.api.dto.auth.CustomOAuth2User;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.service.student.StudentService;
 import com.onrank.server.common.exception.CustomErrorInfo;
 import com.onrank.server.common.exception.CustomException;
@@ -53,7 +53,7 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // Access Token이 유효한지 확인
-            jwtUtil.validateAccessToken(accessToken);
+            jwtUtil.isTokenValid(accessToken);
             username = jwtUtil.getUsername(accessToken);
             email = jwtUtil.getEmail(accessToken);
 

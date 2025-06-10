@@ -66,17 +66,17 @@ public class ScheduleService {
     @Transactional
     public void updateSchedule(Long scheduleId, AddScheduleRequest request) {
         Schedule schedule = scheduleRepository.findByScheduleId(scheduleId)
-                .orElseThrow(() -> new CustomException(SCHEDULE_NOT_FOUND));
+                .orElseThrow(() -> new IllegalArgumentException("Schedule not found"));
         schedule.update(request.getScheduleTitle(), request.getScheduleContent(), request.getScheduleStartingAt());
     }
 
     @Transactional
     public void deleteSchedule(Long scheduleId, Long studyId) {
         Schedule schedule = scheduleRepository.findByScheduleId(scheduleId)
-                .orElseThrow(() -> new CustomException(SCHEDULE_NOT_FOUND));
+                .orElseThrow(() -> new IllegalArgumentException("Schedule not found"));
 
         if (!schedule.getStudy().getStudyId().equals(studyId)) {
-            throw new CustomException(INVALID_SCHEDULE_TIME);
+            throw new IllegalArgumentException("Schedule does not belong to this study");
         }
         notificationService.deleteNotificationByEntity(NotificationCategory.SCHEDULE, scheduleId);
         scheduleRepository.delete(schedule);

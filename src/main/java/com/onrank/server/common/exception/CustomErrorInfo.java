@@ -29,13 +29,14 @@ public enum CustomErrorInfo {
     INVALID_SCHEDULE_TIME(HttpStatus.BAD_REQUEST, "Invalid schedule time"),
     INVALID_ROLE_CHANGE(HttpStatus.BAD_REQUEST, "Invalid role change"),
     SUBMISSION_NOT_SUBMITTED(HttpStatus.BAD_REQUEST, "Submission not submitted yet"),
-    INVALID_MEMBER_DELETION(HttpStatus.BAD_REQUEST, "HOST 와 CREATOR 는 삭제 불가"),
+
 
     // 401 UNAUTHORIZED - 인증 실패
-    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "Login Required"),
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "Invalid access token"),
     ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Access token expired"),
-    RE_AUTHENTICATION_REQUIRED(HttpStatus.UNAUTHORIZED, "Re-Authentication required"),
+    INVALID_LOGIN_CREDENTIALS(HttpStatus.UNAUTHORIZED, "Invalid login credentials"),
+    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "Login required"),
+    OAUTH2_UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "OAuth2 authorization failed"),
 
     // 403 FORBIDDEN - 권한 없음
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "Access denied"),
@@ -49,7 +50,7 @@ public enum CustomErrorInfo {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error"),
     MAIL_SEND_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Mail send error"),
     FILE_UPLOAD_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "File upload error"),
-    S3_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 service error"),
+    S3_SERVICE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "S3 service error")
     ;
 
     private final HttpStatus httpStatus;

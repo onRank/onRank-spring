@@ -14,6 +14,7 @@ import com.onrank.server.api.service.notification.NotificationService;
 import com.onrank.server.api.service.study.StudyService;
 import com.onrank.server.common.exception.CustomException;
 import com.onrank.server.domain.file.FileCategory;
+import com.onrank.server.domain.member.Member;
 import com.onrank.server.domain.notice.Notice;
 import com.onrank.server.domain.notice.NoticeJpaRepository;
 import com.onrank.server.domain.notification.NotificationCategory;
@@ -82,6 +83,8 @@ public class NoticeService {
 
         Study study = studyService.findByStudyId(studyId)
                 .orElseThrow(() -> new CustomException(NOT_STUDY_MEMBER));
+        Member member = memberService.findMemberByUsernameAndStudyId(username, studyId)
+                .orElseThrow(() -> new CustomException(MEMBER_NOT_FOUND));
 
         // 공지 생성 및 저장
         Notice notice = request.toEntity(study);

@@ -3,7 +3,7 @@ package com.onrank.server.api.controller.post;
 import com.onrank.server.api.dto.common.ContextResponse;
 import com.onrank.server.api.dto.common.MemberStudyContext;
 import com.onrank.server.api.dto.file.PresignedUrlResponse;
-import com.onrank.server.api.dto.auth.CustomOAuth2User;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.post.AddPostRequest;
 import com.onrank.server.api.dto.post.PostDetailResponse;
 import com.onrank.server.api.dto.post.PostListResponse;

@@ -1,7 +1,7 @@
 package com.onrank.server.api.controller.submission;
 
 import com.onrank.server.api.dto.common.ContextResponse;
-import com.onrank.server.api.dto.auth.CustomOAuth2User;
+import com.onrank.server.api.dto.oauth.CustomOAuth2User;
 import com.onrank.server.api.dto.submission.ScoreSubmissionRequest;
 import com.onrank.server.api.dto.submission.SubmissionDetailResponse;
 import com.onrank.server.api.dto.submission.SubmissionListResponse;
