@@ -53,7 +53,7 @@ public class JWTOAuth2AuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // Access Token이 유효한지 확인
-            jwtUtil.validateAccessToken(accessToken);
+            jwtUtil.isTokenValid(accessToken);
             username = jwtUtil.getUsername(accessToken);
             email = jwtUtil.getEmail(accessToken);
 
