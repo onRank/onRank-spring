@@ -8,7 +8,6 @@
 </div>
 
 <br></br>
-
 ## 📝 소개
 
 **onRank**는 다양한 스터디 활동을 보다 체계적이고 효율적으로 관리할 수 있도록 설계된 **웹 기반 스터디 관리 플랫폼**입니다. 
@@ -45,7 +44,6 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 <img src="https://github.com/user-attachments/assets/ba13b412-b003-4899-a9e4-c8fd9308601e" alt="ERD">
 <br></br>
 </details>
-
 <br></br>
 ## 🛠️ 기술 스택
 
@@ -54,7 +52,6 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 | **Frontend** | <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=React&logoColor=black"/> <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=JavaScript&logoColor=black"/> <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=Vite&logoColor=white"/> <img src="https://img.shields.io/badge/React_Query-FF4154?style=flat-square&logo=ReactQuery&logoColor=white"/> <img src="https://img.shields.io/badge/Styled_Components-DB7093?style=flat-square&logo=styled-components&logoColor=white"/> |
 | **Backend** |                                                         <img src="https://img.shields.io/badge/Java-007396?style=flat-square&logo=java&logoColor=white"/> <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=flat-square&logo=Spring-Boot&logoColor=white"/> <img src="https://img.shields.io/badge/Spring_Security-6DB33F?style=flat-square&logo=Spring-Security&logoColor=white"/> <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=MySQL&logoColor=white"/>                                                          |
 | **DevOps** |                                                                        <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white"/> <img src="https://img.shields.io/badge/NGINX-009639?style=flat-square&logo=NGINX&logoColor=white"/> <img src="https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=Amazon-AWS&logoColor=white"/> <img src="https://img.shields.io/badge/Git-F05032?style=flat-square&logo=Git&logoColor=white"/>                                                                        |
-
 <br></br>
 ## 🏆 수상 내역
 
@@ -63,7 +60,6 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 <img src="https://github.com/user-attachments/assets/e3f0e69f-711f-4d9b-bd9d-a4fafd812f8d" alt="수상 내역 1">
 <img src="https://github.com/user-attachments/assets/889b4f28-60b2-4a3f-bb8b-e12a0335e674" alt="수상 내역 2">
 </details>
-
 <br></br>
 ## 🔗 링크
 
