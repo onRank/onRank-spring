@@ -7,7 +7,6 @@
   <img src="https://github.com/user-attachments/assets/50402606-5a24-4fc4-89cf-7079fa7f5350" alt="onRank 판넬" width="800">
 </div>
 
-<br></br>
 ## 📝 소개
 
 **onRank**는 다양한 스터디 활동을 보다 체계적이고 효율적으로 관리할 수 있도록 설계된 **웹 기반 스터디 관리 플랫폼**입니다. 
@@ -23,7 +22,9 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 - 아주대학교 2025-1학기 파란학기제
 - 2025.03.04 ~ 2025.05.31
 - FE 2명, BE 2명
-  <br></br>
+
+<br></br>
+
 ## 🏗️ 시스템 아키텍처
 
 <details>
@@ -44,7 +45,6 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 <details>
 <summary>ERD</summary>
 <img src="https://github.com/user-attachments/assets/ba13b412-b003-4899-a9e4-c8fd9308601e" alt="ERD">
-<br></br>
 </details>
 
 <br></br>
