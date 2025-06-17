@@ -8,7 +8,6 @@
 </div>
 <br></br>
 
-[![GitHub license](https://img.shields.io/github/license/OnRank/onrank)](
 ## 📝 소개
 
 **onRank**는 다양한 스터디 활동을 보다 체계적이고 효율적으로 관리할 수 있도록 설계된 **웹 기반 스터디 관리 플랫폼**입니다. 
