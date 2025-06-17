@@ -42,9 +42,9 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 <details>
 <summary>ERD</summary>
 <img src="https://github.com/user-attachments/assets/ba13b412-b003-4899-a9e4-c8fd9308601e" alt="ERD">
-<br></br>
 </details>
 
+<br></br>
 ## 🛠️ 기술 스택
 
 | 분야 |                                                                                                                                                                                                                                                                               기술                                                                                                                                                                                                                                                                               |
