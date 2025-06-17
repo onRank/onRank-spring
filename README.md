@@ -46,6 +46,7 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 <br></br>
 </details>
 
+<br></br>
 ## 🛠️ 기술 스택
 
 | 분야 |                                                                                                                                                                                                                                                                               기술                                                                                                                                                                                                                                                                               |
@@ -55,7 +56,6 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 | **DevOps** |                                                                        <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=Docker&logoColor=white"/> <img src="https://img.shields.io/badge/NGINX-009639?style=flat-square&logo=NGINX&logoColor=white"/> <img src="https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=Amazon-AWS&logoColor=white"/> <img src="https://img.shields.io/badge/Git-F05032?style=flat-square&logo=Git&logoColor=white"/>                                                                        |
 
 <br></br>
-
 ## 🏆 수상 내역
 
 <details>
@@ -65,7 +65,6 @@ onRank는 이러한 비효율을 해소하고자 **출석 관리, 랭킹 시스�
 </details>
 
 <br></br>
-
 ## 🔗 링크
 
 - 서비스 링크: [onRank](https://onrank.kr)
